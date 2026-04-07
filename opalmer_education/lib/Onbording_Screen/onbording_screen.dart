@@ -30,18 +30,30 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       "image":
           "assets/images/onbording_background_image/onbording_background_image_1.jpg",
       "bgColor": const Color(0xFF9E92C4),
+      "imageBottom": 200.0,
+      "textTop": 180.0,
+      "textRight": 20.0,
+      "textFontSize": 50.0,
     },
     {
       "text": "Learning",
       "image":
           "assets/images/onbording_background_image/onbording_background_image_2.png",
       "bgColor": const Color(0xFF094988),
+      "imageBottom": -150.0,
+      "textTop": 180.0,
+      "textRight": 20.0,
+      "textFontSize": 50.0,
     },
     {
       "text": "Real Success",
       "image":
           "assets/images/onbording_background_image/onbording_background_image_3.png",
       "bgColor": const Color(0xFFFFBE02),
+      "imageBottom": -50.0,
+      "textTop": 180.0,
+      "textRight": 20.0,
+      "textFontSize": 40.0,
     },
   ];
 
@@ -140,7 +152,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   children: [
                     // Background Image — animated
                     Positioned(
-                      bottom: 50,
+                      bottom: onboardingData[index]["imageBottom"],
                       left: 0,
                       right: 0,
                       top: 0,
@@ -159,8 +171,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
                     // Rotated Text — animated
                     Positioned(
-                      top: 180,
-                      right: 20,
+                      top: onboardingData[index]["textTop"],
+                      right: onboardingData[index]["textRight"],
                       child: FadeTransition(
                         opacity: _textFade,
                         child: SlideTransition(
@@ -169,8 +181,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             quarterTurns: 3,
                             child: Text(
                               onboardingData[index]["text"]!,
-                              style: const TextStyle(
-                                fontSize: 50,
+                              style: TextStyle(
+                                fontSize: onboardingData[index]["textFontSize"],
                                 fontWeight: FontWeight.w900,
                                 color: Colors.white,
                                 letterSpacing: 2.0,
