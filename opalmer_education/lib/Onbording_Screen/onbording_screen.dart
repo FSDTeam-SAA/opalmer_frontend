@@ -140,7 +140,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   children: [
                     // Background Image — animated
                     Positioned(
-                      bottom: 250,
+                      bottom: 50,
                       left: 0,
                       right: 0,
                       top: 0,
@@ -159,8 +159,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
                     // Rotated Text — animated
                     Positioned(
-                      top: 200,
-                      right: -30,
+                      top: 180,
+                      right: 20,
                       child: FadeTransition(
                         opacity: _textFade,
                         child: SlideTransition(
@@ -170,7 +170,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             child: Text(
                               onboardingData[index]["text"]!,
                               style: const TextStyle(
-                                fontSize: 60,
+                                fontSize: 50,
                                 fontWeight: FontWeight.w900,
                                 color: Colors.white,
                                 letterSpacing: 2.0,
@@ -188,13 +188,13 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
           // ── Top Logo (circle bg like Figma) ──
           Positioned(
-            top: 60,
+            top: 70,
             left: 0,
             right: 0,
             child: Center(
               child: Container(
-                width: 64,
-                height: 64,
+                width: 50,
+                height: 50,
                 decoration: const BoxDecoration(
                   color: Color(0xFF871DAD),
                   shape: BoxShape.circle,
@@ -202,8 +202,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 child: Center(
                   child: Image.asset(
                     'assets/images/onbording_logo.png',
-                    width: 36,
-                    height: 36,
+                    width: 50,
+                    height: 50,
                   ),
                 ),
               ),
@@ -287,6 +287,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF871DAD),
+                              minimumSize: const Size(double.infinity, 54),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(28),
                               ),
