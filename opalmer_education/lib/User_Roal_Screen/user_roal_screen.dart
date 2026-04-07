@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:opalmer_education/Authentication_Screen/login_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -151,7 +152,13 @@ class _UserRoleScreenState extends State<UserRoleScreen>
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                   child: GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const LoginScreen(),
+                        ),
+                      );
+                    },
                     child: Container(
                       width: double.infinity,
                       height: 58,
