@@ -31,6 +31,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           "assets/images/onbording_background_image/onbording_background_image_1.jpg",
       "bgColor": const Color(0xFF9E92C4),
       "imageBottom": 200.0,
+      "imageAlignment": Alignment.topCenter,
       "textTop": 180.0,
       "textRight": 20.0,
       "textFontSize": 50.0,
@@ -40,7 +41,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       "image":
           "assets/images/onbording_background_image/onbording_background_image_2.png",
       "bgColor": const Color(0xFF094988),
-      "imageBottom": -150.0,
+      "imageBottom": -300.0, // আরো নিচে
+      "imageAlignment": Alignment.topCenter,
       "textTop": 180.0,
       "textRight": 20.0,
       "textFontSize": 50.0,
@@ -51,9 +53,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           "assets/images/onbording_background_image/onbording_background_image_3.png",
       "bgColor": const Color(0xFFFFBE02),
       "imageBottom": -50.0,
+      "imageAlignment": Alignment.topRight, // left এ সরানো
       "textTop": 180.0,
       "textRight": 20.0,
-      "textFontSize": 40.0,
+      "textFontSize": 45.0,
     },
   ];
 
@@ -106,10 +109,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   void _playAnimations() {
     _imageController.forward(from: 0);
     Future.delayed(const Duration(milliseconds: 150), () {
-      _textController.forward(from: 0);
+      if (mounted) _textController.forward(from: 0);
     });
     Future.delayed(const Duration(milliseconds: 250), () {
-      _cardController.forward(from: 0);
+      if (mounted) _cardController.forward(from: 0);
     });
   }
 
@@ -131,8 +134,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
     return Scaffold(
       body: Stack(
         children: [
@@ -163,7 +164,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           child: Image.asset(
                             onboardingData[index]["image"]!,
                             fit: BoxFit.cover,
-                            alignment: Alignment.topCenter,
+                            alignment: onboardingData[index]["imageAlignment"],
                           ),
                         ),
                       ),
@@ -198,7 +199,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             },
           ),
 
-          // ── Top Logo (circle bg like Figma) ──
+          // ── Top Logo ──
           Positioned(
             top: 70,
             left: 0,
@@ -275,7 +276,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       ),
                       const Spacer(),
 
-                      // Button with press animation
+                      // Button
                       SizedBox(
                         width: double.infinity,
                         height: 54,
