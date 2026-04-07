@@ -15,17 +15,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final List<Map<String, dynamic>> onboardingData = [
     {
       "text": "Growth",
-      "image": "assets/images/onbording_background_image/onbording_background_image_1.jpg",
+      "image":
+          "assets/images/onbording_background_image/onbording_background_image_1.jpg",
       "bgColor": const Color(0xFF9E92C4), // Fallback if the JPG doesn't cover
     },
     {
       "text": "Learning",
-      "image": "assets/images/onbording_background_image/onbording_background_image_2.png",
+      "image":
+          "assets/images/onbording_background_image/onbording_background_image_2.png",
       "bgColor": const Color(0xFF094988),
     },
     {
       "text": "Real Success",
-      "image": "assets/images/onbording_background_image/onbording_background_image_3.png",
+      "image":
+          "assets/images/onbording_background_image/onbording_background_image_3.png",
       "bgColor": const Color(0xFFFFBE02),
     },
   ];
@@ -60,7 +63,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         alignment: Alignment.topCenter,
                       ),
                     ),
-                    
+
                     // Rotated Text
                     Positioned(
                       top: 200,
@@ -83,7 +86,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               );
             },
           ),
-          
+
           // Top Logo
           Positioned(
             top: 70,
@@ -97,7 +100,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
           ),
-          
+
           // Bottom Card
           Positioned(
             bottom: 0,
@@ -197,7 +200,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       height: 8,
       width: _currentPage == index ? 24 : 8,
       decoration: BoxDecoration(
-        color: _currentPage == index ? const Color(0xFF871DAD) : const Color(0xFFE0E0E0),
+        color: _currentPage == index
+            ? const Color(0xFF871DAD)
+            : const Color(0xFFE0E0E0),
         borderRadius: BorderRadius.circular(4),
       ),
     );
