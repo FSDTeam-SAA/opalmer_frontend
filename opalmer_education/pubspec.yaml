@@ -66,6 +66,7 @@ flutter:
     - assets/images/bottom_navigation_bar_icon/
     - assets/images/header_smoke.png
     - assets/images/Home_dashboard_header.png
+    - assets/images/home_dashboard/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
