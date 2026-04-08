@@ -15,7 +15,7 @@ class HomeDashboard extends StatelessWidget {
             Stack(
               children: [
                 Image.asset(
-                  'assets/images/header_design.png',
+                  'assets/images/Home_dashboard_header.png',
                   width: double.infinity,
                   fit: BoxFit.fitWidth,
                 ),
@@ -28,8 +28,9 @@ class HomeDashboard extends StatelessWidget {
                         const SizedBox(height: 16),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            const Column(
+                            Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
@@ -38,30 +39,39 @@ class HomeDashboard extends StatelessWidget {
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
+                                    letterSpacing: -0.5,
                                   ),
                                 ),
-                                SizedBox(height: 4),
+                                SizedBox(height: 0),
                                 Text(
                                   "Check your students activities",
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Colors.white70,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500,
+                                    shadows: [
+                                      Shadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        offset: const Offset(0, 1),
+                                        blurRadius: 2,
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
-                            // Notification bell
+                            // Refined Notification bell - White circle with purple icon
                             Container(
-                              width: 42,
-                              height: 42,
-                              decoration: BoxDecoration(
+                              width: 48,
+                              height: 48,
+                              decoration: const BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: Colors.white.withOpacity(0.2),
+                                color: Colors.white,
                               ),
                               child: const Icon(
-                                Icons.notifications_outlined,
-                                color: Colors.white,
-                                size: 24,
+                                Icons.notifications_none_rounded,
+                                color: Color(0xFF871DAD),
+                                size: 28,
                               ),
                             ),
                           ],
@@ -257,22 +267,28 @@ class HomeDashboard extends StatelessWidget {
             children: [
               const Icon(Icons.access_time, color: Colors.white70, size: 14),
               const SizedBox(width: 4),
-              Text(days,
-                  style:
-                      const TextStyle(fontSize: 12, color: Colors.white70)),
+              Text(
+                days,
+                style: const TextStyle(fontSize: 12, color: Colors.white70),
+              ),
               const SizedBox(width: 12),
               const Icon(Icons.people_outline, color: Colors.white70, size: 14),
               const SizedBox(width: 4),
-              Text(students,
-                  style:
-                      const TextStyle(fontSize: 12, color: Colors.white70)),
+              Text(
+                students,
+                style: const TextStyle(fontSize: 12, color: Colors.white70),
+              ),
               const SizedBox(width: 12),
-              const Icon(Icons.location_on_outlined,
-                  color: Colors.white70, size: 14),
+              const Icon(
+                Icons.location_on_outlined,
+                color: Colors.white70,
+                size: 14,
+              ),
               const SizedBox(width: 4),
-              Text(room,
-                  style:
-                      const TextStyle(fontSize: 12, color: Colors.white70)),
+              Text(
+                room,
+                style: const TextStyle(fontSize: 12, color: Colors.white70),
+              ),
             ],
           ),
           const Spacer(),
@@ -282,13 +298,18 @@ class HomeDashboard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Attendance",
-                        style: TextStyle(fontSize: 11, color: Colors.white70)),
-                    Text(attendance,
-                        style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white)),
+                    const Text(
+                      "Attendance",
+                      style: TextStyle(fontSize: 11, color: Colors.white70),
+                    ),
+                    Text(
+                      attendance,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -296,13 +317,18 @@ class HomeDashboard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Performance",
-                        style: TextStyle(fontSize: 11, color: Colors.white70)),
-                    Text(performance,
-                        style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white)),
+                    const Text(
+                      "Performance",
+                      style: TextStyle(fontSize: 11, color: Colors.white70),
+                    ),
+                    Text(
+                      performance,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -365,10 +391,7 @@ class HomeDashboard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   "$questions · $duration",
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade500,
-                  ),
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
                 ),
               ],
             ),
