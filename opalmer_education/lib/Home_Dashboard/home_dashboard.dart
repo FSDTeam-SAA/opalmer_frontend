@@ -241,167 +241,174 @@ class _HomeDashboardState extends State<HomeDashboard>
               ],
             ),
 
-            const SizedBox(height: 16),
-
-            // ── Class Stats Section ──
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "Class Stats",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF222222),
-                    ),
-                  ),
-                  Text(
-                    "View All",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF871DAD),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Horizontal scrollable Class Stats cards
-            SizedBox(
-              height: 160,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                children: [
-                  FadeTransition(
-                    opacity: _cardFades[0],
-                    child: SlideTransition(
-                      position: _cardSlides[0],
-                      child: _buildClassCard(
-                        subject: "Grade 6 - Science",
-                        days: "Mon, Wed",
-                        students: "28 Students",
-                        room: "6B",
-                        attendance: "92%",
-                        performance: "85%",
-                        color: const Color(0xFF2E9B5B),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  FadeTransition(
-                    opacity: _cardFades[1],
-                    child: SlideTransition(
-                      position: _cardSlides[1],
-                      child: _buildClassCard(
-                        subject: "Grade 7 - Math",
-                        days: "Tue, Thu",
-                        students: "32 Students",
-                        room: "7A",
-                        attendance: "88%",
-                        performance: "79%",
-                        color: const Color(0xFFE8A317),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // ── Quizzes Section ──
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "Quizzes",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF222222),
-                    ),
-                  ),
-                  Text(
-                    "View All",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF871DAD),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Quiz list items
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+            // ── Main Content Area (Shifted Up to overlap header) ──
+            Transform.translate(
+              offset: const Offset(0, -25),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  FadeTransition(
-                    opacity: _quizCardFades[0],
-                    child: SlideTransition(
-                      position: _quizCardSlides[0],
-                      child: _buildQuizCard(
-                        title: "Fractions and Decimals",
-                        questions: "10 Questions",
-                        duration: "5 min",
-                        status: "Draft",
-                        statusColor: const Color(0xFFE8A317),
-                      ),
+                  // ── Class Stats Section ──
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Class Stats",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF222222),
+                          ),
+                        ),
+                        Text(
+                          "View All",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF871DAD),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 12),
-                  FadeTransition(
-                    opacity: _quizCardFades[1],
-                    child: SlideTransition(
-                      position: _quizCardSlides[1],
-                      child: _buildQuizCard(
-                        title: "Mean and Median",
-                        questions: "10 Questions",
-                        duration: "5 min",
-                        status: "Published",
-                        statusColor: const Color(0xFF2E9B5B),
-                      ),
+
+                  // Horizontal scrollable Class Stats cards
+                  SizedBox(
+                    height: 160,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      children: [
+                        FadeTransition(
+                          opacity: _cardFades[0],
+                          child: SlideTransition(
+                            position: _cardSlides[0],
+                            child: _buildClassCard(
+                              subject: "Grade 6 - Science",
+                              days: "Mon, Wed",
+                              students: "28 Students",
+                              room: "6B",
+                              attendance: "92%",
+                              performance: "85%",
+                              color: const Color(0xFF2E9B5B),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        FadeTransition(
+                          opacity: _cardFades[1],
+                          child: SlideTransition(
+                            position: _cardSlides[1],
+                            child: _buildClassCard(
+                              subject: "Grade 7 - Math",
+                              days: "Tue, Thu",
+                              students: "32 Students",
+                              room: "7A",
+                              attendance: "88%",
+                              performance: "79%",
+                              color: const Color(0xFFE8A317),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // ── Quizzes Section ──
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Quizzes",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF222222),
+                          ),
+                        ),
+                        Text(
+                          "View All",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF871DAD),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 12),
-                  FadeTransition(
-                    opacity: _quizCardFades[2],
-                    child: SlideTransition(
-                      position: _quizCardSlides[2],
-                      child: _buildQuizCard(
-                        title: "Fractions and Decimals",
-                        questions: "10 Questions",
-                        duration: "5 min",
-                        status: "Draft",
-                        statusColor: const Color(0xFFE8A317),
-                      ),
+
+                  // Quiz list items
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      children: [
+                        FadeTransition(
+                          opacity: _quizCardFades[0],
+                          child: SlideTransition(
+                            position: _quizCardSlides[0],
+                            child: _buildQuizCard(
+                              title: "Fractions and Decimals",
+                              questions: "10 Questions",
+                              duration: "5 min",
+                              status: "Draft",
+                              statusColor: const Color(0xFFE8A317),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        FadeTransition(
+                          opacity: _quizCardFades[1],
+                          child: SlideTransition(
+                            position: _quizCardSlides[1],
+                            child: _buildQuizCard(
+                              title: "Mean and Median",
+                              questions: "10 Questions",
+                              duration: "5 min",
+                              status: "Published",
+                              statusColor: const Color(0xFF2E9B5B),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        FadeTransition(
+                          opacity: _quizCardFades[2],
+                          child: SlideTransition(
+                            position: _quizCardSlides[2],
+                            child: _buildQuizCard(
+                              title: "Fractions and Decimals",
+                              questions: "10 Questions",
+                              duration: "5 min",
+                              status: "Draft",
+                              statusColor: const Color(0xFFE8A317),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        FadeTransition(
+                          opacity: _quizCardFades[3],
+                          child: SlideTransition(
+                            position: _quizCardSlides[3],
+                            child: _buildQuizCard(
+                              title: "Fractions and Decimals",
+                              questions: "10 Questions",
+                              duration: "5 min",
+                              status: "Draft",
+                              statusColor: const Color(0xFFE8A317),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 100), // Space for bottom nav
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  FadeTransition(
-                    opacity: _quizCardFades[3],
-                    child: SlideTransition(
-                      position: _quizCardSlides[3],
-                      child: _buildQuizCard(
-                        title: "Fractions and Decimals",
-                        questions: "10 Questions",
-                        duration: "5 min",
-                        status: "Draft",
-                        statusColor: const Color(0xFFE8A317),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 100), // Space for bottom nav
                 ],
               ),
             ),
