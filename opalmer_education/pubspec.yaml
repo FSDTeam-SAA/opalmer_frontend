@@ -63,6 +63,7 @@ flutter:
     - assets/images/onbording_background_image/
     - assets/images/header_design.png
     - assets/images/Login_images/
+    - assets/images/bottom_navigation_bar_icon/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
