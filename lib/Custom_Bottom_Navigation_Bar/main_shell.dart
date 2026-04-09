@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/Custom_Bottom_Navigation_Bar/custom_bottom_navigation_bar.dart';
 import 'package:opalmer_education/Teacher_Roal/Home_Dashboard/home_dashboard.dart';
+import 'package:opalmer_education/Teacher_Roal/Classes_Screen/classes_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({Key? key}) : super(key: key);
@@ -19,7 +20,7 @@ class _MainShellState extends State<MainShell> {
     super.initState();
     _pages = [
       const HomeDashboard(),
-      const _PlaceholderPage(title: "Classes"),
+      const ClassesScreen(),
       const _PlaceholderPage(title: "Community"),
       const _PlaceholderPage(title: "Messages"),
       const _PlaceholderPage(title: "Profile"),

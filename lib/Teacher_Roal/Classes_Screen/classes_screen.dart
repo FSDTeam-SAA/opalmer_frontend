@@ -1,0 +1,283 @@
+import 'package:flutter/material.dart';
+import '../Home_Dashboard/notificatioin.dart';
+
+class ClassesScreen extends StatefulWidget {
+  const ClassesScreen({Key? key}) : super(key: key);
+
+  @override
+  State<ClassesScreen> createState() => _ClassesScreenState();
+}
+
+class _ClassesScreenState extends State<ClassesScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Header
+            Stack(
+              children: [
+                Image.asset(
+                  'assets/images/Home_dashboard_header.png',
+                  width: double.infinity,
+                  fit: BoxFit.fitWidth,
+                ),
+                SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Text(
+                              "Class Stats",
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const NotificationScreen(),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                width: 44,
+                                height: 44,
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Center(
+                                  child: Image.asset(
+                                    'assets/images/home_dashboard/notification.png',
+                                    width: 24,
+                                    height: 24,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            // Main Content Area
+            Transform.translate(
+              offset: const Offset(0, -10),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    _buildClassCard(
+                      subject: "Grade 6 - Science",
+                      date: "6/6/25",
+                      students: "28 Students",
+                      attendance: "92%",
+                      performance: "85%",
+                      color: const Color(0xFF4AA678), // Green
+                    ),
+                    _buildClassCard(
+                      subject: "Grade 5 - Math",
+                      date: "6/6/25",
+                      students: "28 Students",
+                      attendance: "92%",
+                      performance: "85%",
+                      color: const Color(0xFFFEBD43), // Yellow
+                    ),
+                    _buildClassCard(
+                      subject: "Grade 5 - Science",
+                      date: "6/6/25",
+                      students: "28 Students",
+                      attendance: "92%",
+                      performance: "85%",
+                      color: const Color(0xFF3F99B4), // Blue
+                    ),
+                    _buildClassCard(
+                      subject: "Grade 4 - Science",
+                      date: "6/6/25",
+                      students: "28 Students",
+                      attendance: "92%",
+                      performance: "85%",
+                      color: const Color(0xFF4AA678), // Green
+                    ),
+                    const SizedBox(height: 100), // padding for bottom nav
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 80.0), // Extra padding for bottom navigation
+        child: Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: const Color(0xFF871DAD),
+            shape: BoxShape.circle,
+            boxShadow: [
+               BoxShadow(
+                 color: Colors.black.withOpacity(0.2),
+                 blurRadius: 10,
+                 offset: const Offset(0, 4),
+               ),
+            ],
+          ),
+          child: const Icon(
+            Icons.add,
+            color: Colors.white,
+            size: 32,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildClassCard({
+    required String subject,
+    required String date,
+    required String students,
+    required String attendance,
+    required String performance,
+    required Color color,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Image.asset(
+                    'assets/images/classes/book_icon.png',
+                    width: 24,
+                    height: 24,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Text(
+                subject,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              const Icon(Icons.calendar_today_outlined, color: Colors.white, size: 16),
+              const SizedBox(width: 6),
+              Text(
+                date,
+                style: const TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(width: 32),
+              const Icon(Icons.people_outline, color: Colors.white, size: 18),
+              const SizedBox(width: 6),
+              Text(
+                students,
+                style: const TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          IntrinsicHeight(
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Attendance",
+                        style: TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        attendance,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  color: Colors.white.withOpacity(0.7),
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Performance",
+                        style: TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        performance,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
