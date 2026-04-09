@@ -1,15 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:opalmer_education/Chat_Screen/send_to.dart';
+import 'package:opalmer_education/Chat_Screen/chat_screen.dart';
 
 class ChatDashboard extends StatefulWidget {
-  const ChatDashboard({Key? key}) : super(key: key);
+  final int initialTab;
+  const ChatDashboard({Key? key, this.initialTab = 0}) : super(key: key);
 
   @override
   State<ChatDashboard> createState() => _ChatDashboardState();
 }
 
 class _ChatDashboardState extends State<ChatDashboard> {
-  int _selectedTab = 0; // 0: Chat, 1: Draft, 2: Group
+  late int _selectedTab;
   int? _openedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedTab = widget.initialTab;
+  }
 
   void _handleSlide(int tab, int index) {
     // We use a combination of tab and index to create a unique ID
@@ -32,7 +41,9 @@ class _ChatDashboardState extends State<ChatDashboard> {
             bottom: 24,
             right: 24,
             child: FloatingActionButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const SendToScreen()));
+              },
               backgroundColor: const Color(0xFF871DAD),
               child: const Icon(Icons.add, color: Colors.white, size: 32),
             ),
@@ -409,6 +420,17 @@ class _SlidableListItemState extends State<_SlidableListItem> with SingleTickerP
           GestureDetector(
             onHorizontalDragUpdate: _onHorizontalDragUpdate,
             onHorizontalDragEnd: _onHorizontalDragEnd,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ChatScreen(
+                    name: widget.title,
+                    imageUrl: widget.imageUrl ?? "https://i.pravatar.cc/150?u=${widget.title.hashCode}",
+                  ),
+                ),
+              );
+            },
             child: Transform.translate(
               offset: Offset(_dragExtent, 0),
               child: Container(
