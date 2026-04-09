@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:opalmer_education/Chat_Screen/send_to.dart';
 import 'package:opalmer_education/Chat_Screen/chat_screen.dart';
 import 'package:opalmer_education/Chat_Screen/group_call.dart';
+import 'package:opalmer_education/Chat_Screen/call_history.dart';
+import 'package:opalmer_education/Teacher_Roal/Home_Dashboard/notificatioin.dart';
 
 class ChatDashboard extends StatefulWidget {
   final int initialTab;
@@ -43,7 +45,10 @@ class _ChatDashboardState extends State<ChatDashboard> {
             right: 24,
             child: FloatingActionButton(
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const SendToScreen()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SendToScreen()),
+                );
               },
               backgroundColor: const Color(0xFF871DAD),
               child: const Icon(Icons.add, color: Colors.white, size: 32),
@@ -70,7 +75,10 @@ class _ChatDashboardState extends State<ChatDashboard> {
             ),
             SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -84,24 +92,48 @@ class _ChatDashboardState extends State<ChatDashboard> {
                     ),
                     Row(
                       children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            shape: BoxShape.circle,
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const CallHistoryScreen(),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            width: 38,
+                            height: 38,
+                            decoration: BoxDecoration(shape: BoxShape.circle),
+                            child: Center(
+                              child: Image.asset(
+                                'assets/images/home_dashboard/call_icons.png',
+                                width: 30,
+                                height: 30,
+                              ),
+                            ),
                           ),
-                          child: const Icon(Icons.call_outlined, color: Colors.white, size: 22),
                         ),
                         const SizedBox(width: 12),
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            shape: BoxShape.circle,
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const NotificationScreen()),
+                            );
+                          },
+                          child: Container(
+                            width: 38,
+                            height: 38,
+                            decoration: const BoxDecoration(shape: BoxShape.circle),
+                            child: Center(
+                              child: Image.asset(
+                                'assets/images/home_dashboard/notification.png',
+                                width: 30,
+                                height: 30,
+                              ),
+                            ),
                           ),
-                          child: const Icon(Icons.notifications_none_outlined, color: Colors.white, size: 24),
                         ),
                       ],
                     ),
@@ -139,11 +171,7 @@ class _ChatDashboardState extends State<ChatDashboard> {
         Expanded(
           child: IndexedStack(
             index: _selectedTab,
-            children: [
-              _buildChatList(),
-              _buildDraftList(),
-              _buildGroupList(),
-            ],
+            children: [_buildChatList(), _buildDraftList(), _buildGroupList()],
           ),
         ),
       ],
@@ -237,8 +265,16 @@ class _ChatDashboardState extends State<ChatDashboard> {
           date: "11/19/19",
           imageUrl: "https://i.pravatar.cc/150?u=randolph",
           actions: [
-            _SlidableAction(color: const Color(0xFFC4C4C4), icon: Icons.more_horiz, label: "More"),
-            _SlidableAction(color: const Color(0xFFEA4335), icon: Icons.delete_outline, label: "Delete"),
+            _SlidableAction(
+              color: const Color(0xFFC4C4C4),
+              icon: Icons.more_horiz,
+              label: "More",
+            ),
+            _SlidableAction(
+              color: const Color(0xFFEA4335),
+              icon: Icons.delete_outline,
+              label: "Delete",
+            ),
           ],
         ),
         _SlidableListItem(
@@ -252,8 +288,16 @@ class _ChatDashboardState extends State<ChatDashboard> {
           imageUrl: "https://i.pravatar.cc/150?u=sarah",
           statusIcon: Icons.mic_none_outlined,
           actions: [
-            _SlidableAction(color: const Color(0xFFC4C4C4), icon: Icons.more_horiz, label: "More"),
-            _SlidableAction(color: const Color(0xFFEA4335), icon: Icons.delete_outline, label: "Delete"),
+            _SlidableAction(
+              color: const Color(0xFFC4C4C4),
+              icon: Icons.more_horiz,
+              label: "More",
+            ),
+            _SlidableAction(
+              color: const Color(0xFFEA4335),
+              icon: Icons.delete_outline,
+              label: "Delete",
+            ),
           ],
         ),
         _SlidableListItem(
@@ -267,8 +311,16 @@ class _ChatDashboardState extends State<ChatDashboard> {
           imageUrl: "https://i.pravatar.cc/150?u=max",
           showCheck: true,
           actions: [
-            _SlidableAction(color: const Color(0xFFC4C4C4), icon: Icons.more_horiz, label: "More"),
-            _SlidableAction(color: const Color(0xFFEA4335), icon: Icons.delete_outline, label: "Delete"),
+            _SlidableAction(
+              color: const Color(0xFFC4C4C4),
+              icon: Icons.more_horiz,
+              label: "More",
+            ),
+            _SlidableAction(
+              color: const Color(0xFFEA4335),
+              icon: Icons.delete_outline,
+              label: "Delete",
+            ),
           ],
         ),
         _SlidableListItem(
@@ -282,8 +334,16 @@ class _ChatDashboardState extends State<ChatDashboard> {
           imageUrl: "https://i.pravatar.cc/150?u=martha",
           statusIcon: Icons.camera_alt_outlined,
           actions: [
-            _SlidableAction(color: const Color(0xFFC4C4C4), icon: Icons.more_horiz, label: "More"),
-            _SlidableAction(color: const Color(0xFFEA4335), icon: Icons.delete_outline, label: "Delete"),
+            _SlidableAction(
+              color: const Color(0xFFC4C4C4),
+              icon: Icons.more_horiz,
+              label: "More",
+            ),
+            _SlidableAction(
+              color: const Color(0xFFEA4335),
+              icon: Icons.delete_outline,
+              label: "Delete",
+            ),
           ],
         ),
       ],
@@ -295,7 +355,11 @@ class _SlidableAction {
   final Color color;
   final IconData icon;
   final String label;
-  _SlidableAction({required this.color, required this.icon, required this.label});
+  _SlidableAction({
+    required this.color,
+    required this.icon,
+    required this.label,
+  });
 }
 
 class _SlidableListItem extends StatefulWidget {
@@ -333,7 +397,8 @@ class _SlidableListItem extends StatefulWidget {
   State<_SlidableListItem> createState() => _SlidableListItemState();
 }
 
-class _SlidableListItemState extends State<_SlidableListItem> with SingleTickerProviderStateMixin {
+class _SlidableListItemState extends State<_SlidableListItem>
+    with SingleTickerProviderStateMixin {
   double _dragExtent = 0;
   late AnimationController _controller;
   late Animation<double> _animation;
@@ -351,7 +416,10 @@ class _SlidableListItemState extends State<_SlidableListItem> with SingleTickerP
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 200));
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
     _animation = _controller.drive(Tween<double>(begin: 0, end: 1));
     _controller.addListener(() {
       setState(() {
@@ -389,7 +457,9 @@ class _SlidableListItemState extends State<_SlidableListItem> with SingleTickerP
 
   void _animateTo(double target) {
     _controller.stop();
-    _animation = _controller.drive(Tween<double>(begin: _dragExtent, end: target));
+    _animation = _controller.drive(
+      Tween<double>(begin: _dragExtent, end: target),
+    );
     _controller.reset();
     _controller.forward();
   }
@@ -404,17 +474,25 @@ class _SlidableListItemState extends State<_SlidableListItem> with SingleTickerP
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: widget.actions
-                  .map((action) => Container(
-                        width: _actionWidth,
-                        color: action.color,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(action.icon, color: Colors.white),
-                            Text(action.label, style: const TextStyle(color: Colors.white, fontSize: 12)),
-                          ],
-                        ),
-                      ))
+                  .map(
+                    (action) => Container(
+                      width: _actionWidth,
+                      color: action.color,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(action.icon, color: Colors.white),
+                          Text(
+                            action.label,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
                   .toList(),
             ),
           ),
@@ -431,7 +509,9 @@ class _SlidableListItemState extends State<_SlidableListItem> with SingleTickerP
                     }
                     return ChatScreen(
                       name: widget.title,
-                      imageUrl: widget.imageUrl ?? "https://i.pravatar.cc/150?u=${widget.title.hashCode}",
+                      imageUrl:
+                          widget.imageUrl ??
+                          "https://i.pravatar.cc/150?u=${widget.title.hashCode}",
                     );
                   },
                 ),
@@ -444,7 +524,10 @@ class _SlidableListItemState extends State<_SlidableListItem> with SingleTickerP
                 child: Row(
                   children: [
                     if (widget.imageUrl != null)
-                      CircleAvatar(radius: 28, backgroundImage: NetworkImage(widget.imageUrl!))
+                      CircleAvatar(
+                        radius: 28,
+                        backgroundImage: NetworkImage(widget.imageUrl!),
+                      )
                     else
                       Container(
                         width: 56,
@@ -453,7 +536,11 @@ class _SlidableListItemState extends State<_SlidableListItem> with SingleTickerP
                           color: const Color(0xFF871DAD).withOpacity(0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(widget.icon, color: const Color(0xFF871DAD), size: 28),
+                        child: Icon(
+                          widget.icon,
+                          color: const Color(0xFF871DAD),
+                          size: 28,
+                        ),
                       ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -463,25 +550,49 @@ class _SlidableListItemState extends State<_SlidableListItem> with SingleTickerP
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(widget.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF222222))),
-                              Text(widget.date, style: TextStyle(color: Colors.grey.shade400, fontSize: 12)),
+                              Text(
+                                widget.title,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: Color(0xFF222222),
+                                ),
+                              ),
+                              Text(
+                                widget.date,
+                                style: TextStyle(
+                                  color: Colors.grey.shade400,
+                                  fontSize: 12,
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 4),
                           Row(
                             children: [
                               if (widget.statusIcon != null) ...[
-                                Icon(widget.statusIcon, size: 16, color: const Color(0xFF4CAF50)),
+                                Icon(
+                                  widget.statusIcon,
+                                  size: 16,
+                                  color: const Color(0xFF4CAF50),
+                                ),
                                 const SizedBox(width: 4),
                               ],
                               if (widget.showCheck) ...[
-                                const Icon(Icons.done_all, size: 16, color: Color(0xFF4FA0F3)),
+                                const Icon(
+                                  Icons.done_all,
+                                  size: 16,
+                                  color: Color(0xFF4FA0F3),
+                                ),
                                 const SizedBox(width: 4),
                               ],
                               Expanded(
                                 child: Text(
                                   widget.subtitle,
-                                  style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
+                                  style: TextStyle(
+                                    color: Colors.grey.shade500,
+                                    fontSize: 14,
+                                  ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
@@ -500,5 +611,3 @@ class _SlidableListItemState extends State<_SlidableListItem> with SingleTickerP
     );
   }
 }
-
-
