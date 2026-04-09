@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'profile_setup.dart';
+import 'notification_setting.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -34,7 +36,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       SafeArea(
                         bottom: false,
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 16,
+                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,7 +71,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
                 ),
-                
+
                 // Avatar Picture
                 Positioned(
                   top: 130, // Positioning to overlap the header boundary
@@ -76,17 +81,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white,
-                      border: Border.all(color: Colors.white, width: 4),
+                      border: Border.all(color: Colors.white, width: 0),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
+                          blurRadius: 2,
                           offset: const Offset(0, 5),
                         ),
                       ],
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(50),
+                      borderRadius: BorderRadius.circular(10),
                       child: Image.asset(
                         'assets/images/profile /olivia.png',
                         fit: BoxFit.cover,
@@ -96,7 +101,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ],
             ),
-            
+
             // Name and Email
             const SizedBox(height: 60), // Spacer for the overlapping avatar
             const Text(
@@ -110,27 +115,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 4),
             Text(
               "oliviacarter@gmail.com",
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.grey.shade500,
-              ),
+              style: TextStyle(fontSize: 15, color: Colors.grey.shade500),
             ),
             const SizedBox(height: 32),
-            
+
             // Menu Items List
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
                 children: [
-                  _buildMenuTile("Edit Profile", Icons.person_outline),
-                  _buildMenuTile("Notifications Settings", Icons.notifications_none_outlined),
+                  _buildMenuTile(
+                    "Edit Profile",
+                    Icons.person_outline,
+                    const ProfileSetupScreen(),
+                  ),
+                  _buildMenuTile(
+                    "Notifications Settings",
+                    Icons.notifications_none_outlined,
+                    const NotificationSettingScreen(),
+                  ),
                   _buildMenuTile("Block list", Icons.block_outlined),
-                  _buildMenuTile("Two-Factor Authentication", Icons.verified_user_outlined),
+                  _buildMenuTile(
+                    "Two-Factor Authentication",
+                    Icons.verified_user_outlined,
+                  ),
                   _buildMenuTile("Language", Icons.language_outlined),
                   _buildMenuTile("About Us", Icons.help_outline),
-                  _buildMenuTile("Terms and Conditions", Icons.description_outlined),
+                  _buildMenuTile(
+                    "Terms and Conditions",
+                    Icons.description_outlined,
+                  ),
                   _buildMenuTile("Dispute Center", Icons.chat_outlined),
-                  
+
                   // Logout Button
                   Padding(
                     padding: const EdgeInsets.only(top: 8, bottom: 40),
@@ -172,7 +188,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildMenuTile(String title, IconData icon) {
+  Widget _buildMenuTile(String title, IconData icon, [Widget? destination]) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -189,11 +205,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Icon(
-          icon,
-          color: const Color(0xFF444444),
-          size: 24,
-        ),
+        leading: Icon(icon, color: const Color(0xFF444444), size: 24),
         title: Text(
           title,
           style: const TextStyle(
@@ -208,7 +220,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           size: 16,
         ),
         onTap: () {
-          // Add navigation logic
+          if (destination != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => destination),
+            );
+          }
         },
       ),
     );
