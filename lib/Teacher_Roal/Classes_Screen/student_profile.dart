@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'behavior_record.dart';
 
 class StudentProfileScreen extends StatefulWidget {
   const StudentProfileScreen({Key? key}) : super(key: key);
@@ -249,7 +250,17 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                     const SizedBox(height: 24),
 
                     // ── List Items ──
-                    _buildListTile("Behavior Record"),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const BehaviorRecordScreen(),
+                          ),
+                        );
+                      },
+                      child: _buildListTile("Behavior Record"),
+                    ),
                     _buildListTile("Academic Notes"),
                     _buildListTile("Grading Progress"),
                     

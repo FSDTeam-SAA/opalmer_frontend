@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../Home_Dashboard/notificatioin.dart';
 import 'class_details.dart';
+import 'add_class.dart';
 
 class ClassesScreen extends StatefulWidget {
   const ClassesScreen({Key? key}) : super(key: key);
@@ -129,24 +130,29 @@ class _ClassesScreenState extends State<ClassesScreen> {
       ),
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 80.0), // Extra padding for bottom navigation
-        child: Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: const Color(0xFF871DAD),
-            shape: BoxShape.circle,
-            boxShadow: [
-               BoxShadow(
-                 color: Colors.black.withOpacity(0.2),
-                 blurRadius: 10,
-                 offset: const Offset(0, 4),
-               ),
-            ],
-          ),
-          child: const Icon(
-            Icons.add,
-            color: Colors.white,
-            size: 32,
+        child: GestureDetector(
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const AddClassScreen()));
+          },
+          child: Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: const Color(0xFF871DAD),
+              shape: BoxShape.circle,
+              boxShadow: [
+                 BoxShadow(
+                   color: Colors.black.withOpacity(0.2),
+                   blurRadius: 10,
+                   offset: const Offset(0, 4),
+                 ),
+              ],
+            ),
+            child: const Icon(
+              Icons.add,
+              color: Colors.white,
+              size: 32,
+            ),
           ),
         ),
       ),
