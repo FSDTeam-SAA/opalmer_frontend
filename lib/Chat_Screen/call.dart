@@ -85,9 +85,9 @@ class _CallScreenState extends State<CallScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildControlIconAsset('assets/images/message.png'),
-                  _buildControlIconAsset('assets/images/volume.png'),
-                  _buildControlIconAsset('assets/images/mute_unmute.png'),
+                  _buildControlIconAsset('assets/images/call/message.png'),
+                  _buildControlIconAsset('assets/images/call/volume.png'),
+                  _buildControlIconAsset('assets/images/call/mute_unmute.png'),
                   _buildEndCallButton(context),
                 ],
               ),
@@ -102,8 +102,8 @@ class _CallScreenState extends State<CallScreen> {
     return Container(
       width: 52,
       height: 52,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
+      decoration: const BoxDecoration(
+        color: Color(0xFF444444), // Darker charcoal grey
         shape: BoxShape.circle,
       ),
       child: Center(
@@ -115,10 +115,16 @@ class _CallScreenState extends State<CallScreen> {
   Widget _buildEndCallButton(BuildContext context) {
     return GestureDetector(
       onTap: () => Navigator.pop(context),
-      child: SizedBox(
+      child: Container(
         width: 56,
         height: 56,
-        child: Image.asset('assets/images/end_call.png', fit: BoxFit.contain),
+        decoration: const BoxDecoration(
+          color: Color(0xFFEA4335), // Red background
+          shape: BoxShape.circle,
+        ),
+        child: Center(
+          child: Image.asset('assets/images/call/end_call.png', width: 28, height: 28, fit: BoxFit.contain),
+        ),
       ),
     );
   }

@@ -69,6 +69,10 @@ flutter:
     - assets/images/home_dashboard/
     - assets/images/classes/
     - "assets/images/profile /"
+    - assets/images/call/volume.png
+    - assets/images/call/message.png
+    - assets/images/call/mute_unmute.png
+    - assets/images/call/end_call.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
