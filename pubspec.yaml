@@ -68,6 +68,7 @@ flutter:
     - assets/images/Home_dashboard_header.png
     - assets/images/home_dashboard/
     - assets/images/classes/
+    - "assets/images/profile /"
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
