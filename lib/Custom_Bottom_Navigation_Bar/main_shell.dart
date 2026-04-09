@@ -3,6 +3,7 @@ import 'package:opalmer_education/Custom_Bottom_Navigation_Bar/custom_bottom_nav
 import 'package:opalmer_education/Teacher_Roal/Home_Dashboard/home_dashboard.dart';
 import 'package:opalmer_education/Teacher_Roal/Classes_Screen/classes_screen.dart';
 import 'package:opalmer_education/Profile_Screen/profile.dart';
+import 'package:opalmer_education/Chat_Screen/chat_dashboard.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({Key? key}) : super(key: key);
@@ -25,7 +26,7 @@ class _MainShellState extends State<MainShell> {
       const HomeDashboard(),
       const ClassesScreen(),
       const _PlaceholderPage(title: "Community"),
-      const _PlaceholderPage(title: "Messages"),
+      const ChatDashboard(),
       const ProfileScreen(),
     ];
 
