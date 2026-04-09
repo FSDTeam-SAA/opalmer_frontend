@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'profile_setup.dart';
 import 'notification_setting.dart';
-
+import 'about_us.dart';
+import 'terms_condition.dart';
+import 'disput_center.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
 
@@ -140,12 +142,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Icons.verified_user_outlined,
                   ),
                   _buildMenuTile("Language", Icons.language_outlined),
-                  _buildMenuTile("About Us", Icons.help_outline),
+                  _buildMenuTile("About Us", Icons.help_outline, const AboutUsScreen()),
                   _buildMenuTile(
                     "Terms and Conditions",
                     Icons.description_outlined,
+                    const TermsConditionScreen(),
                   ),
-                  _buildMenuTile("Dispute Center", Icons.chat_outlined),
+                  _buildMenuTile("Dispute Center", Icons.chat_outlined, const DisputCenterScreen()),
 
                   // Logout Button
                   Padding(
