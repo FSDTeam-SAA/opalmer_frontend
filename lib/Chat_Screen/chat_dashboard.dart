@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/Chat_Screen/send_to.dart';
 import 'package:opalmer_education/Chat_Screen/chat_screen.dart';
+import 'package:opalmer_education/Chat_Screen/group_call.dart';
 
 class ChatDashboard extends StatefulWidget {
   final int initialTab;
@@ -424,10 +425,15 @@ class _SlidableListItemState extends State<_SlidableListItem> with SingleTickerP
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ChatScreen(
-                    name: widget.title,
-                    imageUrl: widget.imageUrl ?? "https://i.pravatar.cc/150?u=${widget.title.hashCode}",
-                  ),
+                  builder: (context) {
+                    if (widget.tab == 2) {
+                      return GroupChatScreen(groupName: widget.title);
+                    }
+                    return ChatScreen(
+                      name: widget.title,
+                      imageUrl: widget.imageUrl ?? "https://i.pravatar.cc/150?u=${widget.title.hashCode}",
+                    );
+                  },
                 ),
               );
             },

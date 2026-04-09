@@ -420,7 +420,7 @@ class UnifiedBubblePainter extends CustomPainter {
       path.moveTo(r, 0);
       path.lineTo(w - r, 0);
       path.quadraticBezierTo(w, 0, w, r);
-      path.lineTo(w, h - 8); 
+      path.lineTo(w, h - 8);
       // The "Beak" tail
       path.lineTo(w + 8, h);
       path.lineTo(w - r, h);

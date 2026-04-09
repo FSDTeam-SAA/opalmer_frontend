@@ -57,9 +57,12 @@ class _ChatScreenState extends State<ChatScreen> {
             children: [
               CircleAvatar(radius: 20, backgroundImage: NetworkImage(widget.imageUrl)),
               const SizedBox(width: 12),
-              Text(
-                widget.name,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+              Flexible(
+                child: Text(
+                  widget.name,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
