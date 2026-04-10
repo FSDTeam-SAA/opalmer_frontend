@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:opalmer_education/Chat_Screen/send_to.dart';
-import 'package:opalmer_education/Chat_Screen/chat_screen.dart';
-import 'package:opalmer_education/Chat_Screen/group_call.dart';
-import 'package:opalmer_education/Chat_Screen/call_history.dart';
+import 'package:opalmer_education/Teacher_Roal/Chat_Screen/send_to.dart';
+import 'package:opalmer_education/Teacher_Roal/Chat_Screen/chat_screen.dart';
+import 'package:opalmer_education/Teacher_Roal/Chat_Screen/group_call.dart';
+import 'package:opalmer_education/Teacher_Roal/Chat_Screen/call_history.dart';
 import 'package:opalmer_education/Teacher_Roal/Home_Dashboard/notificatioin.dart';
 
 class ChatDashboard extends StatefulWidget {

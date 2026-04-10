@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:opalmer_education/Chat_Screen/block_user.dart';
-import 'package:opalmer_education/Chat_Screen/call.dart';
+import 'package:opalmer_education/Teacher_Roal/Chat_Screen/block_user.dart';
+import 'package:opalmer_education/Teacher_Roal/Chat_Screen/call.dart';
 import 'package:opalmer_education/Profile_Screen/language.dart';
 
 class ChatScreen extends StatefulWidget {

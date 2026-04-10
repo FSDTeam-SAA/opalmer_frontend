@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:opalmer_education/Chat_Screen/chat_screen.dart';
-import 'package:opalmer_education/Chat_Screen/chat_dashboard.dart';
+import 'package:opalmer_education/Teacher_Roal/Chat_Screen/chat_screen.dart';
+import 'package:opalmer_education/Teacher_Roal/Chat_Screen/chat_dashboard.dart';
 
 class ComposeMessageScreen extends StatefulWidget {
   final String name;
