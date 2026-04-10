@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/Teacher_Roal/Quiz_Screen/quiz_details.dart';
 import 'package:opalmer_education/Teacher_Roal/Quiz_Screen/create_quiz.dart';
+import 'package:opalmer_education/Teacher_Roal/Classes_Screen/scan_document.dart';
 
 class GradingToolScreen extends StatefulWidget {
   const GradingToolScreen({Key? key}) : super(key: key);
@@ -88,7 +89,7 @@ class _GradingToolScreenState extends State<GradingToolScreen> {
           if (!_isDraftTab)
             GestureDetector(
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateQuizScreen()));
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const ScanDocumentScreen()));
               },
               child: Container(
                 width: 38,
@@ -98,7 +99,7 @@ class _GradingToolScreenState extends State<GradingToolScreen> {
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  Icons.filter_center_focus_outlined,
+                  Icons.center_focus_strong_outlined,
                   color: Color(0xFF871DAD),
                   size: 22,
                 ),
