@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:opalmer_education/Teacher_Roal/Quiz_Screen/quiz_details.dart';
 
 class GradingToolScreen extends StatefulWidget {
   const GradingToolScreen({Key? key}) : super(key: key);
@@ -30,14 +31,22 @@ class _GradingToolScreenState extends State<GradingToolScreen> {
               itemCount: 10, // Mock data count
               itemBuilder: (context, index) {
                 final isEven = index % 2 == 0;
-                return _buildGradingItem(
-                  title: isEven ? "Fractions and Decimals" : "Mean and Median",
-                  questions: "10 Questions",
-                  time: "5 min",
-                  status: _isDraftTab ? "Draft" : "Published",
-                  imageUrl: isEven 
-                    ? "https://img.freepik.com/free-photo/view-planet-earth-from-space_23-2148705432.jpg"
-                    : "https://img.freepik.com/free-photo/businessman-working-laptop-office_23-2148817045.jpg",
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const QuizDetailScreen()),
+                    );
+                  },
+                  child: _buildGradingItem(
+                    title: isEven ? "Fractions and Decimals" : "Mean and Median",
+                    questions: "10 Questions",
+                    time: "5 min",
+                    status: _isDraftTab ? "Draft" : "Published",
+                    imageUrl: isEven 
+                      ? "https://img.freepik.com/free-photo/view-planet-earth-from-space_23-2148705432.jpg"
+                      : "https://img.freepik.com/free-photo/businessman-working-laptop-office_23-2148817045.jpg",
+                  ),
                 );
               },
             ),
