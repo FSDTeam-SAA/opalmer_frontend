@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'student_attendence.dart';
 import 'student_profile.dart';
+import 'lessons_screen.dart';
+import 'homework_screen.dart';
 
 class ClassDetailsScreen extends StatefulWidget {
   const ClassDetailsScreen({Key? key}) : super(key: key);
@@ -50,15 +52,23 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                       ),
                     ),
                     const Spacer(),
-                    Container(
-                      width: 36,
-                       height: 36,
-                       decoration: const BoxDecoration(
-                         color: Color(0xFF904BBB), // Slightly brighter purple as per design variation if needed, or stick to 0xFF871DAD
-                         shape: BoxShape.circle,
-                       ),
-                       padding: const EdgeInsets.all(8),
-                       child: Image.asset('assets/images/classes/home_book.png', fit: BoxFit.contain),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const HomeworkScreen()),
+                        );
+                      },
+                      child: Container(
+                        width: 36,
+                         height: 36,
+                         decoration: const BoxDecoration(
+                           color: Color(0xFF904BBB), // Slightly brighter purple as per design variation if needed, or stick to 0xFF871DAD
+                           shape: BoxShape.circle,
+                         ),
+                         padding: const EdgeInsets.all(8),
+                         child: Image.asset('assets/images/classes/home_book.png', fit: BoxFit.contain),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Container(
@@ -146,13 +156,21 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                             color: Color(0xFF222222),
                           ),
                         ),
-                        Text(
-                          "View All",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: const Color(0xFF871DAD),
-                            decoration: TextDecoration.underline,
-                            decorationColor: const Color(0xFF871DAD),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const LessonsScreen()),
+                            );
+                          },
+                          child: Text(
+                            "View All",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: const Color(0xFF871DAD),
+                              decoration: TextDecoration.underline,
+                              decorationColor: const Color(0xFF871DAD),
+                            ),
                           ),
                         ),
                       ],
