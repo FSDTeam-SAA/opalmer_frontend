@@ -112,7 +112,7 @@ class QuizDetailScreen extends StatelessWidget {
           
           // Fixed Bottom Button
           Positioned(
-            bottom: 30,
+            bottom: 12,
             left: 20,
             right: 20,
             child: GestureDetector(

@@ -103,6 +103,7 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
         ),
       ),
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
             Expanded(
@@ -141,9 +142,9 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
               ),
             ),
             
-            // Bottom Action Bar
             Container(
-              height: 120, // Tall bottom section
+              height: 140, // Tall bottom section
+              padding: const EdgeInsets.only(bottom: 20), // Compensate for safe area manually
               decoration: const BoxDecoration(
                 color: Color(0xFF871DAD),
                 borderRadius: BorderRadius.vertical(top: Radius.circular(30)),

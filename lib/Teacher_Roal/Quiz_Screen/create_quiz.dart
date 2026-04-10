@@ -78,7 +78,7 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
           
           // Bottom Buttons
           Positioned(
-            bottom: 30,
+            bottom: 12,
             left: 20,
             right: 20,
             child: Row(
