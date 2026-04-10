@@ -10,7 +10,7 @@ class NotificationScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // Custom Header       custom header with back button and t
+            // Custom Header       custom header with back button and 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Row(
