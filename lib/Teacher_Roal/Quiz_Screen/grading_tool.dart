@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/Teacher_Roal/Quiz_Screen/quiz_details.dart';
+import 'package:opalmer_education/Teacher_Roal/Quiz_Screen/create_quiz.dart';
 
 class GradingToolScreen extends StatefulWidget {
   const GradingToolScreen({Key? key}) : super(key: key);
@@ -15,6 +16,13 @@ class _GradingToolScreenState extends State<GradingToolScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateQuizScreen()));
+        },
+        backgroundColor: const Color(0xFF871DAD),
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
+      ),
       body: Column(
         children: [
           // Header
@@ -78,17 +86,22 @@ class _GradingToolScreenState extends State<GradingToolScreen> {
             ),
           ),
           if (!_isDraftTab)
-            Container(
-              width: 38,
-              height: 38,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.filter_center_focus_outlined,
-                color: Color(0xFF871DAD),
-                size: 22,
+            GestureDetector(
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateQuizScreen()));
+              },
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.filter_center_focus_outlined,
+                  color: Color(0xFF871DAD),
+                  size: 22,
+                ),
               ),
             ),
         ],

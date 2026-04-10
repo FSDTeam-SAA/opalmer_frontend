@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/Teacher_Roal/Quiz_Screen/attended_students.dart';
+import 'package:opalmer_education/Teacher_Roal/Quiz_Screen/create_quiz.dart';
 
 class QuizDetailScreen extends StatelessWidget {
   const QuizDetailScreen({Key? key}) : super(key: key);
@@ -37,14 +38,19 @@ class QuizDetailScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(right: 20),
             child: Center(
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF871DAD),
-                  shape: BoxShape.circle,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateQuizScreen()));
+                },
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF871DAD),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.edit_outlined, color: Colors.white, size: 20),
                 ),
-                child: const Icon(Icons.edit_outlined, color: Colors.white, size: 20),
               ),
             ),
           ),

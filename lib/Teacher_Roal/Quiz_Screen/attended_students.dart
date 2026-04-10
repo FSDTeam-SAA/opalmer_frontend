@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:opalmer_education/Teacher_Roal/Quiz_Screen/student_detail.dart';
 
 class AttendedStudentsScreen extends StatelessWidget {
   const AttendedStudentsScreen({Key? key}) : super(key: key);
@@ -41,12 +42,20 @@ class AttendedStudentsScreen extends StatelessWidget {
           final colors = [const Color(0xFF4DB68D), const Color(0xFFFFCC33), const Color(0xFF4FA0F3)];
           final sideColor = colors[index % colors.length];
           
-          return _buildStudentCard(
-            name: "Mia Johnson",
-            details: "Grade 6 - Age 12",
-            progress: 0.93,
-            sideColor: sideColor,
-            imageUrl: "https://i.pravatar.cc/150?u=student_${index}",
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const StudentDetailScreen()),
+              );
+            },
+            child: _buildStudentCard(
+              name: "Mia Johnson",
+              details: "Grade 6 - Age 12",
+              progress: 0.93,
+              sideColor: sideColor,
+              imageUrl: "https://i.pravatar.cc/150?u=student_${index}",
+            ),
           );
         },
       ),
