@@ -1,41 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:opalmer_education/Authentication_Screen/login_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/authentication_screen/login_screen.dart';
+import 'package:opalmer_education/core/theme/app_colors.dart';
+import 'package:opalmer_education/core/widgets/primary_button.dart';
+import 'package:opalmer_education/core/providers/role_provider.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(fontFamily: 'SF Pro Display'),
-      home: const UserRoleScreen(),
-    );
-  }
-}
-
-class UserRoleScreen extends StatefulWidget {
+class UserRoleScreen extends ConsumerStatefulWidget {
   const UserRoleScreen({Key? key}) : super(key: key);
 
   @override
-  State<UserRoleScreen> createState() => _UserRoleScreenState();
+  ConsumerState<UserRoleScreen> createState() => _UserRoleScreenState();
 }
 
-class _UserRoleScreenState extends State<UserRoleScreen>
+class _UserRoleScreenState extends ConsumerState<UserRoleScreen>
     with SingleTickerProviderStateMixin {
   String selectedRole = 'Teacher';
   late AnimationController _controller;
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
-
-  static const Color _primaryDark = Color(0xFF5B0E91);
-  static const Color _primaryMid = Color(0xFF871DAD);
-  static const Color _primaryLight = Color(0xFFB44FD4);
-  static const Color _accentLight = Color(0xFFD8A8F0);
 
   final List<Map<String, String>> roles = const [
     {'role': 'Teacher', 'emoji': '👩‍🏫', 'desc': 'Manage classes & students'},
@@ -68,10 +50,22 @@ class _UserRoleScreenState extends State<UserRoleScreen>
     super.dispose();
   }
 
+  void _onContinue() {
+    // Save role to Riverpod
+    ref.read(roleProvider.notifier).setRoleFromString(selectedRole);
+    
+    // Navigate to Login
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const LoginScreen(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F0FA),
+      backgroundColor: AppColors.primaryVeryLight,
       body: Stack(
         children: [
           // ── Header background image ──
@@ -151,52 +145,13 @@ class _UserRoleScreenState extends State<UserRoleScreen>
                 // Continue Button
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const LoginScreen(),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      height: 58,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [_primaryDark, _primaryMid, _primaryLight],
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                        ),
-                        borderRadius: BorderRadius.circular(28),
-                        boxShadow: [
-                          BoxShadow(
-                            color: _primaryMid.withOpacity(0.45),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "CONTINUE",
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                              letterSpacing: 2,
-                            ),
-                          ),
-                          SizedBox(width: 8),
-                          Icon(
-                            Icons.arrow_forward_rounded,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ],
-                      ),
+                  child: PrimaryButton(
+                    text: "CONTINUE",
+                    onPressed: _onContinue,
+                    icon: const Icon(
+                      Icons.arrow_forward_rounded,
+                      color: Colors.white,
+                      size: 20,
                     ),
                   ),
                 ),
@@ -226,13 +181,13 @@ class _UserRoleScreenState extends State<UserRoleScreen>
           color: isSelected ? Colors.white : Colors.white.withOpacity(0.92),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? _primaryMid : Colors.transparent,
+            color: isSelected ? AppColors.primaryMid : Colors.transparent,
             width: 2,
           ),
           boxShadow: [
             BoxShadow(
               color: isSelected
-                  ? _primaryMid.withOpacity(0.15)
+                  ? AppColors.primaryMid.withOpacity(0.15)
                   : Colors.black.withOpacity(0.05),
               blurRadius: isSelected ? 20 : 10,
               offset: const Offset(0, 6),
@@ -248,13 +203,7 @@ class _UserRoleScreenState extends State<UserRoleScreen>
               height: 58,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: isSelected
-                    ? const LinearGradient(
-                        colors: [Color(0xFFE8CBFA), Color(0xFFD4A0F5)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      )
-                    : null,
+                gradient: isSelected ? AppColors.surfaceGradient : null,
                 color: isSelected ? null : const Color(0xFFF0EAF8),
               ),
               alignment: Alignment.center,
@@ -274,8 +223,8 @@ class _UserRoleScreenState extends State<UserRoleScreen>
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                       color: isSelected
-                          ? _primaryDark
-                          : const Color(0xFF222222),
+                          ? AppColors.primaryDark
+                          : AppColors.textPrimary,
                       letterSpacing: -0.2,
                     ),
                   ),
@@ -285,7 +234,7 @@ class _UserRoleScreenState extends State<UserRoleScreen>
                     style: TextStyle(
                       fontSize: 12.5,
                       color: isSelected
-                          ? _primaryMid.withOpacity(0.8)
+                          ? AppColors.primaryMid.withOpacity(0.8)
                           : Colors.grey.shade500,
                       height: 1.3,
                     ),
@@ -305,7 +254,7 @@ class _UserRoleScreenState extends State<UserRoleScreen>
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                         gradient: LinearGradient(
-                          colors: [_primaryMid, _primaryLight],
+                          colors: [AppColors.primaryMid, AppColors.primaryLight],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),

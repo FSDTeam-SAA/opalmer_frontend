@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:opalmer_education/Teacher_Roal/Quiz_Screen/quiz_details.dart';
-import 'package:opalmer_education/Teacher_Roal/Quiz_Screen/create_quiz.dart';
-import 'package:opalmer_education/Teacher_Roal/Classes_Screen/scan_document.dart';
+import 'package:opalmer_education/teacher_role/Quiz_Screen/quiz_details.dart';
+import 'package:opalmer_education/teacher_role/Quiz_Screen/create_quiz.dart';
+import 'package:opalmer_education/teacher_role/Classes_Screen/scan_document.dart';
 
 class GradingToolScreen extends StatefulWidget {
   const GradingToolScreen({Key? key}) : super(key: key);

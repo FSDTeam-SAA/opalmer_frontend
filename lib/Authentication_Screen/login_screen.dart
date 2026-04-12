@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:opalmer_education/Custom_Bottom_Navigation_Bar/main_shell.dart';
+import 'package:opalmer_education/custom_bottom_navigation_bar/main_shell.dart';
+import 'package:opalmer_education/core/theme/app_colors.dart';
+import 'package:opalmer_education/core/widgets/primary_button.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -19,7 +21,6 @@ class _LoginScreenState extends State<LoginScreen>
   late AnimationController _headerController;
   late AnimationController _formController;
   late AnimationController _imageController;
-  late AnimationController _buttonController;
 
   // Header animations
   late Animation<Offset> _headerSlide;
@@ -40,9 +41,6 @@ class _LoginScreenState extends State<LoginScreen>
   // Button animation
   late Animation<Offset> _buttonSlide;
   late Animation<double> _buttonFade;
-  late Animation<double> _buttonScale;
-
-  bool _isButtonPressed = false;
 
   @override
   void initState() {
@@ -64,12 +62,6 @@ class _LoginScreenState extends State<LoginScreen>
     _formController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
-    );
-
-    // Button controller
-    _buttonController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 200),
     );
 
     // Header: slide down + fade
@@ -154,11 +146,6 @@ class _LoginScreenState extends State<LoginScreen>
       ),
     );
 
-    // Button press scale
-    _buttonScale = Tween<double>(begin: 1.0, end: 0.96).animate(
-      CurvedAnimation(parent: _buttonController, curve: Curves.easeInOut),
-    );
-
     // Start animations in sequence
     _startAnimations();
   }
@@ -171,18 +158,12 @@ class _LoginScreenState extends State<LoginScreen>
     _formController.forward();
   }
 
-  Future<void> _onButtonTap() async {
-    setState(() => _isButtonPressed = true);
-    await _buttonController.forward();
-    await _buttonController.reverse();
-    setState(() => _isButtonPressed = false);
+  void _onButtonTap() {
     // Navigate to main dashboard
-    if (mounted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const MainShell()),
-        (route) => false,
-      );
-    }
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const MainShell()),
+      (route) => false,
+    );
   }
 
   @override
@@ -192,7 +173,6 @@ class _LoginScreenState extends State<LoginScreen>
     _headerController.dispose();
     _imageController.dispose();
     _formController.dispose();
-    _buttonController.dispose();
     super.dispose();
   }
 
@@ -317,41 +297,23 @@ class _LoginScreenState extends State<LoginScreen>
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF333333),
+                              color: AppColors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(30),
-                              border: Border.all(
-                                color: const Color(0xFFE0E0E0),
-                                width: 1.5,
+                          TextField(
+                            controller: _schoolIdController,
+                            decoration: InputDecoration(
+                              hintText: "Enter your school ID",
+                              prefixIcon: Icon(
+                                Icons.check_box_outlined,
+                                color: Colors.grey.shade400,
+                                size: 20,
                               ),
-                            ),
-                            child: TextField(
-                              controller: _schoolIdController,
-                              decoration: InputDecoration(
-                                hintText: "Enter your school ID",
-                                hintStyle: TextStyle(
-                                  color: Colors.grey.shade400,
-                                  fontSize: 14,
-                                ),
-                                prefixIcon: Icon(
-                                  Icons.check_box_outlined,
-                                  color: Colors.grey.shade400,
-                                  size: 20,
-                                ),
-                                suffixIcon: const Icon(
-                                  Icons.check_circle,
-                                  color: Color(0xFF871DAD),
-                                  size: 22,
-                                ),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 14,
-                                ),
+                              suffixIcon: const Icon(
+                                Icons.check_circle,
+                                color: AppColors.primaryMid,
+                                size: 22,
                               ),
                             ),
                           ),
@@ -375,50 +337,32 @@ class _LoginScreenState extends State<LoginScreen>
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF333333),
+                              color: AppColors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(30),
-                              border: Border.all(
-                                color: const Color(0xFFE0E0E0),
-                                width: 1.5,
+                          TextField(
+                            controller: _passwordController,
+                            obscureText: _obscurePassword,
+                            decoration: InputDecoration(
+                              hintText: "Password",
+                              prefixIcon: Icon(
+                                Icons.lock_outline,
+                                color: Colors.grey.shade400,
+                                size: 20,
                               ),
-                            ),
-                            child: TextField(
-                              controller: _passwordController,
-                              obscureText: _obscurePassword,
-                              decoration: InputDecoration(
-                                hintText: "Password",
-                                hintStyle: TextStyle(
+                              suffixIcon: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                                child: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
                                   color: Colors.grey.shade400,
-                                  fontSize: 14,
-                                ),
-                                prefixIcon: Icon(
-                                  Icons.lock_outline,
-                                  color: Colors.grey.shade400,
-                                  size: 20,
-                                ),
-                                suffixIcon: GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _obscurePassword = !_obscurePassword;
-                                    });
-                                  },
-                                  child: Icon(
-                                    _obscurePassword
-                                        ? Icons.visibility_off_outlined
-                                        : Icons.visibility_outlined,
-                                    color: Colors.grey.shade400,
-                                    size: 22,
-                                  ),
-                                ),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 14,
+                                  size: 22,
                                 ),
                               ),
                             ),
@@ -447,7 +391,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   _rememberMe = val ?? false;
                                 });
                               },
-                              activeColor: const Color(0xFF871DAD),
+                              activeColor: AppColors.primaryMid,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(4),
                               ),
@@ -462,7 +406,7 @@ class _LoginScreenState extends State<LoginScreen>
                             "Remember Me",
                             style: TextStyle(
                               fontSize: 14,
-                              color: Color(0xFF666666),
+                              color: AppColors.textSecondary,
                             ),
                           ),
                         ],
@@ -477,31 +421,10 @@ class _LoginScreenState extends State<LoginScreen>
                     opacity: _buttonFade,
                     child: SlideTransition(
                       position: _buttonSlide,
-                      child: ScaleTransition(
-                        scale: _buttonScale,
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: 54,
-                          child: ElevatedButton(
-                            onPressed: _onButtonTap,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF871DAD),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(28),
-                              ),
-                              elevation: 0,
-                            ),
-                            child: const Text(
-                              "LOG IN NOW",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                letterSpacing: 1.5,
-                              ),
-                            ),
-                          ),
-                        ),
+                      child: PrimaryButton(
+                        text: "LOG IN NOW",
+                        onPressed: _onButtonTap,
+                        isGradient: false, // Login screen used solid purple in my original check
                       ),
                     ),
                   ),

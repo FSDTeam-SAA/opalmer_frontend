@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../Home_Dashboard/notificatioin.dart';
+import '../Home_Dashboard/notification.dart';
 import 'class_details.dart';
 import 'add_class.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:opalmer_education/Teacher_Roal/Chat_Screen/compose_message.dart';
+import 'package:opalmer_education/teacher_role/Chat_Screen/compose_message.dart';
 
 class SendToScreen extends StatefulWidget {
   const SendToScreen({Key? key}) : super(key: key);

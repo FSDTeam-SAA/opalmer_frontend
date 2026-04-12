@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:opalmer_education/Teacher_Roal/Quiz_Screen/student_detail.dart';
+import 'package:opalmer_education/teacher_role/Quiz_Screen/student_detail.dart';
 
 class AttendedStudentsScreen extends StatelessWidget {
   const AttendedStudentsScreen({Key? key}) : super(key: key);

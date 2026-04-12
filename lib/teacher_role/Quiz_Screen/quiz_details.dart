@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:opalmer_education/Teacher_Roal/Quiz_Screen/attended_students.dart';
-import 'package:opalmer_education/Teacher_Roal/Quiz_Screen/create_quiz.dart';
+import 'package:opalmer_education/teacher_role/Quiz_Screen/attended_students.dart';
+import 'package:opalmer_education/teacher_role/Quiz_Screen/create_quiz.dart';
 
 class QuizDetailScreen extends StatelessWidget {
   const QuizDetailScreen({Key? key}) : super(key: key);

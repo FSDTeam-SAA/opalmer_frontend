@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:opalmer_education/Profile_Screen/language.dart';
+import 'package:opalmer_education/profile_screen/language.dart';
 
 class GroupChatScreen extends StatefulWidget {
   final String groupName;

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../User_Roal_Screen/user_roal_screen.dart';
+import 'package:opalmer_education/core/theme/app_colors.dart';
+import 'package:opalmer_education/core/widgets/primary_button.dart';
+import '../user_role_screen/user_role_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({Key? key}) : super(key: key);
@@ -41,7 +43,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       "image":
           "assets/images/onbording_background_image/onbording_background_image_2.png",
       "bgColor": const Color(0xFF094988),
-      "imageBottom": -300.0, // আরো নিচে
+      "imageBottom": -300.0,
       "imageAlignment": Alignment.topCenter,
       "textTop": 180.0,
       "textRight": 20.0,
@@ -53,7 +55,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           "assets/images/onbording_background_image/onbording_background_image_3.png",
       "bgColor": const Color(0xFFFFBE02),
       "imageBottom": -50.0,
-      "imageAlignment": Alignment.topRight, // left এ সরানো
+      "imageAlignment": Alignment.topRight,
       "textTop": 180.0,
       "textRight": 20.0,
       "textFontSize": 45.0,
@@ -209,7 +211,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 width: 50,
                 height: 50,
                 decoration: const BoxDecoration(
-                  color: Color(0xFF871DAD),
+                  color: AppColors.primaryMid,
                   shape: BoxShape.circle,
                 ),
                 child: Center(
@@ -261,7 +263,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         style: TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF333333),
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -270,55 +272,31 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 15,
-                          color: Color(0xFF888888),
+                          color: AppColors.textSecondary,
                           height: 1.55,
                         ),
                       ),
                       const Spacer(),
 
                       // Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 54,
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 300),
-                          child: ElevatedButton(
-                            key: ValueKey(_currentPage),
-                            onPressed: () {
-                              if (_currentPage == onboardingData.length - 1) {
-                                Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                    builder: (_) => const UserRoleScreen(),
-                                  ),
-                                );
-                              } else {
-                                _pageController.nextPage(
-                                  duration: const Duration(milliseconds: 350),
-                                  curve: Curves.easeInOut,
-                                );
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF871DAD),
-                              minimumSize: const Size(double.infinity, 54),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(28),
+                      PrimaryButton(
+                        text: _currentPage == onboardingData.length - 1
+                            ? "GET STARTED"
+                            : "CONTINUE",
+                        onPressed: () {
+                          if (_currentPage == onboardingData.length - 1) {
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (_) => const UserRoleScreen(),
                               ),
-                              elevation: 0,
-                            ),
-                            child: Text(
-                              _currentPage == onboardingData.length - 1
-                                  ? "GET STARTED"
-                                  : "CONTINUE",
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                          ),
-                        ),
+                            );
+                          } else {
+                            _pageController.nextPage(
+                              duration: const Duration(milliseconds: 350),
+                              curve: Curves.easeInOut,
+                            );
+                          }
+                        },
                       ),
                       const SizedBox(height: 16),
                     ],
@@ -341,7 +319,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       width: _currentPage == index ? 28 : 8,
       decoration: BoxDecoration(
         color: _currentPage == index
-            ? const Color(0xFF871DAD)
+            ? AppColors.primaryMid
             : const Color(0xFFE0E0E0),
         borderRadius: BorderRadius.circular(4),
       ),

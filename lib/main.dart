@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'Splash_Screen/splash_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'splash_screen/splash_screen.dart';
+import 'core/theme/app_theme.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(
@@ -9,7 +11,7 @@ void main() {
       statusBarIconBrightness: Brightness.light, 
     ),
   );
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -20,12 +22,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Class Pulse',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        fontFamily: 'Inter', // Default to standard if available.
-        scaffoldBackgroundColor: Colors.white,
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF871DAD)),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.lightTheme,
       home: const SplashScreen(),
     );
   }

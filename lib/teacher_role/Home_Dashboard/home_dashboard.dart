@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'notificatioin.dart';
+import 'package:opalmer_education/core/theme/app_colors.dart';
+import 'package:opalmer_education/core/widgets/pressable_card.dart';
+import 'notification.dart';
 
 class HomeDashboard extends StatefulWidget {
   const HomeDashboard({Key? key}) : super(key: key);
@@ -7,6 +9,7 @@ class HomeDashboard extends StatefulWidget {
   @override
   State<HomeDashboard> createState() => _HomeDashboardState();
 }
+
 class _HomeDashboardState extends State<HomeDashboard>
     with TickerProviderStateMixin {
   late AnimationController _headerController;
@@ -150,7 +153,7 @@ class _HomeDashboardState extends State<HomeDashboard>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: AppColors.scaffoldBg,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -268,7 +271,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF222222),
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         Text(
@@ -276,7 +279,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF871DAD),
+                            color: AppColors.primaryMid,
                           ),
                         ),
                       ],
@@ -302,7 +305,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                               room: "6B",
                               attendance: "92%",
                               performance: "85%",
-                              color: const Color(0xFF2E9B5B),
+                              color: AppColors.success,
                             ),
                           ),
                         ),
@@ -318,7 +321,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                               room: "7A",
                               attendance: "88%",
                               performance: "79%",
-                              color: const Color(0xFFE8A317),
+                              color: AppColors.warning,
                             ),
                           ),
                         ),
@@ -339,7 +342,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF222222),
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         Text(
@@ -347,7 +350,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF871DAD),
+                            color: AppColors.primaryMid,
                           ),
                         ),
                       ],
@@ -369,7 +372,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                               questions: "10 Questions",
                               duration: "5 min",
                               status: "Draft",
-                              statusColor: const Color(0xFFE8A317),
+                              statusColor: AppColors.warning,
                             ),
                           ),
                         ),
@@ -383,7 +386,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                               questions: "10 Questions",
                               duration: "5 min",
                               status: "Published",
-                              statusColor: const Color(0xFF2E9B5B),
+                              statusColor: AppColors.success,
                             ),
                           ),
                         ),
@@ -397,7 +400,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                               questions: "10 Questions",
                               duration: "5 min",
                               status: "Draft",
-                              statusColor: const Color(0xFFE8A317),
+                              statusColor: AppColors.warning,
                             ),
                           ),
                         ),
@@ -411,7 +414,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                               questions: "10 Questions",
                               duration: "5 min",
                               status: "Draft",
-                              statusColor: const Color(0xFFE8A317),
+                              statusColor: AppColors.warning,
                             ),
                           ),
                         ),
@@ -437,7 +440,7 @@ class _HomeDashboardState extends State<HomeDashboard>
     required String performance,
     required Color color,
   }) {
-    return _PressableCard(
+    return PressableCard(
       child: Container(
         width: 280,
         padding: const EdgeInsets.all(16),
@@ -563,7 +566,7 @@ class _HomeDashboardState extends State<HomeDashboard>
     required String status,
     required Color statusColor,
   }) {
-    return _PressableCard(
+    return PressableCard(
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
@@ -603,7 +606,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF222222),
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -633,51 +636,6 @@ class _HomeDashboardState extends State<HomeDashboard>
           ],
         ),
       ),
-    );
-  }
-}
-
-/// Premium press/tap animation wrapper — scale down on press, bounce back on release
-class _PressableCard extends StatefulWidget {
-  final Widget child;
-  const _PressableCard({required this.child});
-
-  @override
-  State<_PressableCard> createState() => _PressableCardState();
-}
-
-class _PressableCardState extends State<_PressableCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scale;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 120),
-      reverseDuration: const Duration(milliseconds: 200),
-    );
-    _scale = Tween<double>(
-      begin: 1.0,
-      end: 0.96,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => _controller.forward(),
-      onTapUp: (_) => _controller.reverse(),
-      onTapCancel: () => _controller.reverse(),
-      child: ScaleTransition(scale: _scale, child: widget.child),
     );
   }
 }
