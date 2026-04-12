@@ -58,7 +58,7 @@ class _TwoFactorScreenState extends State<TwoFactorScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                   const Text(
+                  const Text(
                     "Two-Factor Authentication",
                     style: TextStyle(
                       fontSize: 18,
@@ -96,9 +96,15 @@ class _TwoFactorScreenState extends State<TwoFactorScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              _buildBulletItem("Enter Your Phone Number, We'll send a 6-digit OTP to your mobile number for verification."),
-              _buildBulletItem("Receive OTP Instantly, You'll get a one-time code via SMS within a few seconds."),
-              _buildBulletItem("Verify & Access, Enter the code to confirm your identity and securely access your account."),
+              _buildBulletItem(
+                "Enter Your Phone Number, We'll send a 6-digit OTP to your mobile number for verification.",
+              ),
+              _buildBulletItem(
+                "Receive OTP Instantly, You'll get a one-time code via SMS within a few seconds.",
+              ),
+              _buildBulletItem(
+                "Verify & Access, Enter the code to confirm your identity and securely access your account.",
+              ),
               const SizedBox(height: 32),
               Container(
                 padding: const EdgeInsets.all(20),

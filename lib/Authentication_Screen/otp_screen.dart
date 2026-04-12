@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/providers/role_provider.dart';
+import 'package:opalmer_education/custom_bottom_navigation_bar/main_shell.dart';
+import 'package:opalmer_education/student_role/StudentHomeDashboard/student_home_dashboard.dart';
+import 'package:opalmer_education/parent_role/ParentHomeDashboard/parent_home_dashboard.dart';
 
-class OtpScreen extends StatefulWidget {
+class OtpScreen extends ConsumerStatefulWidget {
   const OtpScreen({Key? key}) : super(key: key);
 
   @override
-  State<OtpScreen> createState() => _OtpScreenState();
+  ConsumerState<OtpScreen> createState() => _OtpScreenState();
 }
 
-class _OtpScreenState extends State<OtpScreen> {
+class _OtpScreenState extends ConsumerState<OtpScreen> {
   final List<TextEditingController> _controllers = List.generate(4, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
 
@@ -142,6 +147,24 @@ class _OtpScreenState extends State<OtpScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     // Verification logic
+                    final role = ref.read(roleProvider);
+                    if (role == UserRole.student) {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const StudentHomeDashboard()),
+                        (route) => false,
+                      );
+                    } else if (role == UserRole.parent) {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const ParentHomeDashboard()),
+                        (route) => false,
+                      );
+                    } else {
+                      // Default to teacher / main shell
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const MainShell()),
+                        (route) => false,
+                      );
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF871DAD),

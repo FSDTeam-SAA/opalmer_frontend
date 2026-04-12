@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:opalmer_education/custom_bottom_navigation_bar/main_shell.dart';
+import 'package:opalmer_education/authentication_screen/otp_screen.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/core/widgets/primary_button.dart';
 
@@ -159,11 +159,10 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   void _onButtonTap() {
-    // Navigate to main dashboard
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const MainShell()),
-      (route) => false,
-    );
+    // Navigate to OTP screen
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const OtpScreen()));
   }
 
   @override
@@ -424,7 +423,8 @@ class _LoginScreenState extends State<LoginScreen>
                       child: PrimaryButton(
                         text: "LOG IN NOW",
                         onPressed: _onButtonTap,
-                        isGradient: false, // Login screen used solid purple in my original check
+                        isGradient:
+                            false, // Login screen used solid purple in my original check
                       ),
                     ),
                   ),

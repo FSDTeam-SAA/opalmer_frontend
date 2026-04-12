@@ -6,7 +6,8 @@ import 'terms_condition.dart';
 import 'disput_center.dart';
 import 'block_list.dart';
 import 'language.dart';
-import 'two_factor.dart';
+import '../authentication_screen/two_factor.dart';
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
 
@@ -139,20 +140,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Icons.notifications_none_outlined,
                     const NotificationSettingScreen(),
                   ),
-                  _buildMenuTile("Block list", Icons.block_outlined, const BlockListScreen()),
+                  _buildMenuTile(
+                    "Block list",
+                    Icons.block_outlined,
+                    const BlockListScreen(),
+                  ),
                   _buildMenuTile(
                     "Two-Factor Authentication",
                     Icons.verified_user_outlined,
                     const TwoFactorScreen(),
                   ),
-                  _buildMenuTile("Language", Icons.language_outlined, const LanguageScreen()),
-                  _buildMenuTile("About Us", Icons.help_outline, const AboutUsScreen()),
+                  _buildMenuTile(
+                    "Language",
+                    Icons.language_outlined,
+                    const LanguageScreen(),
+                  ),
+                  _buildMenuTile(
+                    "About Us",
+                    Icons.help_outline,
+                    const AboutUsScreen(),
+                  ),
                   _buildMenuTile(
                     "Terms and Conditions",
                     Icons.description_outlined,
                     const TermsConditionScreen(),
                   ),
-                  _buildMenuTile("Dispute Center", Icons.chat_outlined, const DisputCenterScreen()),
+                  _buildMenuTile(
+                    "Dispute Center",
+                    Icons.chat_outlined,
+                    const DisputCenterScreen(),
+                  ),
 
                   // Logout Button
                   Padding(
