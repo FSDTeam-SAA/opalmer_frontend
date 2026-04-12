@@ -3,7 +3,7 @@ import 'package:opalmer_education/teacher_role/Chat_Screen/send_to.dart';
 import 'package:opalmer_education/teacher_role/Chat_Screen/chat_screen.dart';
 import 'package:opalmer_education/teacher_role/Chat_Screen/group_call.dart';
 import 'package:opalmer_education/teacher_role/Chat_Screen/call_history.dart';
-import 'package:opalmer_education/teacher_role/Home_Dashboard/notification.dart';
+import 'package:opalmer_education/notification/notification.dart';
 
 class ChatDashboard extends StatefulWidget {
   final int initialTab;
@@ -119,13 +119,18 @@ class _ChatDashboardState extends State<ChatDashboard> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const NotificationScreen()),
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const NotificationScreen(),
+                              ),
                             );
                           },
                           child: Container(
                             width: 38,
                             height: 38,
-                            decoration: const BoxDecoration(shape: BoxShape.circle),
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                            ),
                             child: Center(
                               child: Image.asset(
                                 'assets/images/home_dashboard/notification.png',

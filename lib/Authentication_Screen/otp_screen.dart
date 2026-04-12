@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/providers/role_provider.dart';
 import 'package:opalmer_education/custom_bottom_navigation_bar/main_shell.dart';
 import 'package:opalmer_education/student_role/StudentHomeDashboard/student_home_dashboard.dart';
-import 'package:opalmer_education/parent_role/ParentHomeDashboard/parent_home_dashboard.dart';
+import 'package:opalmer_education/parent_role/parent_main_shell.dart';
 
 class OtpScreen extends ConsumerStatefulWidget {
   const OtpScreen({Key? key}) : super(key: key);
@@ -155,7 +155,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                       );
                     } else if (role == UserRole.parent) {
                       Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (_) => const ParentHomeDashboard()),
+                        MaterialPageRoute(builder: (_) => const ParentMainShell()),
                         (route) => false,
                       );
                     } else {

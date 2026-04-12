@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/core/widgets/pressable_card.dart';
-import 'notification.dart';
+import '../../notification/notification.dart';
 
 class HomeDashboard extends StatefulWidget {
   const HomeDashboard({Key? key}) : super(key: key);
@@ -233,7 +233,8 @@ class _HomeDashboardState extends State<HomeDashboard>
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => const NotificationScreen(),
+                                        builder: (context) =>
+                                            const NotificationScreen(),
                                       ),
                                     );
                                   },
