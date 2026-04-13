@@ -12,7 +12,8 @@ class SupportScreen extends StatefulWidget {
 class _SupportScreenState extends State<SupportScreen> {
   final TextEditingController _messageController = TextEditingController();
   final String _supportName = "Support Randolph";
-  final String _supportImageUrl = "https://i.pravatar.cc/150?u=support_randolph";
+  final String _supportImageUrl =
+      "https://i.pravatar.cc/150?u=support_randolph";
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +35,11 @@ class _SupportScreenState extends State<SupportScreen> {
                   color: Color(0xFF871DAD),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                child: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
             ),
           ),
@@ -42,12 +47,19 @@ class _SupportScreenState extends State<SupportScreen> {
         titleSpacing: 0,
         title: Row(
           children: [
-            CircleAvatar(radius: 20, backgroundImage: NetworkImage(_supportImageUrl)),
+            CircleAvatar(
+              radius: 20,
+              backgroundImage: NetworkImage(_supportImageUrl),
+            ),
             const SizedBox(width: 12),
             Flexible(
               child: Text(
                 _supportName,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -57,7 +69,10 @@ class _SupportScreenState extends State<SupportScreen> {
           _buildActionIcon(
             icon: Icons.translate,
             onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const LanguageScreen()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LanguageScreen()),
+              );
             },
           ),
           const SizedBox(width: 4),
@@ -67,7 +82,10 @@ class _SupportScreenState extends State<SupportScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => CallScreen(name: _supportName, imageUrl: _supportImageUrl),
+                  builder: (context) => CallScreen(
+                    name: _supportName,
+                    imageUrl: _supportImageUrl,
+                  ),
                 ),
               );
             },
@@ -81,12 +99,36 @@ class _SupportScreenState extends State<SupportScreen> {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
               children: [
-                _buildMessage(text: "Can't log in.\nPassword wrong.", time: "17:47", isMe: true),
-                _buildMessage(text: "Try \"Forgot\nPassword\"\nlink?", time: "17:47", isMe: false),
-                _buildMessage(text: "Did, no reset\nemail received.", time: "17:47", isMe: true),
-                _buildMessage(text: "Check spam folder?", time: "17:47", isMe: false),
-                _buildMessage(text: "Checked, no email.", time: "17:47", isMe: true),
-                _buildMessage(text: "Send your\nemail, we'll\nresend link.", time: "17:47", isMe: false),
+                _buildMessage(
+                  text: "Can't log in.\nPassword wrong.",
+                  time: "17:47",
+                  isMe: true,
+                ),
+                _buildMessage(
+                  text: "Try \"Forgot\nPassword\"\nlink?",
+                  time: "17:47",
+                  isMe: false,
+                ),
+                _buildMessage(
+                  text: "Did, no reset\nemail received.",
+                  time: "17:47",
+                  isMe: true,
+                ),
+                _buildMessage(
+                  text: "Check spam folder?",
+                  time: "17:47",
+                  isMe: false,
+                ),
+                _buildMessage(
+                  text: "Checked, no email.",
+                  time: "17:47",
+                  isMe: true,
+                ),
+                _buildMessage(
+                  text: "Send your\nemail, we'll\nresend link.",
+                  time: "17:47",
+                  isMe: false,
+                ),
                 _buildVoiceMessage(time: "17:47", isMe: false),
               ],
             ),
@@ -97,7 +139,10 @@ class _SupportScreenState extends State<SupportScreen> {
     );
   }
 
-  Widget _buildActionIcon({required IconData icon, required VoidCallback onTap}) {
+  Widget _buildActionIcon({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
     return Center(
       child: GestureDetector(
         onTap: onTap,
@@ -126,17 +171,30 @@ class _SupportScreenState extends State<SupportScreen> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 2)),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
                 ],
               ),
               child: TextField(
                 controller: _messageController,
                 decoration: InputDecoration(
                   hintText: "Type a message",
-                  hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 15),
+                  hintStyle: TextStyle(
+                    color: Colors.grey.shade400,
+                    fontSize: 15,
+                  ),
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                  suffixIcon: const Icon(Icons.camera_alt, color: Color(0xFF871DAD)),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
+                  suffixIcon: const Icon(
+                    Icons.camera_alt,
+                    color: Color(0xFF871DAD),
+                  ),
                 ),
               ),
             ),
@@ -156,16 +214,25 @@ class _SupportScreenState extends State<SupportScreen> {
     );
   }
 
-  Widget _buildMessage({required String text, required String time, required bool isMe}) {
+  Widget _buildMessage({
+    required String text,
+    required String time,
+    required bool isMe,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
-        mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isMe
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Flexible(
             child: CustomPaint(
-              painter: _UnifiedBubblePainter(isMe: isMe, color: isMe ? const Color(0xFFF1F0F0) : const Color(0xFF871DAD)),
+              painter: _UnifiedBubblePainter(
+                isMe: isMe,
+                color: isMe ? const Color(0xFFF1F0F0) : const Color(0xFF871DAD),
+              ),
               child: Container(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
                 child: Column(
@@ -174,7 +241,11 @@ class _SupportScreenState extends State<SupportScreen> {
                   children: [
                     Text(
                       text,
-                      style: TextStyle(fontSize: 15, color: isMe ? const Color(0xFF222222) : Colors.white, height: 1.4),
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: isMe ? const Color(0xFF222222) : Colors.white,
+                        height: 1.4,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Row(
@@ -182,11 +253,18 @@ class _SupportScreenState extends State<SupportScreen> {
                       children: [
                         Text(
                           time,
-                          style: TextStyle(fontSize: 10, color: isMe ? Colors.grey.shade400 : Colors.white70),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: isMe ? Colors.grey.shade400 : Colors.white70,
+                          ),
                         ),
                         if (isMe) ...[
                           const SizedBox(width: 4),
-                          const Icon(Icons.done_all, size: 14, color: Color(0xFF4FA0F3)),
+                          const Icon(
+                            Icons.done_all,
+                            size: 14,
+                            color: Color(0xFF4FA0F3),
+                          ),
                         ],
                       ],
                     ),
@@ -204,14 +282,21 @@ class _SupportScreenState extends State<SupportScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
-        crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: isMe
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            mainAxisAlignment: isMe
+                ? MainAxisAlignment.end
+                : MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               CustomPaint(
-                painter: _UnifiedBubblePainter(isMe: isMe, color: const Color(0xFF871DAD)),
+                painter: _UnifiedBubblePainter(
+                  isMe: isMe,
+                  color: const Color(0xFF871DAD),
+                ),
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   child: Column(
@@ -224,8 +309,15 @@ class _SupportScreenState extends State<SupportScreen> {
                           Container(
                             width: 34,
                             height: 34,
-                            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                            child: const Icon(Icons.play_arrow, color: Color(0xFF871DAD), size: 24),
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.play_arrow,
+                              color: Color(0xFF871DAD),
+                              size: 24,
+                            ),
                           ),
                           const SizedBox(width: 10),
                           _buildWaveform(),
@@ -236,7 +328,13 @@ class _SupportScreenState extends State<SupportScreen> {
                         ],
                       ),
                       const SizedBox(height: 4),
-                      Text(time, style: const TextStyle(fontSize: 10, color: Colors.white70)),
+                      Text(
+                        time,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: Colors.white70,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -248,7 +346,12 @@ class _SupportScreenState extends State<SupportScreen> {
             padding: EdgeInsets.only(left: 12),
             child: Text(
               "View Transcript",
-              style: TextStyle(fontSize: 12, color: Color(0xFF871DAD), decoration: TextDecoration.underline, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                fontSize: 12,
+                color: Color(0xFF871DAD),
+                decoration: TextDecoration.underline,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
@@ -266,7 +369,10 @@ class _SupportScreenState extends State<SupportScreen> {
           width: 1.5,
           height: h,
           margin: const EdgeInsets.symmetric(horizontal: 1.5),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(0.5)),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(0.5),
+          ),
         );
       }),
     );
@@ -275,8 +381,18 @@ class _SupportScreenState extends State<SupportScreen> {
   Widget _buildPill(String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(15)),
-      child: Text(text, style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w600)),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 11,
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 }
