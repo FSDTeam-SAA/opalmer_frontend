@@ -6,7 +6,7 @@ import 'terms_condition.dart';
 import 'disput_center.dart';
 import 'block_list.dart';
 import 'language.dart';
-import '../../authentication_screen/two_factor.dart';
+import '../../authentication_screen/two_factor_auth_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -148,7 +148,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _buildMenuTile(
                     "Two-Factor Authentication",
                     Icons.verified_user_outlined,
-                    const TwoFactorScreen(),
+                    const TwoFactorAuthScreen(),
                   ),
                   _buildMenuTile(
                     "Language",

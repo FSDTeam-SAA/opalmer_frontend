@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:opalmer_education/authentication_screen/two_factor_auth_screen.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/core/widgets/animated_wave_header.dart';
 import 'package:opalmer_education/notification/notification.dart';
@@ -7,7 +8,6 @@ import 'package:opalmer_education/parent_role/ProfileScreen/profile_setup_screen
 import 'package:opalmer_education/parent_role/ProfileScreen/notification_settings_screen.dart';
 import 'package:opalmer_education/parent_role/ProfileScreen/block_list_screen.dart';
 import 'package:opalmer_education/parent_role/ProfileScreen/terms_and_condition_screen.dart';
-import 'package:opalmer_education/parent_role/ProfileScreen/two_factor_auth_screen.dart';
 import 'package:opalmer_education/parent_role/ProfileScreen/language_selection_screen.dart';
 import 'package:opalmer_education/parent_role/ProfileScreen/about_us_screen.dart';
 import 'package:opalmer_education/user_role_screen/user_role_screen.dart';

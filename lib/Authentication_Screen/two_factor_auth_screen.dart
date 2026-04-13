@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'otp_screen.dart';
 
-class TwoFactorScreen extends StatefulWidget {
-  const TwoFactorScreen({Key? key}) : super(key: key);
+class TwoFactorAuthScreen extends StatefulWidget {
+  const TwoFactorAuthScreen({super.key});
 
   @override
-  State<TwoFactorScreen> createState() => _TwoFactorScreenState();
+  State<TwoFactorAuthScreen> createState() => _TwoFactorScreenState();
 }
 
-class _TwoFactorScreenState extends State<TwoFactorScreen> {
+class _TwoFactorScreenState extends State<TwoFactorAuthScreen> {
   bool _isToggled = false;
 
   @override
