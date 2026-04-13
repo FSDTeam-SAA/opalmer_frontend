@@ -18,6 +18,7 @@ class _GradingToolScreenState extends State<GradingToolScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       floatingActionButton: FloatingActionButton(
+        heroTag: 'grading_fab',
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateQuizScreen()));
         },

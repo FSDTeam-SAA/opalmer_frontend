@@ -65,7 +65,46 @@ const List<LearningTip> mockLearningTips = [
     title: "Create Daily Routines That Support Learning Success",
     imageUrl:
         "https://images.unsplash.com/photo-1620063255146-5f07aee3b784?auto=format&fit=crop&w=200&q=60",
+    sections: [
+      LearningTipSection(
+        title: "1. Build a Consistent Schedule",
+        description:
+            "Help your child feel secure and focused by setting regular times for:",
+        bulletPoints: [
+          "Homework and study sessions",
+          "Meals and snacks",
+          "Playtime and relaxation",
+          "Sleep and bedtime routines",
+        ],
+        footerText:
+            "Consistency helps children develop discipline and reduces daily confusion.",
+      ),
+      LearningTipSection(
+        title: "2. Use Visual Timetables",
+        imageUrls: [
+          "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=200&q=80",
+          "https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=200&q=80",
+          "https://images.unsplash.com/photo-1596495577886-d920f1fb7238?auto=format&fit=crop&w=200&q=80",
+        ],
+      ),
+      LearningTipSection(
+        title: "3. Balance Study and Breaks",
+        bulletPoints: [
+          "Use short, focused study sessions (20–30 minutes)",
+          "Include regular breaks to avoid burnout",
+          "Encourage physical movement between sessions",
+        ],
+        footerText:
+            "A balanced routine improves concentration and keeps learning enjoyable.",
+      ),
+      LearningTipSection(
+        title: "4. Adapt to Your Child’s Needs",
+        description:
+            "Every child is different. Adjust routines based on their energy levels, school demands, and personal interests to keep them engaged and motivated.",
+      ),
+    ],
   ),
+
   LearningTip(
     title: "Discover the Magic of Reading Together Every Night",
     imageUrl:

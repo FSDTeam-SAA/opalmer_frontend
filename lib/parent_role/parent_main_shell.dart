@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/parent_role/parent_bottom_navigation_bar.dart';
 import 'package:opalmer_education/parent_role/ParentHomeDashboard/parent_home_dashboard.dart';
+import 'package:opalmer_education/parent_role/ChildsProfilesScreen/childs_profiles_screen.dart';
+import 'package:opalmer_education/parent_role/ProfileScreen/parent_profile_screen.dart';
 
 class ParentMainShell extends StatefulWidget {
   const ParentMainShell({Key? key}) : super(key: key);
@@ -16,9 +18,9 @@ class _ParentMainShellState extends State<ParentMainShell> {
   Widget build(BuildContext context) {
     final List<Widget> pages = [
       const ParentHomeDashboard(),
-      const _PlaceholderPage(title: "Teachers/Classes"),
+      const ChildsProfilesScreen(),
       const _PlaceholderPage(title: "Messages"),
-      const _PlaceholderPage(title: "Profile"),
+      const ParentProfileScreen(),
     ];
 
     return Scaffold(

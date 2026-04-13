@@ -7,6 +7,7 @@ import 'package:opalmer_education/parent_role/LearningTipsScreen/models/learning
 import 'package:opalmer_education/notification/notification.dart';
 import 'package:opalmer_education/parent_role/LearningTipsScreen/learning_tips_screen.dart';
 import 'package:opalmer_education/parent_role/LearningTipsScreen/learning_tip_detail_screen.dart';
+import 'package:opalmer_education/parent_role/ChildsProfilesScreen/childs_profiles_screen.dart';
 
 class ParentHomeDashboard extends StatefulWidget {
   const ParentHomeDashboard({super.key});
@@ -128,13 +129,24 @@ class _ParentHomeDashboardState extends State<ParentHomeDashboard> {
                             color: Colors.black87,
                           ),
                         ),
-                        Text(
-                          "View All",
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.primaryMid,
-                            decoration: TextDecoration.underline,
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const ChildsProfilesScreen(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            "View All",
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primaryMid,
+                              decoration: TextDecoration.underline,
+                            ),
                           ),
                         ),
                       ],
@@ -230,9 +242,7 @@ class _ParentHomeDashboardState extends State<ParentHomeDashboard> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) =>
-                                          LearningTipDetailScreen(
-                                            tip: tip,
-                                          ),
+                                          LearningTipDetailScreen(tip: tip),
                                     ),
                                   );
                                 },

@@ -9,12 +9,12 @@ class BlockListScreen extends StatelessWidget {
       {
         "name": "Maximillian Jacobson",
         "date": "11/19/19",
-        "image": "https://i.pravatar.cc/150?u=max"
+        "image": "https://i.pravatar.cc/150?u=max",
       },
       {
         "name": "Martha Carig",
         "date": "11/19/19",
-        "image": "https://i.pravatar.cc/150?u=martha"
+        "image": "https://i.pravatar.cc/150?u=martha",
       },
     ];
 
@@ -37,7 +37,7 @@ class BlockListScreen extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                   Icons.arrow_back,
+                  Icons.arrow_back,
                   color: Colors.white,
                   size: 20,
                 ),
@@ -94,12 +94,16 @@ class BlockListScreen extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () {},
                   style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(0, 36),
                     backgroundColor: const Color(0xFF871DAD),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                   ),
                   child: const Text(
                     "Unblock",

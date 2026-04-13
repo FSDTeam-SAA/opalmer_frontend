@@ -44,6 +44,7 @@ class _ChatDashboardState extends State<ChatDashboard> {
             bottom: 24,
             right: 24,
             child: FloatingActionButton(
+              heroTag: 'chat_fab',
               onPressed: () {
                 Navigator.push(
                   context,
