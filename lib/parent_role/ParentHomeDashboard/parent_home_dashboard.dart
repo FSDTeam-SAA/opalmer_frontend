@@ -8,6 +8,8 @@ import 'package:opalmer_education/notification/notification.dart';
 import 'package:opalmer_education/parent_role/LearningTipsScreen/learning_tips_screen.dart';
 import 'package:opalmer_education/parent_role/LearningTipsScreen/learning_tip_detail_screen.dart';
 import 'package:opalmer_education/parent_role/ChildsProfilesScreen/childs_profiles_screen.dart';
+import 'package:opalmer_education/parent_role/ChildsProfilesScreen/models/child_profile.dart';
+import 'package:opalmer_education/parent_role/SubjectsScreen/subjects_screen.dart';
 
 class ParentHomeDashboard extends StatefulWidget {
   const ParentHomeDashboard({super.key});
@@ -89,10 +91,10 @@ class _ParentHomeDashboardState extends State<ParentHomeDashboard> {
                                 shape: BoxShape.circle,
                                 color: Colors.white,
                               ),
-                              child: const Icon(
-                                Icons.notifications_none_rounded,
-                                color: AppColors.primaryMid,
-                                size: 22,
+                              child: Image.asset(
+                                'assets/images/home_dashboard/notification.png',
+                                height: 24,
+                                width: 24,
                               ),
                             ),
                           ),
@@ -158,31 +160,12 @@ class _ParentHomeDashboardState extends State<ParentHomeDashboard> {
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 20),
-                      children: [
-                        _buildChildCard(
-                          name: "Mia Johnson",
-                          gradeAge: "Grade 6 - Age 12",
-                          progress: 0.93,
-                          tagText: "Excellent",
-                          tagColor: const Color(0xFF4CB07D),
-                          barColor: AppColors.primaryMid,
-                          leftBorderColor: const Color(0xFF4CB07D),
-                          imageUrl:
-                              "https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?auto=format&fit=crop&w=150&q=80",
-                        ),
-                        const SizedBox(width: 14),
-                        _buildChildCard(
-                          name: "Alex Johnson",
-                          gradeAge: "Grade 4 - Age 10",
-                          progress: 0.85,
-                          tagText: "Good",
-                          tagColor: const Color(0xFFF4B84F),
-                          barColor: AppColors.primaryMid,
-                          leftBorderColor: const Color(0xFFF4B84F),
-                          imageUrl:
-                              "https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=150&q=80",
-                        ),
-                      ],
+                      children: mockChildProfiles.take(3).map((profile) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 14),
+                          child: _buildChildCard(profile),
+                        );
+                      }).toList(),
                     ),
                   ),
 
@@ -263,17 +246,14 @@ class _ParentHomeDashboardState extends State<ParentHomeDashboard> {
     );
   }
 
-  Widget _buildChildCard({
-    required String name,
-    required String gradeAge,
-    required double progress,
-    required String tagText,
-    required Color tagColor,
-    required Color barColor,
-    required Color leftBorderColor,
-    required String imageUrl,
-  }) {
+  Widget _buildChildCard(ChildProfile profile) {
     return PressableCard(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SubjectsScreen()),
+        );
+      },
       child: Container(
         width: 290,
         decoration: BoxDecoration(
@@ -294,7 +274,7 @@ class _ParentHomeDashboardState extends State<ParentHomeDashboard> {
             Container(
               width: 6,
               decoration: BoxDecoration(
-                color: leftBorderColor,
+                color: profile.leftBorderColor,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(10),
                   bottomLeft: Radius.circular(10),
@@ -305,7 +285,7 @@ class _ParentHomeDashboardState extends State<ParentHomeDashboard> {
             // Avatar
             CircleAvatar(
               radius: 28,
-              backgroundImage: NetworkImage(imageUrl),
+              backgroundImage: NetworkImage(profile.imageUrl),
               backgroundColor: Colors.grey.shade200,
             ),
             const SizedBox(width: 14),
@@ -325,7 +305,7 @@ class _ParentHomeDashboardState extends State<ParentHomeDashboard> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                name,
+                                profile.name,
                                 style: const TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,
@@ -336,7 +316,7 @@ class _ParentHomeDashboardState extends State<ParentHomeDashboard> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                gradeAge,
+                                profile.gradeAge,
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey.shade600,
@@ -352,11 +332,11 @@ class _ParentHomeDashboardState extends State<ParentHomeDashboard> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: tagColor,
+                            color: profile.tagColor,
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            tagText,
+                            profile.tagText,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 10,
@@ -380,7 +360,7 @@ class _ParentHomeDashboardState extends State<ParentHomeDashboard> {
                         ),
                         const Spacer(),
                         Text(
-                          "${(progress * 100).toInt()}%",
+                          "${(profile.progress * 100).toInt()}%",
                           style: TextStyle(
                             fontSize: 11,
                             color: Colors.grey.shade600,
@@ -391,9 +371,11 @@ class _ParentHomeDashboardState extends State<ParentHomeDashboard> {
                     ),
                     const SizedBox(height: 4),
                     LinearProgressIndicator(
-                      value: progress,
+                      value: profile.progress,
                       backgroundColor: Colors.grey.shade200,
-                      valueColor: AlwaysStoppedAnimation<Color>(barColor),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        profile.barColor,
+                      ),
                       minHeight: 4,
                       borderRadius: BorderRadius.circular(2),
                     ),

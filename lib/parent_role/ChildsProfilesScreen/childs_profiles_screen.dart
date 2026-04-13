@@ -4,6 +4,7 @@ import 'package:opalmer_education/core/widgets/animated_wave_header.dart';
 import 'package:opalmer_education/core/widgets/pressable_card.dart';
 import 'package:opalmer_education/notification/notification.dart';
 import 'package:opalmer_education/parent_role/SubjectsScreen/subjects_screen.dart';
+import 'package:opalmer_education/parent_role/ChildsProfilesScreen/models/child_profile.dart';
 
 class ChildsProfilesScreen extends StatelessWidget {
   const ChildsProfilesScreen({super.key});
@@ -79,10 +80,10 @@ class ChildsProfilesScreen extends StatelessWidget {
                                 shape: BoxShape.circle,
                                 color: Colors.white,
                               ),
-                              child: const Icon(
-                                Icons.notifications_none_rounded,
-                                color: AppColors.primaryMid,
-                                size: 22,
+                              child: Image.asset(
+                                'assets/images/home_dashboard/notification.png',
+                                height: 24,
+                                width: 24,
                               ),
                             ),
                           ),
@@ -100,47 +101,15 @@ class ChildsProfilesScreen extends StatelessWidget {
                     horizontal: 20,
                     vertical: 20,
                   ),
-                  children: [
-                    _buildProfileCard(
-                      context: context,
-                      name: "Mia Johnson",
-                      gradeAge: "Grade 6 - Age 12",
-                      progress: 0.93,
-                      tagText: "Excellent",
-                      tagColor: const Color(0xFF4CB07D),
-                      barColor: AppColors.primaryMid,
-                      leftBorderColor: const Color(0xFF4CB07D),
-                      imageUrl:
-                          "https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?auto=format&fit=crop&w=150&q=80",
-                    ),
-                    const SizedBox(height: 16),
-                    _buildProfileCard(
-                      context: context,
-                      name:
-                          "Mia Johnson", // Same info as screenshot dummy repeated
-                      gradeAge: "Grade 6 - Age 12",
-                      progress: 0.93,
-                      tagText: "Excellent",
-                      tagColor: const Color(0xFF4CB07D),
-                      barColor: AppColors.primaryMid,
-                      leftBorderColor: const Color(0xFFF4B84F),
-                      imageUrl:
-                          "https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?auto=format&fit=crop&w=150&q=80",
-                    ),
-                    const SizedBox(height: 16),
-                    _buildProfileCard(
-                      context: context,
-                      name: "Mia Johnson",
-                      gradeAge: "Grade 6 - Age 12",
-                      progress: 0.93,
-                      tagText: "Excellent",
-                      tagColor: const Color(0xFF4CB07D),
-                      barColor: AppColors.primaryMid,
-                      leftBorderColor: const Color(0xFF3892A8),
-                      imageUrl:
-                          "https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?auto=format&fit=crop&w=150&q=80",
-                    ),
-                  ],
+                  children: mockChildProfiles.map((profile) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: _buildProfileCard(
+                        context: context,
+                        profile: profile,
+                      ),
+                    );
+                  }).toList(),
                 ),
               ),
             ],
@@ -162,22 +131,13 @@ class ChildsProfilesScreen extends StatelessWidget {
 
   Widget _buildProfileCard({
     required BuildContext context,
-    required String name,
-    required String gradeAge,
-    required double progress,
-    required String tagText,
-    required Color tagColor,
-    required Color barColor,
-    required Color leftBorderColor,
-    required String imageUrl,
+    required ChildProfile profile,
   }) {
     return PressableCard(
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => const SubjectsScreen(),
-          ),
+          MaterialPageRoute(builder: (context) => const SubjectsScreen()),
         );
       },
       child: Container(
@@ -201,7 +161,7 @@ class ChildsProfilesScreen extends StatelessWidget {
               width: 8,
               height: 120,
               decoration: BoxDecoration(
-                color: leftBorderColor,
+                color: profile.leftBorderColor,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(8),
                   bottomLeft: Radius.circular(8),
@@ -212,7 +172,7 @@ class ChildsProfilesScreen extends StatelessWidget {
             // Avatar
             CircleAvatar(
               radius: 28,
-              backgroundImage: NetworkImage(imageUrl),
+              backgroundImage: NetworkImage(profile.imageUrl),
               backgroundColor: Colors.grey.shade200,
             ),
             const SizedBox(width: 14),
@@ -232,7 +192,7 @@ class ChildsProfilesScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                name,
+                                profile.name,
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -243,7 +203,7 @@ class ChildsProfilesScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                gradeAge,
+                                profile.gradeAge,
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey.shade600,
@@ -259,11 +219,11 @@ class ChildsProfilesScreen extends StatelessWidget {
                             vertical: 5,
                           ),
                           decoration: BoxDecoration(
-                            color: tagColor,
+                            color: profile.tagColor,
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            tagText,
+                            profile.tagText,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 11,
@@ -287,7 +247,7 @@ class ChildsProfilesScreen extends StatelessWidget {
                         ),
                         const Spacer(),
                         Text(
-                          "${(progress * 100).toInt()}%",
+                          "${(profile.progress * 100).toInt()}%",
                           style: TextStyle(
                             fontSize: 11,
                             color: AppColors.primaryMid,
@@ -298,9 +258,11 @@ class ChildsProfilesScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     LinearProgressIndicator(
-                      value: progress,
+                      value: profile.progress,
                       backgroundColor: Colors.grey.shade200,
-                      valueColor: AlwaysStoppedAnimation<Color>(barColor),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        profile.barColor,
+                      ),
                       minHeight: 4,
                       borderRadius: BorderRadius.circular(2),
                     ),

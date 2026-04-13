@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/core/widgets/animated_wave_header.dart';
+import 'package:opalmer_education/notification/notification.dart';
 import 'package:opalmer_education/parent_role/ProfileScreen/dispute_center_screen.dart';
 import 'package:opalmer_education/parent_role/ProfileScreen/profile_setup_screen.dart';
 import 'package:opalmer_education/parent_role/ProfileScreen/notification_settings_screen.dart';
@@ -18,202 +19,223 @@ class ParentProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // ── Header & Profile Image ──
-            Stack(
-              clipBehavior: Clip.none,
-              alignment: Alignment.center,
-              children: [
-                const AnimatedWaveHeader(height: 200),
-                ClipPath(
-                  clipper: ProfileHeaderClipper(),
-                  child: Container(
-                    height: 220,
-                    width: double.infinity,
-                    color: AppColors.primaryMid,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 50,
-                    ),
-                    alignment: Alignment.topLeft,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "Profile",
-                          style: TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+      body: Column(
+        children: [
+          // ── Header & Profile Image ──
+          Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: [
+              const AnimatedWaveHeader(height: 200),
+              ClipPath(
+                clipper: ProfileHeaderClipper(),
+                child: Container(
+                  height: 220,
+                  width: double.infinity,
+                  color: AppColors.primaryMid,
+                  padding: const EdgeInsets.only(top: 75, left: 20, right: 20),
+                  alignment: Alignment.topLeft,
+
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                    children: [
+                      const Text(
+                        "Profile",
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
-                        Container(
-                          padding: const EdgeInsets.all(8),
+                      ),
+                      // Notification bell
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const NotificationScreen(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 36,
+                          height: 36,
                           decoration: const BoxDecoration(
-                            color: Colors.white,
                             shape: BoxShape.circle,
+                            color: Colors.white,
                           ),
-                          child: const Icon(
-                            Icons.notifications_none_rounded,
-                            color: AppColors.primaryMid,
-                            size: 24,
+                          child: Image.asset(
+                            'assets/images/home_dashboard/notification.png',
+                            height: 24,
+                            width: 24,
                           ),
                         ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Overlapping Avatar
+              Positioned(
+                top: 130, // Adjust based on header height and avatar size
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const CircleAvatar(
+                    radius: 65,
+                    backgroundImage: NetworkImage(
+                      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80",
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 80), // Space for overlapping avatar
+          // ── Name & Email ──
+          const Text(
+            "Sarah Michelle",
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF222222),
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            "sarahmichelle@gmail.com",
+            style: TextStyle(fontSize: 14, color: Colors.grey),
+          ),
+
+          const SizedBox(height: 30),
+
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  // ── Settings Menu ──
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      children: [
+                        _buildSettingsTile(
+                          icon: Icons.person_outline_rounded,
+                          title: "Edit Profile",
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const ProfileSetupScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildSettingsTile(
+                          icon: Icons.notifications_none_rounded,
+                          title: "Notifications Settings",
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const NotificationSettingsScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildSettingsTile(
+                          icon: Icons.block_flipped,
+                          title: "Block list",
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const BlockListScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildSettingsTile(
+                          icon: Icons.verified_user_outlined,
+                          title: "Two-Factor Authentication",
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const TwoFactorAuthScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildSettingsTile(
+                          icon: Icons.language_rounded,
+                          title: "Language",
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const LanguageSelectionScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildSettingsTile(
+                          icon: Icons.help_outline_rounded,
+                          title: "About Us",
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AboutUsScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildSettingsTile(
+                          icon: Icons.assignment_outlined,
+                          title: "Terms and Conditions",
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const TermsAndConditionScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildSettingsTile(
+                          icon: Icons.chat_bubble_outline_rounded,
+                          title: "Dispute Center",
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const ParentDisputeCenterScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 10),
+                        _buildLogoutButton(context),
                       ],
                     ),
                   ),
-                ),
-                // Overlapping Avatar
-                Positioned(
-                  top: 130, // Adjust based on header height and avatar size
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const CircleAvatar(
-                      radius: 65,
-                      backgroundImage: NetworkImage(
-                        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80",
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 80), // Space for overlapping avatar
-            // ── Name & Email ──
-            const Text(
-              "Sarah Michelle",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF222222),
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              "sarahmichelle@gmail.com",
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-
-            const SizedBox(height: 30),
-
-            // ── Settings Menu ──
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                children: [
-                  _buildSettingsTile(
-                    icon: Icons.person_outline_rounded,
-                    title: "Edit Profile",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ProfileSetupScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildSettingsTile(
-                    icon: Icons.notifications_none_rounded,
-                    title: "Notifications Settings",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              const NotificationSettingsScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildSettingsTile(
-                    icon: Icons.block_flipped,
-                    title: "Block list",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const BlockListScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildSettingsTile(
-                    icon: Icons.verified_user_outlined,
-                    title: "Two-Factor Authentication",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const TwoFactorAuthScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildSettingsTile(
-                    icon: Icons.language_rounded,
-                    title: "Language",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LanguageSelectionScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildSettingsTile(
-                    icon: Icons.help_outline_rounded,
-                    title: "About Us",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AboutUsScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildSettingsTile(
-                    icon: Icons.assignment_outlined,
-                    title: "Terms and Conditions",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const TermsAndConditionScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildSettingsTile(
-                    icon: Icons.chat_bubble_outline_rounded,
-                    title: "Dispute Center",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              const ParentDisputeCenterScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  _buildLogoutButton(context),
+                  const SizedBox(height: 30),
                 ],
               ),
             ),
-            const SizedBox(height: 30),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
