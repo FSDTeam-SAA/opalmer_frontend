@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:opalmer_education/authentication_screen/registration_successful_screen.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/core/widgets/animated_wave_header.dart';
 
 class ProfileSetupScreen extends StatelessWidget {
-  const ProfileSetupScreen({super.key});
+  final bool isRegistrationFlow;
+
+  const ProfileSetupScreen({super.key, this.isRegistrationFlow = false});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +21,10 @@ class ProfileSetupScreen extends StatelessWidget {
                 const AnimatedWaveHeader(height: 280),
                 SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -153,8 +159,15 @@ class ProfileSetupScreen extends StatelessWidget {
                 height: 56,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Logic to save changes
-                    Navigator.pop(context);
+                    if (isRegistrationFlow) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const RegistrationSuccessfulScreen(),
+                        ),
+                      );
+                    } else {
+                      Navigator.of(context).pop();
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryMid,
@@ -200,11 +213,7 @@ class ProfileSetupScreen extends StatelessWidget {
               children: [
                 Icon(icon, color: Colors.grey.shade600, size: 24),
                 const SizedBox(width: 12),
-                Container(
-                  width: 1,
-                  height: 24,
-                  color: Colors.grey.shade300,
-                ),
+                Container(width: 1, height: 24, color: Colors.grey.shade300),
               ],
             ),
           ),

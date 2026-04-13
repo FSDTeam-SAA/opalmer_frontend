@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:opalmer_education/authentication_screen/registration_successful_screen.dart';
 
 class ProfileSetupScreen extends StatefulWidget {
-  const ProfileSetupScreen({Key? key}) : super(key: key);
+  final bool isRegistrationFlow;
+
+  const ProfileSetupScreen({super.key, this.isRegistrationFlow = false});
 
   @override
   State<ProfileSetupScreen> createState() => _ProfileSetupScreenState();
@@ -192,7 +195,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        // Save Action
+                        if (widget.isRegistrationFlow) {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const RegistrationSuccessfulScreen(),
+                            ),
+                          );
+                        } else {
+                          Navigator.of(context).pop();
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF871DAD),
