@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/student_role/Subjects/subjects_screen.dart';
 import 'package:opalmer_education/student_role/Subjects/widgets/subject_card.dart';
+import 'package:opalmer_education/notification/notification.dart';
 
 class StudentHomeDashboard extends StatelessWidget {
   const StudentHomeDashboard({Key? key}) : super(key: key);
@@ -73,17 +74,25 @@ class StudentHomeDashboard extends StatelessWidget {
                   ],
                 ),
                 // Notification Bell
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 1),
-                  ),
-                  child: const Icon(
-                    Icons.notifications_none_rounded,
-                    color: Colors.white,
-                    size: 24,
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const NotificationScreen()),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 1),
+                    ),
+                    child: const Icon(
+                      Icons.notifications_none_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    ),
                   ),
                 ),
               ],

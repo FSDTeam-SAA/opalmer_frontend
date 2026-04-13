@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/student_role/StudentHomeDashboard/student_home_dashboard.dart';
 import 'package:opalmer_education/student_role/widgets/student_bottom_navbar.dart';
-import 'package:opalmer_education/profile_screen/profile.dart';
 import 'package:opalmer_education/student_role/Quizzes/student_quiz_main_screen.dart';
 import 'package:opalmer_education/student_role/Subjects/subjects_screen.dart';
 import 'package:opalmer_education/student_role/Chat_Screen/chat_dashboard.dart';
+import 'package:opalmer_education/teacher_role/profile_screen/profile.dart';
 
 class StudentMainShell extends StatefulWidget {
   const StudentMainShell({Key? key}) : super(key: key);
@@ -28,10 +28,7 @@ class _StudentMainShellState extends State<StudentMainShell> {
     ];
 
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: pages,
-      ),
+      body: IndexedStack(index: _currentIndex, children: pages),
       bottomNavigationBar: StudentBottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
@@ -56,11 +53,19 @@ class _ComingSoonPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.construction_rounded, size: 64, color: Colors.grey.shade300),
+            Icon(
+              Icons.construction_rounded,
+              size: 64,
+              color: Colors.grey.shade300,
+            ),
             const SizedBox(height: 16),
             Text(
               title,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF333333)),
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF333333),
+              ),
             ),
             const SizedBox(height: 8),
             Text("Coming Soon", style: TextStyle(color: Colors.grey.shade500)),
@@ -80,9 +85,7 @@ class _ComingSoonScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: Text(title, style: const TextStyle(fontSize: 18)),
-      ),
+      body: Center(child: Text(title, style: const TextStyle(fontSize: 18))),
     );
   }
 }

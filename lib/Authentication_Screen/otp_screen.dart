@@ -2,18 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/providers/role_provider.dart';
 import 'package:opalmer_education/custom_bottom_navigation_bar/main_shell.dart';
+import 'package:opalmer_education/parent_role/parent_main_shell.dart';
+import 'package:opalmer_education/parent_role/ProfileScreen/profile_setup_screen.dart'
+    as parent_profile_setup;
+import 'package:opalmer_education/student_role/StudentHomeDashboard/student_home_dashboard.dart';
+import 'package:opalmer_education/teacher_role/profile_screen/profile_setup.dart'
+    as teacher_profile_setup;
 import 'package:opalmer_education/student_role/student_main_shell.dart';
 import 'package:opalmer_education/parent_role/ParentHomeDashboard/parent_home_dashboard.dart';
 
 class OtpScreen extends ConsumerStatefulWidget {
-  const OtpScreen({Key? key}) : super(key: key);
+  final bool isRegistrationFlow;
+
+  const OtpScreen({super.key, this.isRegistrationFlow = false});
 
   @override
   ConsumerState<OtpScreen> createState() => _OtpScreenState();
 }
 
 class _OtpScreenState extends ConsumerState<OtpScreen> {
-  final List<TextEditingController> _controllers = List.generate(4, (_) => TextEditingController());
+  final List<TextEditingController> _controllers = List.generate(
+    4,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
 
   @override
@@ -25,6 +36,56 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
       node.dispose();
     }
     super.dispose();
+  }
+
+  void _handleVerificationSuccess() {
+    final role = ref.read(roleProvider);
+
+    if (widget.isRegistrationFlow) {
+      _routeToProfileSetup(role);
+      return;
+    }
+
+    _routeToDashboard(role);
+  }
+
+  void _routeToProfileSetup(UserRole role) {
+    if (role == UserRole.teacher) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const teacher_profile_setup.ProfileSetupScreen(
+            isRegistrationFlow: true,
+          ),
+        ),
+      );
+    } else if (role == UserRole.parent) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const parent_profile_setup.ProfileSetupScreen(
+            isRegistrationFlow: true,
+          ),
+        ),
+      );
+    }
+  }
+
+  void _routeToDashboard(UserRole role) {
+    if (role == UserRole.student) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const StudentMainShell()),
+        (route) => false,
+      );
+    } else if (role == UserRole.parent) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const ParentMainShell()),
+        (route) => false,
+      );
+    } else {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const MainShell()),
+        (route) => false,
+      );
+    }
   }
 
   @override
@@ -47,7 +108,10 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                 ),
                 SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -114,10 +178,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               children: [
                 const Text(
                   "Didn't get code? - ",
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Color(0xFF444444),
-                  ),
+                  style: TextStyle(fontSize: 15, color: Color(0xFF444444)),
                 ),
                 GestureDetector(
                   onTap: () {
@@ -150,12 +211,16 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                     final role = ref.read(roleProvider);
                     if (role == UserRole.student) {
                       Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (_) => const StudentMainShell()),
+                        MaterialPageRoute(
+                          builder: (_) => const StudentMainShell(),
+                        ),
                         (route) => false,
                       );
                     } else if (role == UserRole.parent) {
                       Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (_) => const ParentHomeDashboard()),
+                        MaterialPageRoute(
+                          builder: (_) => const ParentHomeDashboard(),
+                        ),
                         (route) => false,
                       );
                     } else {

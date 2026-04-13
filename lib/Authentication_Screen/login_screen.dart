@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/authentication_screen/otp_screen.dart';
+import 'package:opalmer_education/core/providers/role_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/core/widgets/primary_button.dart';
+import 'package:opalmer_education/custom_bottom_navigation_bar/main_shell.dart';
+import 'package:opalmer_education/parent_role/parent_main_shell.dart';
+import 'package:opalmer_education/student_role/StudentHomeDashboard/student_home_dashboard.dart';
+import 'package:opalmer_education/student_role/student_main_shell.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+class LoginScreen extends ConsumerStatefulWidget {
+  final bool isRegistrationFlow;
+
+  const LoginScreen({super.key, this.isRegistrationFlow = false});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen>
+class _LoginScreenState extends ConsumerState<LoginScreen>
     with TickerProviderStateMixin {
   final TextEditingController _schoolIdController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -159,10 +167,35 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   void _onButtonTap() {
-    // Navigate to OTP screen
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const OtpScreen()));
+    if (widget.isRegistrationFlow) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const OtpScreen(isRegistrationFlow: true),
+        ),
+      );
+      return;
+    }
+
+    _routeToDashboard(ref.read(roleProvider));
+  }
+
+  void _routeToDashboard(UserRole role) {
+    if (role == UserRole.parent) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const ParentMainShell()),
+        (route) => false,
+      );
+    } else if (role == UserRole.student) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const StudentMainShell()),
+        (route) => false,
+      );
+    } else {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const MainShell()),
+        (route) => false,
+      );
+    }
   }
 
   @override
@@ -226,9 +259,13 @@ class _LoginScreenState extends State<LoginScreen>
                                     height: 42,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: Colors.white.withOpacity(0.2),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.2,
+                                      ),
                                       border: Border.all(
-                                        color: Colors.white.withOpacity(0.4),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.4,
+                                        ),
                                         width: 1.5,
                                       ),
                                     ),
@@ -246,7 +283,7 @@ class _LoginScreenState extends State<LoginScreen>
                               "Experience a better learning\nenvironment",
                               style: TextStyle(
                                 fontSize: 16,
-                                color: Colors.white.withOpacity(0.9),
+                                color: Colors.white.withValues(alpha: 0.9),
                                 height: 1.4,
                               ),
                             ),

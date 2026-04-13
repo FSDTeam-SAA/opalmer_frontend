@@ -6,7 +6,9 @@ import 'package:opalmer_education/core/widgets/primary_button.dart';
 import 'package:opalmer_education/core/providers/role_provider.dart';
 
 class UserRoleScreen extends ConsumerStatefulWidget {
-  const UserRoleScreen({Key? key}) : super(key: key);
+  final bool isRegistrationFlow;
+
+  const UserRoleScreen({super.key, this.isRegistrationFlow = false});
 
   @override
   ConsumerState<UserRoleScreen> createState() => _UserRoleScreenState();
@@ -53,11 +55,12 @@ class _UserRoleScreenState extends ConsumerState<UserRoleScreen>
   void _onContinue() {
     // Save role to Riverpod
     ref.read(roleProvider.notifier).setRoleFromString(selectedRole);
-    
+
     // Navigate to Login
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => const LoginScreen(),
+        builder: (_) =>
+            LoginScreen(isRegistrationFlow: widget.isRegistrationFlow),
       ),
     );
   }
@@ -107,7 +110,7 @@ class _UserRoleScreenState extends ConsumerState<UserRoleScreen>
                     "Choose your role to access the right\nfeatures.",
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       height: 1.4,
                     ),
                   ),
@@ -178,7 +181,9 @@ class _UserRoleScreenState extends ConsumerState<UserRoleScreen>
         curve: Curves.easeInOut,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.white.withOpacity(0.92),
+          color: isSelected
+              ? Colors.white
+              : Colors.white.withValues(alpha: 0.92),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected ? AppColors.primaryMid : Colors.transparent,
@@ -187,8 +192,8 @@ class _UserRoleScreenState extends ConsumerState<UserRoleScreen>
           boxShadow: [
             BoxShadow(
               color: isSelected
-                  ? AppColors.primaryMid.withOpacity(0.15)
-                  : Colors.black.withOpacity(0.05),
+                  ? AppColors.primaryMid.withValues(alpha: 0.15)
+                  : Colors.black.withValues(alpha: 0.05),
               blurRadius: isSelected ? 20 : 10,
               offset: const Offset(0, 6),
             ),
@@ -234,7 +239,7 @@ class _UserRoleScreenState extends ConsumerState<UserRoleScreen>
                     style: TextStyle(
                       fontSize: 12.5,
                       color: isSelected
-                          ? AppColors.primaryMid.withOpacity(0.8)
+                          ? AppColors.primaryMid.withValues(alpha: 0.8)
                           : Colors.grey.shade500,
                       height: 1.3,
                     ),
@@ -254,7 +259,10 @@ class _UserRoleScreenState extends ConsumerState<UserRoleScreen>
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                         gradient: LinearGradient(
-                          colors: [AppColors.primaryMid, AppColors.primaryLight],
+                          colors: [
+                            AppColors.primaryMid,
+                            AppColors.primaryLight,
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -284,4 +292,3 @@ class _UserRoleScreenState extends ConsumerState<UserRoleScreen>
     );
   }
 }
-

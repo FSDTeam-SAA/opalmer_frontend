@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../Home_Dashboard/notification.dart';
+import '../../notification/notification.dart';
 import 'class_details.dart';
 import 'add_class.dart';
 
@@ -52,7 +52,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const NotificationScreen(),
+                                    builder: (context) =>
+                                        const NotificationScreen(),
                                   ),
                                 );
                               },
@@ -129,10 +130,15 @@ class _ClassesScreenState extends State<ClassesScreen> {
         ),
       ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 80.0), // Extra padding for bottom navigation
+        padding: const EdgeInsets.only(
+          bottom: 80.0,
+        ), // Extra padding for bottom navigation
         child: GestureDetector(
           onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const AddClassScreen()));
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AddClassScreen()),
+            );
           },
           child: Container(
             width: 56,
@@ -141,18 +147,14 @@ class _ClassesScreenState extends State<ClassesScreen> {
               color: const Color(0xFF871DAD),
               shape: BoxShape.circle,
               boxShadow: [
-                 BoxShadow(
-                   color: Colors.black.withOpacity(0.2),
-                   blurRadius: 10,
-                   offset: const Offset(0, 4),
-                 ),
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
               ],
             ),
-            child: const Icon(
-              Icons.add,
-              color: Colors.white,
-              size: 32,
-            ),
+            child: const Icon(Icons.add, color: Colors.white, size: 32),
           ),
         ),
       ),
@@ -171,9 +173,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => const ClassDetailsScreen(),
-          ),
+          MaterialPageRoute(builder: (context) => const ClassDetailsScreen()),
         );
       },
       child: Container(
@@ -191,110 +191,130 @@ class _ClassesScreenState extends State<ClassesScreen> {
           ],
         ),
         child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Image.asset(
-                    'assets/images/classes/book_icon.png',
-                    width: 24,
-                    height: 24,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 14),
-              Text(
-                subject,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                  letterSpacing: 0.2,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              const Icon(Icons.calendar_today_outlined, color: Colors.white, size: 16),
-              const SizedBox(width: 6),
-              Text(
-                date,
-                style: const TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(width: 32),
-              const Icon(Icons.people_outline, color: Colors.white, size: 18),
-              const SizedBox(width: 6),
-              Text(
-                students,
-                style: const TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w500),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          IntrinsicHeight(
-            child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Attendance",
-                        style: TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w500),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        attendance,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Image.asset(
+                      'assets/images/classes/book_icon.png',
+                      width: 24,
+                      height: 24,
+                    ),
                   ),
                 ),
-                Container(
-                  width: 1,
-                  color: Colors.white.withOpacity(0.7),
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Performance",
-                        style: TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w500),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        performance,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
+                const SizedBox(width: 14),
+                Text(
+                  subject,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                    letterSpacing: 0.2,
                   ),
                 ),
               ],
             ),
-          ),
-        ],
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                const Icon(
+                  Icons.calendar_today_outlined,
+                  color: Colors.white,
+                  size: 16,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  date,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(width: 32),
+                const Icon(Icons.people_outline, color: Colors.white, size: 18),
+                const SizedBox(width: 6),
+                Text(
+                  students,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            IntrinsicHeight(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Attendance",
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          attendance,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: 1,
+                    color: Colors.white.withOpacity(0.7),
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                  ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Performance",
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          performance,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
