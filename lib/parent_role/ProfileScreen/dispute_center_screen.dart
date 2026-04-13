@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/parent_role/ProfileScreen/models/support_screen.dart';
 
-class DisputCenterScreen extends StatefulWidget {
-  const DisputCenterScreen({super.key});
+class ParentDisputeCenterScreen extends StatefulWidget {
+  const ParentDisputeCenterScreen({super.key});
 
   @override
-  State<DisputCenterScreen> createState() => _DisputCenterScreenState();
+  State<ParentDisputeCenterScreen> createState() =>
+      _ParentDisputeCenterScreenState();
 }
 
-class _DisputCenterScreenState extends State<DisputCenterScreen> {
+class _ParentDisputeCenterScreenState extends State<ParentDisputeCenterScreen> {
   // Track which FAQ is currently expanded. -1 means none.
   int _expandedIndex = 0;
 
