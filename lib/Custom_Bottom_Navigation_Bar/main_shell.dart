@@ -4,7 +4,7 @@ import 'package:opalmer_education/chat/models/chat_role.dart';
 import 'package:opalmer_education/chat/screens/chat_dashboard.dart';
 import 'package:opalmer_education/teacher_role/Home_Dashboard/home_dashboard.dart';
 import 'package:opalmer_education/teacher_role/Classes_Screen/classes_screen.dart';
-import 'package:opalmer_education/profile_screen/profile.dart';
+import 'package:opalmer_education/teacher_role/profile_screen/profile.dart';
 import 'package:opalmer_education/teacher_role/Quiz_Screen/grading_tool.dart';
 
 class MainShell extends StatefulWidget {

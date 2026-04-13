@@ -6,7 +6,7 @@ import 'terms_condition.dart';
 import 'disput_center.dart';
 import 'block_list.dart';
 import 'language.dart';
-import '../authentication_screen/two_factor.dart';
+import '../../authentication_screen/two_factor.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);

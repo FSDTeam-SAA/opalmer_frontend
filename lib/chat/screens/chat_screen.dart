@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:opalmer_education/profile_screen/language.dart';
+import 'package:opalmer_education/teacher_role/profile_screen/language.dart';
 
 import 'block_user.dart';
 import 'call.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/chat/screens/call.dart';
-import 'package:opalmer_education/profile_screen/language.dart';
+import 'package:opalmer_education/teacher_role/profile_screen/language.dart';
 
 class SupportScreen extends StatefulWidget {
   const SupportScreen({Key? key}) : super(key: key);
