@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:opalmer_education/chat/models/chat_role.dart';
+import 'package:opalmer_education/chat/screens/chat_dashboard.dart';
 import 'package:opalmer_education/parent_role/parent_bottom_navigation_bar.dart';
 import 'package:opalmer_education/parent_role/ParentHomeDashboard/parent_home_dashboard.dart';
 import 'package:opalmer_education/parent_role/ChildsProfilesScreen/childs_profiles_screen.dart';
 import 'package:opalmer_education/parent_role/ProfileScreen/parent_profile_screen.dart';
 
 class ParentMainShell extends StatefulWidget {
-  const ParentMainShell({Key? key}) : super(key: key);
+  const ParentMainShell({super.key});
 
   @override
   State<ParentMainShell> createState() => _ParentMainShellState();
@@ -19,7 +21,7 @@ class _ParentMainShellState extends State<ParentMainShell> {
     final List<Widget> pages = [
       const ParentHomeDashboard(),
       const ChildsProfilesScreen(),
-      const _PlaceholderPage(title: "Messages"),
+      const ChatDashboard(role: ChatRole.parent),
       const ParentProfileScreen(),
     ];
 
@@ -32,44 +34,6 @@ class _ParentMainShellState extends State<ParentMainShell> {
             _currentIndex = index;
           });
         },
-      ),
-    );
-  }
-}
-
-class _PlaceholderPage extends StatelessWidget {
-  final String title;
-  const _PlaceholderPage({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.construction_rounded,
-              size: 64,
-              color: const Color(0xFF871DAD).withOpacity(0.3),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF333333),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Coming Soon",
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
-            ),
-          ],
-        ),
       ),
     );
   }

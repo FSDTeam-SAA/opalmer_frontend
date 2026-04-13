@@ -4,10 +4,7 @@ import 'package:opalmer_education/profile_screen/language.dart';
 class GroupChatScreen extends StatefulWidget {
   final String groupName;
 
-  const GroupChatScreen({
-    Key? key,
-    required this.groupName,
-  }) : super(key: key);
+  const GroupChatScreen({super.key, required this.groupName});
 
   @override
   State<GroupChatScreen> createState() => _GroupChatScreenState();
@@ -15,6 +12,12 @@ class GroupChatScreen extends StatefulWidget {
 
 class _GroupChatScreenState extends State<GroupChatScreen> {
   final TextEditingController _messageController = TextEditingController();
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +41,11 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   color: Color(0xFF871DAD),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                child: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
             ),
           ),
@@ -57,7 +64,12 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
             child: Center(
               child: GestureDetector(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const LanguageScreen()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LanguageScreen(),
+                    ),
+                  );
                 },
                 child: Container(
                   width: 40,
@@ -66,7 +78,11 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     color: Color(0xFF871DAD),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.translate, color: Colors.white, size: 20),
+                  child: const Icon(
+                    Icons.translate,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
               ),
             ),
@@ -86,7 +102,11 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   isMe: false,
                   imageUrl: "https://i.pravatar.cc/150?u=sarah",
                 ),
-                _buildMessage(text: "He skips homework sometimes.", time: "17:47", isMe: true),
+                _buildMessage(
+                  text: "He skips homework sometimes.",
+                  time: "17:47",
+                  isMe: true,
+                ),
                 _buildMessage(
                   text: "Science is going well.",
                   time: "17:47",
@@ -99,7 +119,11 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   isMe: false,
                   imageUrl: "https://i.pravatar.cc/150?u=parent1",
                 ),
-                _buildMessage(text: "Short quizzes, fun learning. I'll share resources.", time: "17:47", isMe: true),
+                _buildMessage(
+                  text: "Short quizzes, fun learning. I'll share resources.",
+                  time: "17:47",
+                  isMe: true,
+                ),
                 _buildMessage(
                   text: "Thank you very much.",
                   time: "17:47",
@@ -129,7 +153,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -139,10 +163,19 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                 controller: _messageController,
                 decoration: InputDecoration(
                   hintText: "Type a message",
-                  hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 15),
+                  hintStyle: TextStyle(
+                    color: Colors.grey.shade400,
+                    fontSize: 15,
+                  ),
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                  suffixIcon: const Icon(Icons.camera_alt, color: Color(0xFF871DAD)),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
+                  suffixIcon: const Icon(
+                    Icons.camera_alt,
+                    color: Color(0xFF871DAD),
+                  ),
                 ),
               ),
             ),
@@ -173,21 +206,30 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
-        crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: isMe
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            mainAxisAlignment: isMe
+                ? MainAxisAlignment.end
+                : MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               if (!isMe && imageUrl != null) ...[
-                CircleAvatar(radius: 20, backgroundImage: NetworkImage(imageUrl)),
+                CircleAvatar(
+                  radius: 20,
+                  backgroundImage: NetworkImage(imageUrl),
+                ),
                 const SizedBox(width: 8),
               ],
               Flexible(
                 child: CustomPaint(
                   painter: _UnifiedBubblePainter(
                     isMe: isMe,
-                    color: isMe ? const Color(0xFFF1F0F0) : const Color(0xFF871DAD),
+                    color: isMe
+                        ? const Color(0xFFF1F0F0)
+                        : const Color(0xFF871DAD),
                   ),
                   child: Container(
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
@@ -199,7 +241,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                           text,
                           style: TextStyle(
                             fontSize: 15,
-                            color: isMe ? const Color(0xFF222222) : Colors.white,
+                            color: isMe
+                                ? const Color(0xFF222222)
+                                : Colors.white,
                             height: 1.4,
                           ),
                         ),
@@ -211,12 +255,18 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                               time,
                               style: TextStyle(
                                 fontSize: 10,
-                                color: isMe ? Colors.grey.shade400 : Colors.white70,
+                                color: isMe
+                                    ? Colors.grey.shade400
+                                    : Colors.white70,
                               ),
                             ),
                             if (isMe) ...[
                               const SizedBox(width: 4),
-                              const Icon(Icons.done_all, size: 14, color: Color(0xFF4FA0F3)),
+                              const Icon(
+                                Icons.done_all,
+                                size: 14,
+                                color: Color(0xFF4FA0F3),
+                              ),
                             ],
                           ],
                         ),
@@ -233,16 +283,29 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               padding: const EdgeInsets.only(left: 48), // Align with bubble
               child: GestureDetector(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const LanguageScreen()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LanguageScreen(),
+                    ),
+                  );
                 },
                 child: Row(
                   children: [
                     const Text(
                       "Translate",
-                      style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     const SizedBox(width: 8),
-                    Icon(Icons.refresh, size: 16, color: const Color(0xFF871DAD).withOpacity(0.7)),
+                    Icon(
+                      Icons.refresh,
+                      size: 16,
+                      color: const Color(0xFF871DAD).withValues(alpha: 0.7),
+                    ),
                   ],
                 ),
               ),

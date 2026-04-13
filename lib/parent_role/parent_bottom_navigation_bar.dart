@@ -5,10 +5,10 @@ class ParentBottomNavigationBar extends StatelessWidget {
   final ValueChanged<int> onTap;
 
   const ParentBottomNavigationBar({
-    Key? key,
+    super.key,
     required this.currentIndex,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   static const String _iconPath = 'assets/images/bottom_navigation_bar_icon';
   static const Color _activeColor = Color(0xFF871DAD);

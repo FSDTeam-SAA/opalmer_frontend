@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CallHistoryScreen extends StatelessWidget {
-  const CallHistoryScreen({Key? key}) : super(key: key);
+  const CallHistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +23,11 @@ class CallHistoryScreen extends StatelessWidget {
                   color: Color(0xFF871DAD),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                child: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
             ),
           ),
@@ -40,14 +44,15 @@ class CallHistoryScreen extends StatelessWidget {
       body: ListView.separated(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         itemCount: 15, // Mock data count
-        separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFF5F5F5)),
+        separatorBuilder: (context, index) =>
+            const Divider(height: 1, color: Color(0xFFF5F5F5)),
         itemBuilder: (context, index) {
           final isIncoming = index % 2 == 0;
           return _buildCallItem(
             name: "Sarah Michelle",
             date: "06/03/2025",
             isIncoming: isIncoming,
-            imageUrl: "https://i.pravatar.cc/150?u=sarah${index}",
+            imageUrl: "https://i.pravatar.cc/150?u=sarah$index",
           );
         },
       ),
@@ -64,10 +69,7 @@ class CallHistoryScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 28,
-            backgroundImage: NetworkImage(imageUrl),
-          ),
+          CircleAvatar(radius: 28, backgroundImage: NetworkImage(imageUrl)),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -87,7 +89,9 @@ class CallHistoryScreen extends StatelessWidget {
                     Icon(
                       isIncoming ? Icons.south_west : Icons.north_east,
                       size: 14,
-                      color: isIncoming ? const Color(0xFF4CAF50) : const Color(0xFFEA4335),
+                      color: isIncoming
+                          ? const Color(0xFF4CAF50)
+                          : const Color(0xFFEA4335),
                     ),
                     const SizedBox(width: 6),
                     Text(

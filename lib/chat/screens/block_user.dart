@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class BlockUserScreen extends StatefulWidget {
   final String userName;
 
-  const BlockUserScreen({Key? key, required this.userName}) : super(key: key);
+  const BlockUserScreen({super.key, required this.userName});
 
   @override
   State<BlockUserScreen> createState() => _BlockUserScreenState();
@@ -12,6 +12,12 @@ class BlockUserScreen extends StatefulWidget {
 class _BlockUserScreenState extends State<BlockUserScreen> {
   String _selectedReason = "Other";
   final TextEditingController _reasonController = TextEditingController();
+
+  @override
+  void dispose() {
+    _reasonController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,14 +39,22 @@ class _BlockUserScreenState extends State<BlockUserScreen> {
                   color: Color(0xFF871DAD),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                child: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
             ),
           ),
         ),
         title: const Text(
           "Block",
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
         ),
       ),
       body: SingleChildScrollView(
@@ -50,12 +64,20 @@ class _BlockUserScreenState extends State<BlockUserScreen> {
           children: [
             Text(
               "The ${widget.userName} will not be able to message or call you anymore.",
-              style: TextStyle(fontSize: 16, color: Colors.grey.shade600, height: 1.5),
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey.shade600,
+                height: 1.5,
+              ),
             ),
             const SizedBox(height: 32),
             const Text(
               "Reason For Blocking",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF222222)),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF222222),
+              ),
             ),
             const SizedBox(height: 16),
             _buildRadioOption("Harassment"),
@@ -65,7 +87,11 @@ class _BlockUserScreenState extends State<BlockUserScreen> {
             const SizedBox(height: 32),
             const Text(
               "Reason( Optional)",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF222222)),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF222222),
+              ),
             ),
             const SizedBox(height: 16),
             Container(
@@ -92,12 +118,18 @@ class _BlockUserScreenState extends State<BlockUserScreen> {
                 onPressed: () {},
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF871DAD),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 0,
                 ),
                 child: const Text(
                   "BLOCK",
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -127,7 +159,10 @@ class _BlockUserScreenState extends State<BlockUserScreen> {
                       child: Container(
                         width: 10,
                         height: 10,
-                        decoration: const BoxDecoration(color: Color(0xFF871DAD), shape: BoxShape.circle),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF871DAD),
+                          shape: BoxShape.circle,
+                        ),
                       ),
                     )
                   : null,
@@ -135,7 +170,11 @@ class _BlockUserScreenState extends State<BlockUserScreen> {
             const SizedBox(width: 12),
             Text(
               title,
-              style: TextStyle(fontSize: 16, color: Colors.grey.shade600, fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal),
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey.shade600,
+                fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+              ),
             ),
           ],
         ),

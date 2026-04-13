@@ -4,11 +4,7 @@ class CallScreen extends StatefulWidget {
   final String name;
   final String imageUrl;
 
-  const CallScreen({
-    Key? key,
-    required this.name,
-    required this.imageUrl,
-  }) : super(key: key);
+  const CallScreen({super.key, required this.name, required this.imageUrl});
 
   @override
   State<CallScreen> createState() => _CallScreenState();
@@ -53,27 +49,27 @@ class _CallScreenState extends State<CallScreen> {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            
+
             const Spacer(flex: 2),
-            
+
             // Central Avatar
             Container(
               width: 180,
               height: 180,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white.withOpacity(0.1), width: 8),
-              ),
-              child: ClipOval(
-                child: Image.network(
-                  widget.imageUrl,
-                  fit: BoxFit.cover,
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  width: 8,
                 ),
               ),
+              child: ClipOval(
+                child: Image.network(widget.imageUrl, fit: BoxFit.cover),
+              ),
             ),
-            
+
             const Spacer(flex: 3),
-            
+
             // Bottom Controls
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -107,7 +103,12 @@ class _CallScreenState extends State<CallScreen> {
         shape: BoxShape.circle,
       ),
       child: Center(
-        child: Image.asset(assetPath, width: 24, height: 24, fit: BoxFit.contain),
+        child: Image.asset(
+          assetPath,
+          width: 24,
+          height: 24,
+          fit: BoxFit.contain,
+        ),
       ),
     );
   }
@@ -123,7 +124,12 @@ class _CallScreenState extends State<CallScreen> {
           shape: BoxShape.circle,
         ),
         child: Center(
-          child: Image.asset('assets/images/call/end_call.png', width: 28, height: 28, fit: BoxFit.contain),
+          child: Image.asset(
+            'assets/images/call/end_call.png',
+            width: 28,
+            height: 28,
+            fit: BoxFit.contain,
+          ),
         ),
       ),
     );

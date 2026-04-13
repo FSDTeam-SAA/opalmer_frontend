@@ -1,19 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:opalmer_education/teacher_role/Chat_Screen/send_to.dart';
-import 'package:opalmer_education/teacher_role/Chat_Screen/chat_screen.dart';
-import 'package:opalmer_education/teacher_role/Chat_Screen/group_call.dart';
-import 'package:opalmer_education/teacher_role/Chat_Screen/call_history.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/notification/notification.dart';
 
-class ChatDashboard extends StatefulWidget {
+import '../models/chat_role.dart';
+import '../models/chat_session_model.dart';
+import '../providers/chat_provider.dart';
+import 'call_history.dart';
+import 'chat_screen.dart';
+import 'group_call.dart';
+import 'send_to.dart';
+
+class ChatDashboard extends ConsumerStatefulWidget {
   final int initialTab;
-  const ChatDashboard({Key? key, this.initialTab = 0}) : super(key: key);
+  final ChatRole role;
+
+  const ChatDashboard({
+    super.key,
+    this.initialTab = 0,
+    this.role = ChatRole.teacher,
+  });
 
   @override
-  State<ChatDashboard> createState() => _ChatDashboardState();
+  ConsumerState<ChatDashboard> createState() => _ChatDashboardState();
 }
 
-class _ChatDashboardState extends State<ChatDashboard> {
+class _ChatDashboardState extends ConsumerState<ChatDashboard> {
   late int _selectedTab;
   int? _openedIndex;
 
@@ -40,27 +51,32 @@ class _ChatDashboardState extends State<ChatDashboard> {
       body: Stack(
         children: [
           _buildContent(),
-          Positioned(
-            bottom: 24,
-            right: 24,
-            child: FloatingActionButton(
-              heroTag: 'chat_fab',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SendToScreen()),
-                );
-              },
-              backgroundColor: const Color(0xFF871DAD),
-              child: const Icon(Icons.add, color: Colors.white, size: 32),
+          if (widget.role.canComposeNewChat)
+            Positioned(
+              bottom: 24,
+              right: 24,
+              child: FloatingActionButton(
+                heroTag: 'chat_fab_${widget.role.name}',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SendToScreen(role: widget.role),
+                    ),
+                  );
+                },
+                backgroundColor: const Color(0xFF871DAD),
+                child: const Icon(Icons.add, color: Colors.white, size: 32),
+              ),
             ),
-          ),
         ],
       ),
     );
   }
 
   Widget _buildContent() {
+    final chatState = ref.watch(chatProvider(widget.role));
+
     return Column(
       children: [
         // Header
@@ -165,7 +181,7 @@ class _ChatDashboardState extends State<ChatDashboard> {
               children: [
                 Expanded(child: _buildTabItem("Chat", 0)),
                 Expanded(child: _buildTabItem("Draft", 1)),
-                Expanded(child: _buildTabItem("Group", 2)),
+                Expanded(child: _buildTabItem(widget.role.groupTabLabel, 2)),
               ],
             ),
           ),
@@ -177,7 +193,11 @@ class _ChatDashboardState extends State<ChatDashboard> {
         Expanded(
           child: IndexedStack(
             index: _selectedTab,
-            children: [_buildChatList(), _buildDraftList(), _buildGroupList()],
+            children: [
+              _buildChatList(chatState.chats),
+              _buildDraftList(chatState.drafts),
+              _buildGroupList(chatState.groups),
+            ],
           ),
         ),
       ],
@@ -207,153 +227,98 @@ class _ChatDashboardState extends State<ChatDashboard> {
     );
   }
 
-  Widget _buildDraftList() {
+  Widget _buildDraftList(List<ChatSessionModel> sessions) {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      itemCount: 8,
-      itemBuilder: (context, index) => _SlidableListItem(
-        index: index,
-        tab: 1,
-        openedIndex: _openedIndex,
-        onSlide: _handleSlide,
-        title: "Draft Message",
-        subtitle: "Actually I wanted to check with you...",
-        date: "11/19/19",
-        icon: Icons.description_outlined,
-        isGroupOrDraft: true,
-        actions: [
-          _SlidableAction(
-            color: const Color(0xFFEA4335),
-            icon: Icons.delete_outline,
-            label: "Delete",
-          ),
-        ],
-      ),
+      itemCount: sessions.length,
+      itemBuilder: (context, index) =>
+          _buildSessionListItem(sessions[index], index, 1),
     );
   }
 
-  Widget _buildGroupList() {
+  Widget _buildGroupList(List<ChatSessionModel> sessions) {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      itemCount: 8,
-      itemBuilder: (context, index) => _SlidableListItem(
-        index: index,
-        tab: 2,
-        openedIndex: _openedIndex,
-        onSlide: _handleSlide,
-        title: "Grade ${index + 1} - Science",
-        subtitle: "Actually I wanted to check with you...",
-        date: "11/19/19",
-        icon: Icons.school_outlined,
-        isGroupOrDraft: true,
-        actions: [
-          _SlidableAction(
-            color: const Color(0xFFEA4335),
-            icon: Icons.delete_outline,
-            label: "Delete",
-          ),
-        ],
-      ),
+      itemCount: sessions.length,
+      itemBuilder: (context, index) =>
+          _buildSessionListItem(sessions[index], index, 2),
     );
   }
 
-  Widget _buildChatList() {
-    return ListView(
+  Widget _buildChatList(List<ChatSessionModel> sessions) {
+    return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      children: [
-        _SlidableListItem(
-          index: 0,
-          tab: 0,
-          openedIndex: _openedIndex,
-          onSlide: _handleSlide,
-          title: "Randolph",
-          subtitle: "2pm is awesome",
-          date: "11/19/19",
-          imageUrl: "https://i.pravatar.cc/150?u=randolph",
-          actions: [
-            _SlidableAction(
-              color: const Color(0xFFC4C4C4),
-              icon: Icons.more_horiz,
-              label: "More",
-            ),
-            _SlidableAction(
-              color: const Color(0xFFEA4335),
-              icon: Icons.delete_outline,
-              label: "Delete",
-            ),
-          ],
-        ),
-        _SlidableListItem(
-          index: 1,
-          tab: 0,
-          openedIndex: _openedIndex,
-          onSlide: _handleSlide,
-          title: "Sarah Michelle",
-          subtitle: "0:14",
-          date: "11/19/19",
-          imageUrl: "https://i.pravatar.cc/150?u=sarah",
-          statusIcon: Icons.mic_none_outlined,
-          actions: [
-            _SlidableAction(
-              color: const Color(0xFFC4C4C4),
-              icon: Icons.more_horiz,
-              label: "More",
-            ),
-            _SlidableAction(
-              color: const Color(0xFFEA4335),
-              icon: Icons.delete_outline,
-              label: "Delete",
-            ),
-          ],
-        ),
-        _SlidableListItem(
-          index: 2,
-          tab: 0,
-          openedIndex: _openedIndex,
-          onSlide: _handleSlide,
-          title: "Maximillian Jacobson",
-          subtitle: "Yes, 2pm is awesome",
-          date: "11/19/19",
-          imageUrl: "https://i.pravatar.cc/150?u=max",
-          showCheck: true,
-          actions: [
-            _SlidableAction(
-              color: const Color(0xFFC4C4C4),
-              icon: Icons.more_horiz,
-              label: "More",
-            ),
-            _SlidableAction(
-              color: const Color(0xFFEA4335),
-              icon: Icons.delete_outline,
-              label: "Delete",
-            ),
-          ],
-        ),
-        _SlidableListItem(
-          index: 3,
-          tab: 0,
-          openedIndex: _openedIndex,
-          onSlide: _handleSlide,
-          title: "Martha Carig",
-          subtitle: "Photo",
-          date: "11/19/19",
-          imageUrl: "https://i.pravatar.cc/150?u=martha",
-          statusIcon: Icons.camera_alt_outlined,
-          actions: [
-            _SlidableAction(
-              color: const Color(0xFFC4C4C4),
-              icon: Icons.more_horiz,
-              label: "More",
-            ),
-            _SlidableAction(
-              color: const Color(0xFFEA4335),
-              icon: Icons.delete_outline,
-              label: "Delete",
-            ),
-          ],
-        ),
-      ],
+      itemCount: sessions.length,
+      itemBuilder: (context, index) =>
+          _buildSessionListItem(sessions[index], index, 0),
     );
+  }
+
+  Widget _buildSessionListItem(ChatSessionModel session, int index, int tab) {
+    return _SlidableListItem(
+      index: index,
+      tab: tab,
+      openedIndex: _openedIndex,
+      onSlide: _handleSlide,
+      title: session.title,
+      subtitle: session.subtitle,
+      date: session.displayDate,
+      imageUrl: session.avatarUrl,
+      icon: _sessionIcon(session),
+      statusIcon: _previewIcon(session.previewType),
+      showCheck: session.showReadReceipt,
+      isGroupOrDraft: session.isGroupOrDraft,
+      actions: _actionsForSession(session),
+    );
+  }
+
+  List<_SlidableAction> _actionsForSession(ChatSessionModel session) {
+    if (session.type == ChatSessionType.direct) {
+      return [
+        _SlidableAction(
+          color: const Color(0xFFC4C4C4),
+          icon: Icons.more_horiz,
+          label: "More",
+        ),
+        _SlidableAction(
+          color: const Color(0xFFEA4335),
+          icon: Icons.delete_outline,
+          label: "Delete",
+        ),
+      ];
+    }
+
+    return [
+      _SlidableAction(
+        color: const Color(0xFFEA4335),
+        icon: Icons.delete_outline,
+        label: "Delete",
+      ),
+    ];
+  }
+
+  IconData _sessionIcon(ChatSessionModel session) {
+    switch (session.type) {
+      case ChatSessionType.draft:
+        return Icons.description_outlined;
+      case ChatSessionType.group:
+        return widget.role == ChatRole.parent
+            ? Icons.co_present_outlined
+            : Icons.school_outlined;
+      case ChatSessionType.direct:
+        return Icons.person_outline;
+    }
+  }
+
+  IconData? _previewIcon(MessagePreviewType previewType) {
+    switch (previewType) {
+      case MessagePreviewType.voice:
+        return Icons.mic_none_outlined;
+      case MessagePreviewType.photo:
+        return Icons.camera_alt_outlined;
+      case MessagePreviewType.text:
+        return null;
+    }
   }
 }
 
@@ -539,7 +504,7 @@ class _SlidableListItemState extends State<_SlidableListItem>
                         width: 56,
                         height: 56,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF871DAD).withOpacity(0.1),
+                          color: const Color(0xFF871DAD).withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(

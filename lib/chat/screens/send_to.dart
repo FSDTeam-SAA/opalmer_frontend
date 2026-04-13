@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:opalmer_education/teacher_role/Chat_Screen/compose_message.dart';
+
+import '../models/chat_role.dart';
+import 'compose_message.dart';
 
 class SendToScreen extends StatefulWidget {
-  const SendToScreen({Key? key}) : super(key: key);
+  final ChatRole role;
+
+  const SendToScreen({super.key, this.role = ChatRole.teacher});
 
   @override
   State<SendToScreen> createState() => _SendToScreenState();
@@ -10,18 +14,100 @@ class SendToScreen extends StatefulWidget {
 
 class _SendToScreenState extends State<SendToScreen> {
   final Set<int> _selectedIndices = {};
-  final List<Map<String, dynamic>> _frequentChats = [
-    {"name": "Sarah Michelle", "time": "11/19/19", "message": "0:14", "imageUrl": "https://i.pravatar.cc/150?u=sarah", "icon": Icons.mic_none_outlined},
-    {"name": "Grade 6 - Science", "time": "11/19/19", "message": "Actually I wanted to check with you...", "icon": Icons.school_outlined},
-    {"name": "Tabitha Potter", "time": "11/19/19", "message": "Actually I wanted to check with you...", "imageUrl": "https://i.pravatar.cc/150?u=tabitha"},
-  ];
 
-  final List<Map<String, dynamic>> _recentChats = [
-    {"name": "Grade 5 - Science", "time": "11/19/19", "message": "Actually I wanted to check with you...", "icon": Icons.school_outlined},
-    {"name": "Grade 3 - Science", "time": "11/19/19", "message": "Actually I wanted to check with you...", "icon": Icons.school_outlined},
-    {"name": "Kiron Doston", "time": "11/19/19", "message": "Ok, have a good day", "imageUrl": "https://i.pravatar.cc/150?u=kiron", "showCheck": true},
-    {"name": "Maximillian Jacobson", "time": "11/19/19", "message": "Actually I wanted to check with you...", "imageUrl": "https://i.pravatar.cc/150?u=max"},
-  ];
+  List<Map<String, dynamic>> get _frequentChats {
+    if (widget.role == ChatRole.parent) {
+      return [
+        {
+          "name": "Ms. Sarah Michelle",
+          "time": "11/19/19",
+          "message": "Science progress update",
+          "imageUrl": "https://i.pravatar.cc/150?u=sarah",
+        },
+        {
+          "name": "Subject Teachers - Science",
+          "time": "11/19/19",
+          "message": "Ask the science teaching team",
+          "icon": Icons.co_present_outlined,
+        },
+        {
+          "name": "Mr. Randolph",
+          "time": "11/19/19",
+          "message": "Math homework support",
+          "imageUrl": "https://i.pravatar.cc/150?u=randolph",
+        },
+      ];
+    }
+
+    return [
+      {
+        "name": "Sarah Michelle",
+        "time": "11/19/19",
+        "message": "0:14",
+        "imageUrl": "https://i.pravatar.cc/150?u=sarah",
+        "icon": Icons.mic_none_outlined,
+      },
+      {
+        "name": "Grade 6 - Science",
+        "time": "11/19/19",
+        "message": "Actually I wanted to check with you...",
+        "icon": Icons.school_outlined,
+      },
+      {
+        "name": "Tabitha Potter",
+        "time": "11/19/19",
+        "message": "Actually I wanted to check with you...",
+        "imageUrl": "https://i.pravatar.cc/150?u=tabitha",
+      },
+    ];
+  }
+
+  List<Map<String, dynamic>> get _recentChats {
+    if (widget.role == ChatRole.parent) {
+      return [
+        {
+          "name": "Subject Teachers - Math",
+          "time": "11/19/19",
+          "message": "Practice sheets are ready",
+          "icon": Icons.co_present_outlined,
+        },
+        {
+          "name": "Ms. Tabitha Potter",
+          "time": "11/19/19",
+          "message": "Reading notes for Mia",
+          "imageUrl": "https://i.pravatar.cc/150?u=tabitha",
+        },
+      ];
+    }
+
+    return [
+      {
+        "name": "Grade 5 - Science",
+        "time": "11/19/19",
+        "message": "Actually I wanted to check with you...",
+        "icon": Icons.school_outlined,
+      },
+      {
+        "name": "Grade 3 - Science",
+        "time": "11/19/19",
+        "message": "Actually I wanted to check with you...",
+        "icon": Icons.school_outlined,
+      },
+      {
+        "name": "Kiron Doston",
+        "time": "11/19/19",
+        "message": "Ok, have a good day",
+        "imageUrl": "https://i.pravatar.cc/150?u=kiron",
+        "showCheck": true,
+      },
+      {
+        "name": "Maximillian Jacobson",
+        "time": "11/19/19",
+        "message": "Actually I wanted to check with you...",
+        "imageUrl": "https://i.pravatar.cc/150?u=max",
+      },
+    ];
+  }
 
   void _toggleSelection(int id) {
     setState(() {
@@ -53,14 +139,22 @@ class _SendToScreenState extends State<SendToScreen> {
                   color: Color(0xFF871DAD),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                child: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
             ),
           ),
         ),
         title: const Text(
           "Send To",
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
         ),
       ),
       body: Column(
@@ -90,13 +184,27 @@ class _SendToScreenState extends State<SendToScreen> {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               children: [
-                const Text("Frequently Chat", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF222222))),
+                Text(
+                  widget.role.frequentSectionLabel,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF222222),
+                  ),
+                ),
                 const SizedBox(height: 16),
                 ...List.generate(_frequentChats.length, (index) {
                   return _buildListTile(index, _frequentChats[index]);
                 }),
                 const SizedBox(height: 16),
-                const Text("Recent Chats", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF222222))),
+                Text(
+                  widget.role.recentSectionLabel,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF222222),
+                  ),
+                ),
                 const SizedBox(height: 16),
                 ...List.generate(_recentChats.length, (index) {
                   return _buildListTile(index + 100, _recentChats[index]);
@@ -128,7 +236,10 @@ class _SendToScreenState extends State<SendToScreen> {
                             MaterialPageRoute(
                               builder: (context) => ComposeMessageScreen(
                                 name: selectedChat['name'],
-                                imageUrl: selectedChat['imageUrl'] ?? "https://i.pravatar.cc/150?u=${selectedChat['name'].hashCode}",
+                                imageUrl:
+                                    selectedChat['imageUrl'] ??
+                                    "https://i.pravatar.cc/150?u=${selectedChat['name'].hashCode}",
+                                role: widget.role,
                               ),
                             ),
                           );
@@ -136,12 +247,18 @@ class _SendToScreenState extends State<SendToScreen> {
                       },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF871DAD),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 0,
                 ),
                 child: Text(
                   "(${_selectedIndices.length}) SEND",
-                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -164,16 +281,23 @@ class _SendToScreenState extends State<SendToScreen> {
             Stack(
               children: [
                 if (chat['imageUrl'] != null)
-                  CircleAvatar(radius: 28, backgroundImage: NetworkImage(chat['imageUrl']))
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundImage: NetworkImage(chat['imageUrl']),
+                  )
                 else
                   Container(
                     width: 56,
                     height: 56,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF871DAD).withOpacity(0.1),
+                      color: const Color(0xFF871DAD).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(chat['icon'], color: const Color(0xFF871DAD), size: 28),
+                    child: Icon(
+                      chat['icon'],
+                      color: const Color(0xFF871DAD),
+                      size: 28,
+                    ),
                   ),
                 if (isSelected)
                   Positioned(
@@ -183,10 +307,12 @@ class _SendToScreenState extends State<SendToScreen> {
                       width: 56,
                       height: 56,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF871DAD).withOpacity(0.4),
+                        color: const Color(0xFF871DAD).withValues(alpha: 0.4),
                         shape: BoxShape.circle,
                       ),
-                      child: const Center(child: Icon(Icons.check, color: Colors.white, size: 24)),
+                      child: const Center(
+                        child: Icon(Icons.check, color: Colors.white, size: 24),
+                      ),
                     ),
                   ),
               ],
@@ -199,25 +325,49 @@ class _SendToScreenState extends State<SendToScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(chat['name'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF222222))),
-                      Text(chat['time'], style: TextStyle(color: Colors.grey.shade400, fontSize: 12)),
+                      Text(
+                        chat['name'],
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Color(0xFF222222),
+                        ),
+                      ),
+                      Text(
+                        chat['time'],
+                        style: TextStyle(
+                          color: Colors.grey.shade400,
+                          fontSize: 12,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
                       if (chat['icon'] != null && chat['imageUrl'] != null) ...[
-                        Icon(chat['icon'], size: 16, color: const Color(0xFF4CAF50)),
+                        Icon(
+                          chat['icon'],
+                          size: 16,
+                          color: const Color(0xFF4CAF50),
+                        ),
                         const SizedBox(width: 4),
                       ],
                       if (chat['showCheck'] == true) ...[
-                        const Icon(Icons.done_all, size: 16, color: Color(0xFF4FA0F3)),
+                        const Icon(
+                          Icons.done_all,
+                          size: 16,
+                          color: Color(0xFF4FA0F3),
+                        ),
                         const SizedBox(width: 4),
                       ],
                       Expanded(
                         child: Text(
                           chat['message'],
-                          style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
+                          style: TextStyle(
+                            color: Colors.grey.shade500,
+                            fontSize: 14,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
