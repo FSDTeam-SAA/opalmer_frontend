@@ -7,11 +7,11 @@ class LearningTipCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   const LearningTipCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.imageUrl,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,7 @@ class LearningTipCard extends StatelessWidget {
           border: Border.all(color: Colors.grey.shade200, width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: Colors.black.withValues(alpha: 0.02),
               offset: const Offset(0, 4),
               blurRadius: 6,
             ),

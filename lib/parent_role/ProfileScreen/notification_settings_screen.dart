@@ -5,10 +5,12 @@ class NotificationSettingsScreen extends StatefulWidget {
   const NotificationSettingsScreen({super.key});
 
   @override
-  State<NotificationSettingsScreen> createState() => _NotificationSettingsScreenState();
+  State<NotificationSettingsScreen> createState() =>
+      _NotificationSettingsScreenState();
 }
 
-class _NotificationSettingsScreenState extends State<NotificationSettingsScreen> {
+class _NotificationSettingsScreenState
+    extends State<NotificationSettingsScreen> {
   bool _generalNotifications = true;
   bool _sound = false;
   bool _vibrate = true;
@@ -35,7 +37,11 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                         color: AppColors.primaryMid,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+                      child: const Icon(
+                        Icons.arrow_back,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -61,7 +67,8 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                   _buildToggleTile(
                     title: "General Notifications",
                     value: _generalNotifications,
-                    onChanged: (val) => setState(() => _generalNotifications = val),
+                    onChanged: (val) =>
+                        setState(() => _generalNotifications = val),
                   ),
                   const Divider(height: 1, color: Color(0xFFF0F0F0)),
                   _buildToggleTile(
@@ -111,7 +118,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
           Switch.adaptive(
             value: value,
             onChanged: onChanged,
-            activeColor: Colors.white,
+            activeThumbColor: Colors.white,
             activeTrackColor: AppColors.primaryMid,
             inactiveTrackColor: const Color(0xFFD9D9D9),
           ),

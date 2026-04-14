@@ -6,10 +6,12 @@ class StudentQuizQuestionsScreen extends StatefulWidget {
   const StudentQuizQuestionsScreen({Key? key}) : super(key: key);
 
   @override
-  State<StudentQuizQuestionsScreen> createState() => _StudentQuizQuestionsScreenState();
+  State<StudentQuizQuestionsScreen> createState() =>
+      _StudentQuizQuestionsScreenState();
 }
 
-class _StudentQuizQuestionsScreenState extends State<StudentQuizQuestionsScreen> {
+class _StudentQuizQuestionsScreenState
+    extends State<StudentQuizQuestionsScreen> {
   final Map<int, int> _answers = {};
 
   @override
@@ -30,16 +32,18 @@ class _StudentQuizQuestionsScreenState extends State<StudentQuizQuestionsScreen>
                   "Convert the fraction to a decimal: 3/4",
                   ["0.25", "0.5", "0.75", "1.25"],
                 ),
-                _buildQuestionCard(
-                  2,
-                  "Which of these is the smallest?",
-                  ["1/2", "0.4", "3/5", "0.75"],
-                ),
-                _buildQuestionCard(
-                  3,
-                  "What is 15% of 200?",
-                  ["20", "25", "30", "35"],
-                ),
+                _buildQuestionCard(2, "Which of these is the smallest?", [
+                  "1/2",
+                  "0.4",
+                  "3/5",
+                  "0.75",
+                ]),
+                _buildQuestionCard(3, "What is 15% of 200?", [
+                  "20",
+                  "25",
+                  "30",
+                  "35",
+                ]),
               ],
             ),
           ),
@@ -60,15 +64,26 @@ class _StudentQuizQuestionsScreenState extends State<StudentQuizQuestionsScreen>
             onTap: () => Navigator.pop(context),
             child: Container(
               padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(color: AppColors.primaryMid, shape: BoxShape.circle),
-              child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+              decoration: const BoxDecoration(
+                color: AppColors.primaryMid,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
         ),
       ),
       title: const Text(
         "Questions",
-        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+        style: TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+          color: AppColors.textPrimary,
+        ),
       ),
     );
   }
@@ -96,8 +111,22 @@ class _StudentQuizQuestionsScreenState extends State<StudentQuizQuestionsScreen>
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
-        Text(value, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ],
     );
   }
@@ -109,14 +138,25 @@ class _StudentQuizQuestionsScreenState extends State<StudentQuizQuestionsScreen>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             "$number. $question",
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary, height: 1.4),
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+              height: 1.4,
+            ),
           ),
           const SizedBox(height: 16),
           ...options.asMap().entries.map((entry) {
@@ -135,12 +175,39 @@ class _StudentQuizQuestionsScreenState extends State<StudentQuizQuestionsScreen>
                       height: 22,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: isSelected ? AppColors.primaryMid : Colors.grey.shade300, width: 2),
+                        border: Border.all(
+                          color: isSelected
+                              ? AppColors.primaryMid
+                              : Colors.grey.shade300,
+                          width: 2,
+                        ),
                       ),
-                      child: isSelected ? Center(child: Container(width: 12, height: 12, decoration: const BoxDecoration(color: AppColors.primaryMid, shape: BoxShape.circle))) : null,
+                      child: isSelected
+                          ? Center(
+                              child: Container(
+                                width: 12,
+                                height: 12,
+                                decoration: const BoxDecoration(
+                                  color: AppColors.primaryMid,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            )
+                          : null,
                     ),
                     const SizedBox(width: 12),
-                    Text(text, style: TextStyle(fontSize: 15, color: isSelected ? AppColors.primaryMid : AppColors.textPrimary, fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal)),
+                    Text(
+                      text,
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: isSelected
+                            ? AppColors.primaryMid
+                            : AppColors.textPrimary,
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.normal,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -154,17 +221,38 @@ class _StudentQuizQuestionsScreenState extends State<StudentQuizQuestionsScreen>
   Widget _buildFooter(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-      decoration: BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))]),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
       child: SizedBox(
         width: double.infinity,
         height: 56,
         child: ElevatedButton(
-          onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const StudentQuizResultScreen())),
+          onPressed: () => Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const StudentQuizResultScreen()),
+          ),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryMid,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
-          child: const Text("COMPLETE QUIZ", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+          child: const Text(
+            "COMPLETE QUIZ",
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
         ),
       ),
     );

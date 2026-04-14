@@ -4,7 +4,8 @@ class StudentAttendanceScreen extends StatefulWidget {
   const StudentAttendanceScreen({Key? key}) : super(key: key);
 
   @override
-  State<StudentAttendanceScreen> createState() => _StudentAttendanceScreenState();
+  State<StudentAttendanceScreen> createState() =>
+      _StudentAttendanceScreenState();
 }
 
 class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
@@ -29,10 +30,7 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
                         color: Color(0xFF871DAD),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.white,
-                      ),
+                      child: const Icon(Icons.arrow_back, color: Colors.white),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -47,7 +45,7 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 16),
 
             // ── Table Area ──
@@ -58,10 +56,12 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                    border: Border.all(
+                      color: Colors.grey.withValues(alpha: 0.1),
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -71,7 +71,10 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
                     children: [
                       // Table Header
                       Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 16,
+                          horizontal: 16,
+                        ),
                         decoration: const BoxDecoration(
                           color: Color(0xFFFEBD43),
                           borderRadius: BorderRadius.only(
@@ -128,26 +131,78 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
                           ],
                         ),
                       ),
-                      
+
                       // Table Body
                       Expanded(
                         child: ListView(
                           padding: const EdgeInsets.only(top: 8, bottom: 20),
                           children: [
-                            _buildRow("06-03-25", "Mia Johnson", _Status.present),
-                            _buildRow("06-03-25", "Mia Johnson", _Status.absent),
+                            _buildRow(
+                              "06-03-25",
+                              "Mia Johnson",
+                              _Status.present,
+                            ),
+                            _buildRow(
+                              "06-03-25",
+                              "Mia Johnson",
+                              _Status.absent,
+                            ),
                             _buildRow("06-03-25", "Mia Johnson", _Status.tardy),
-                            _buildRow("06-03-25", "Mia Johnson", _Status.present),
-                            _buildRow("06-03-25", "Mia Johnson", _Status.present),
-                            _buildRow("06-03-25", "Mia Johnson", _Status.present),
-                            _buildRow("06-03-25", "Mia Johnson", _Status.present),
-                            _buildRow("06-03-25", "Mia Johnson", _Status.absent),
-                            _buildRow("06-03-25", "Mia Johnson", _Status.present),
-                            _buildRow("06-03-25", "Mia Johnson", _Status.present),
-                            _buildRow("06-03-25", "Mia Johnson", _Status.present),
-                            _buildRow("06-03-25", "Mia Johnson", _Status.present),
-                            _buildRow("06-03-25", "Mia Johnson", _Status.present),
-                            _buildRow("06-03-25", "Mia Johnson", _Status.present),
+                            _buildRow(
+                              "06-03-25",
+                              "Mia Johnson",
+                              _Status.present,
+                            ),
+                            _buildRow(
+                              "06-03-25",
+                              "Mia Johnson",
+                              _Status.present,
+                            ),
+                            _buildRow(
+                              "06-03-25",
+                              "Mia Johnson",
+                              _Status.present,
+                            ),
+                            _buildRow(
+                              "06-03-25",
+                              "Mia Johnson",
+                              _Status.present,
+                            ),
+                            _buildRow(
+                              "06-03-25",
+                              "Mia Johnson",
+                              _Status.absent,
+                            ),
+                            _buildRow(
+                              "06-03-25",
+                              "Mia Johnson",
+                              _Status.present,
+                            ),
+                            _buildRow(
+                              "06-03-25",
+                              "Mia Johnson",
+                              _Status.present,
+                            ),
+                            _buildRow(
+                              "06-03-25",
+                              "Mia Johnson",
+                              _Status.present,
+                            ),
+                            _buildRow(
+                              "06-03-25",
+                              "Mia Johnson",
+                              _Status.present,
+                            ),
+                            _buildRow(
+                              "06-03-25",
+                              "Mia Johnson",
+                              _Status.present,
+                            ),
+                            _buildRow(
+                              "06-03-25",
+                              "Mia Johnson",
+                              _Status.present,
+                            ),
                           ],
                         ),
                       ),
@@ -171,27 +226,18 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
             width: 90,
             child: Text(
               date,
-              style: const TextStyle(
-                color: Color(0xFF444444),
-                fontSize: 13,
-              ),
+              style: const TextStyle(color: Color(0xFF444444), fontSize: 13),
             ),
           ),
           Expanded(
             child: Center(
               child: Text(
                 name,
-                style: const TextStyle(
-                  color: Color(0xFF444444),
-                  fontSize: 14,
-                ),
+                style: const TextStyle(color: Color(0xFF444444), fontSize: 14),
               ),
             ),
           ),
-          SizedBox(
-            width: 86,
-            child: _buildStatusDropdown(status),
-          ),
+          SizedBox(width: 86, child: _buildStatusDropdown(status)),
         ],
       ),
     );
@@ -237,11 +283,7 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
               fontSize: 12,
             ),
           ),
-          Icon(
-            Icons.keyboard_arrow_down,
-            color: textColor,
-            size: 16,
-          ),
+          Icon(Icons.keyboard_arrow_down, color: textColor, size: 16),
         ],
       ),
     );

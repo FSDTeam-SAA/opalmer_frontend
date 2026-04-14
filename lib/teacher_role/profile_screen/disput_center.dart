@@ -15,15 +15,18 @@ class _DisputCenterScreenState extends State<DisputCenterScreen> {
   final List<Map<String, String>> _faqs = [
     {
       "question": "Who is this app for?",
-      "answer": "Our platform is designed for schools, educators, students, and parents looking to improve communication, streamline",
+      "answer":
+          "Our platform is designed for schools, educators, students, and parents looking to improve communication, streamline",
     },
     {
       "question": "How do parents stay involved?",
-      "answer": "Parents can track academic progress and behavior in real-time.",
+      "answer":
+          "Parents can track academic progress and behavior in real-time.",
     },
     {
       "question": "Is the app mobile-friendly?",
-      "answer": "Yes, our app is fully optimized for both iOS and Android devices.",
+      "answer":
+          "Yes, our app is fully optimized for both iOS and Android devices.",
     },
     {
       "question": "How is data kept secure?",
@@ -31,7 +34,8 @@ class _DisputCenterScreenState extends State<DisputCenterScreen> {
     },
     {
       "question": "What kind of reports can be generated?",
-      "answer": "You can generate detailed academic, behavioral, and attendance reports.",
+      "answer":
+          "You can generate detailed academic, behavioral, and attendance reports.",
     },
     {
       "question": "How do we get started?",
@@ -67,10 +71,7 @@ class _DisputCenterScreenState extends State<DisputCenterScreen> {
                   color: Color(0xFF871DAD),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                ),
+                child: const Icon(Icons.arrow_back, color: Colors.white),
               ),
             ),
           ),
@@ -120,7 +121,7 @@ class _DisputCenterScreenState extends State<DisputCenterScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              
+
               // App Features Header
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24),
@@ -134,7 +135,7 @@ class _DisputCenterScreenState extends State<DisputCenterScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               // Horizontal Cards ListView
               SizedBox(
                 height: 130, // Increased height to prevent bottom overflow
@@ -143,20 +144,20 @@ class _DisputCenterScreenState extends State<DisputCenterScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   children: [
                     _buildFeatureCard(
-                      "Grading & Assessments", 
+                      "Grading & Assessments",
                       "Streamline evaluations with\ncustomizable grading tools and instant.",
                     ),
                     const SizedBox(width: 16),
                     _buildFeatureCard(
-                      "Swift Communication", 
+                      "Swift Communication",
                       "Experience fast, reliable messaging\n—right at your fingertips.",
                     ),
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // FAQs Header
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24),
@@ -170,7 +171,7 @@ class _DisputCenterScreenState extends State<DisputCenterScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              
+
               // FAQs List
               ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -201,7 +202,7 @@ class _DisputCenterScreenState extends State<DisputCenterScreen> {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -213,10 +214,7 @@ class _DisputCenterScreenState extends State<DisputCenterScreen> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(
-                width: 6,
-                color: const Color(0xFF871DAD),
-              ),
+              Container(width: 6, color: const Color(0xFF871DAD)),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -254,7 +252,7 @@ class _DisputCenterScreenState extends State<DisputCenterScreen> {
 
   Widget _buildFAQItem(int index, String question, String answer) {
     bool isExpanded = _expandedIndex == index;
-    
+
     return Column(
       children: [
         Theme(
@@ -288,7 +286,9 @@ class _DisputCenterScreenState extends State<DisputCenterScreen> {
                 border: Border.all(color: Colors.grey.shade400),
               ),
               child: Icon(
-                isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                isExpanded
+                    ? Icons.keyboard_arrow_up
+                    : Icons.keyboard_arrow_down,
                 color: const Color(0xFF871DAD),
                 size: 16,
               ),
@@ -308,10 +308,7 @@ class _DisputCenterScreenState extends State<DisputCenterScreen> {
             ],
           ),
         ),
-        Container(
-          height: 1,
-          color: Colors.grey.shade200,
-        ),
+        Container(height: 1, color: Colors.grey.shade200),
       ],
     );
   }

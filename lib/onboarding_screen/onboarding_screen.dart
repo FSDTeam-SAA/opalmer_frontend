@@ -4,7 +4,7 @@ import 'package:opalmer_education/core/widgets/primary_button.dart';
 import '../user_role_screen/user_role_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({Key? key}) : super(key: key);
+  const OnboardingScreen({super.key});
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();

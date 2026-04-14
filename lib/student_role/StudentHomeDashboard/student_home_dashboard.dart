@@ -68,7 +68,7 @@ class StudentHomeDashboard extends StatelessWidget {
                       "Your learning starts here.",
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                       ),
                     ),
                   ],
@@ -78,13 +78,15 @@ class StudentHomeDashboard extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const NotificationScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const NotificationScreen(),
+                      ),
                     );
                   },
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 1),
                     ),
@@ -122,7 +124,9 @@ class StudentHomeDashboard extends StatelessWidget {
               if (title == "Subjects") {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const SubjectsScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const SubjectsScreen(),
+                  ),
                 );
               }
             },
@@ -155,7 +159,6 @@ class StudentHomeDashboard extends StatelessWidget {
     );
   }
 
-
   Widget _buildQuizzesList() {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -186,7 +189,7 @@ class StudentHomeDashboard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

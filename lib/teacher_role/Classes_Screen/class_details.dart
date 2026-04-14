@@ -24,7 +24,10 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
             children: [
               // ── Header ──
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
                 child: Row(
                   children: [
                     GestureDetector(
@@ -56,30 +59,40 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const HomeworkScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const HomeworkScreen(),
+                          ),
                         );
                       },
                       child: Container(
                         width: 36,
-                         height: 36,
-                         decoration: const BoxDecoration(
-                           color: Color(0xFF904BBB), // Slightly brighter purple as per design variation if needed, or stick to 0xFF871DAD
-                           shape: BoxShape.circle,
-                         ),
-                         padding: const EdgeInsets.all(8),
-                         child: Image.asset('assets/images/classes/home_book.png', fit: BoxFit.contain),
+                        height: 36,
+                        decoration: const BoxDecoration(
+                          color: Color(
+                            0xFF904BBB,
+                          ), // Slightly brighter purple as per design variation if needed, or stick to 0xFF871DAD
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        child: Image.asset(
+                          'assets/images/classes/home_book.png',
+                          fit: BoxFit.contain,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Container(
                       width: 36,
-                       height: 36,
-                       decoration: const BoxDecoration(
-                         color: Color(0xFF904BBB),
-                         shape: BoxShape.circle,
-                       ),
-                       padding: const EdgeInsets.all(8),
-                       child: Image.asset('assets/images/classes/calender.png', fit: BoxFit.contain),
+                      height: 36,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF904BBB),
+                        shape: BoxShape.circle,
+                      ),
+                      padding: const EdgeInsets.all(8),
+                      child: Image.asset(
+                        'assets/images/classes/calender.png',
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ],
                 ),
@@ -141,7 +154,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                         ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 28),
 
                     // ── Lessons Section ──
@@ -160,7 +173,9 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => const LessonsScreen()),
+                              MaterialPageRoute(
+                                builder: (_) => const LessonsScreen(),
+                              ),
                             );
                           },
                           child: Text(
@@ -185,12 +200,14 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                         children: [
                           _buildLessonCard(
                             title: "Fractions Practice",
-                            description: "Solve question 1-10 on page 42 of the textbook.",
+                            description:
+                                "Solve question 1-10 on page 42 of the textbook.",
                             dueDate: "Due: June 13,2025",
                           ),
                           _buildLessonCard(
                             title: "Fractions Practice",
-                            description: "Solve question 1-10 on page 42 of the textbook.",
+                            description:
+                                "Solve question 1-10 on page 42 of the textbook.",
                             dueDate: "Due: June 13,2025",
                           ),
                         ],
@@ -283,7 +300,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -319,10 +336,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
             children: [
               Text(
                 dueDate,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade500,
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
               ),
               const Text(
                 "View",
@@ -349,7 +363,10 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
   }) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const StudentAttendanceScreen()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const StudentAttendanceScreen()),
+        );
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
@@ -358,7 +375,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -388,7 +405,12 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                         children: [
                           GestureDetector(
                             onTap: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const StudentProfileScreen()));
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const StudentProfileScreen(),
+                                ),
+                              );
                             },
                             child: Container(
                               width: 50,
@@ -404,120 +426,126 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                             ),
                           ),
                           const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      name,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        color: Color(0xFF222222),
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(
+                                          0xFF4AA678,
+                                        ), // Always green background for the badge based on the image
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        status,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  subtext,
+                                  style: TextStyle(
+                                    color: Colors.grey.shade500,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      IntrinsicHeight(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    name,
+                                    "Attendance",
+                                    style: TextStyle(
+                                      color: Colors.grey.shade500,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    attendance,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
                                       color: Color(0xFF222222),
                                     ),
                                   ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF4AA678), // Always green background for the badge based on the image
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      status,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
+                                ],
+                              ),
+                            ),
+                            VerticalDivider(
+                              color: Colors.grey.shade300,
+                              width: 1,
+                              thickness: 1,
+                            ),
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Progress",
+                                      style: TextStyle(
+                                        color: Colors.grey.shade500,
+                                        fontSize: 12,
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                subtext,
-                                style: TextStyle(
-                                  color: Colors.grey.shade500,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    IntrinsicHeight(
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Attendance",
-                                  style: TextStyle(
-                                    color: Colors.grey.shade500,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  attendance,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color: Color(0xFF222222),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          VerticalDivider(
-                            color: Colors.grey.shade300,
-                            width: 1,
-                            thickness: 1,
-                          ),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "Progress",
-                                    style: TextStyle(
-                                      color: Colors.grey.shade500,
-                                      fontSize: 12,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  progress,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color: Color(0xFF222222),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      progress,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        color: Color(0xFF222222),
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }

@@ -148,7 +148,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -184,7 +184,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.3),
+              color: color.withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -282,7 +282,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                   ),
                   Container(
                     width: 1,
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     margin: const EdgeInsets.symmetric(horizontal: 16),
                   ),
                   Expanded(

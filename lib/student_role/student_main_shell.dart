@@ -7,7 +7,7 @@ import 'package:opalmer_education/student_role/Chat_Screen/chat_dashboard.dart';
 import 'package:opalmer_education/teacher_role/profile_screen/profile.dart';
 
 class StudentMainShell extends StatefulWidget {
-  const StudentMainShell({Key? key}) : super(key: key);
+  const StudentMainShell({super.key});
 
   @override
   State<StudentMainShell> createState() => _StudentMainShellState();

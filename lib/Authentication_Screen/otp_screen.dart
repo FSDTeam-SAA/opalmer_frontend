@@ -5,7 +5,6 @@ import 'package:opalmer_education/custom_bottom_navigation_bar/main_shell.dart';
 import 'package:opalmer_education/parent_role/parent_main_shell.dart';
 import 'package:opalmer_education/parent_role/ProfileScreen/profile_setup_screen.dart'
     as parent_profile_setup;
-import 'package:opalmer_education/student_role/StudentHomeDashboard/student_home_dashboard.dart';
 import 'package:opalmer_education/teacher_role/profile_screen/profile_setup.dart'
     as teacher_profile_setup;
 import 'package:opalmer_education/student_role/student_main_shell.dart';

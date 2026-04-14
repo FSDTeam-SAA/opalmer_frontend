@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class StudentDetailScreen extends StatelessWidget {
-  const StudentDetailScreen({Key? key}) : super(key: key);
+  const StudentDetailScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,14 +23,22 @@ class StudentDetailScreen extends StatelessWidget {
                   color: Color(0xFF871DAD),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                child: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
             ),
           ),
         ),
         title: const Text(
           "Student Detail",
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
         ),
       ),
       body: ListView(
@@ -38,7 +46,7 @@ class StudentDetailScreen extends StatelessWidget {
         children: [
           // Student Profile
           _buildProfileSection(),
-          
+
           const SizedBox(height: 32),
           // Stats Row
           Row(
@@ -60,14 +68,18 @@ class StudentDetailScreen extends StatelessWidget {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 32),
           const Text(
             "Questions",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF222222)),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF222222),
+            ),
           ),
           const SizedBox(height: 16),
-          
+
           _buildQuestionTile(
             number: 1,
             question: "What is 1/2 as a decimal?",
@@ -129,7 +141,11 @@ class StudentDetailScreen extends StatelessWidget {
             children: [
               const Text(
                 "Mia johnson",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF222222)),
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF222222),
+                ),
               ),
               const SizedBox(height: 6),
               const Text(
@@ -148,26 +164,42 @@ class StudentDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatCard({required String label, required String value, required Color color}) {
+  Widget _buildStatCard({
+    required String label,
+    required String value,
+    required Color color,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20),
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(color: color.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: color.withValues(alpha: 0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
         children: [
           Text(
             label,
-            style: const TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+              fontSize: 16,
+              color: Colors.white,
+              fontWeight: FontWeight.w500,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             value,
-            style: const TextStyle(fontSize: 28, color: Colors.white, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontSize: 28,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),
@@ -189,7 +221,11 @@ class StudentDetailScreen extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 12, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Theme(
@@ -199,11 +235,17 @@ class StudentDetailScreen extends StatelessWidget {
           tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           title: Text(
             "$number. $question",
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFF222222)),
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF222222),
+            ),
           ),
-          trailing: isSelectedCorrect 
-            ? const Icon(Icons.check_circle, color: Color(0xFF4DB68D))
-            : initiallyExpanded ? const Icon(Icons.keyboard_arrow_up) : const Icon(Icons.keyboard_arrow_down),
+          trailing: isSelectedCorrect
+              ? const Icon(Icons.check_circle, color: Color(0xFF4DB68D))
+              : initiallyExpanded
+              ? const Icon(Icons.keyboard_arrow_up)
+              : const Icon(Icons.keyboard_arrow_down),
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
@@ -217,21 +259,34 @@ class StudentDetailScreen extends StatelessWidget {
                         padding: const EdgeInsets.only(bottom: 4),
                         child: Text(
                           "$char. ${options[i]}",
-                          style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
                         ),
                       );
                     }),
-                    const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Divider(height: 1)),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Divider(height: 1),
+                    ),
                   ],
                   Row(
                     children: [
                       const Text(
                         "Selected Answer: ",
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFFE74C3C)),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFFE74C3C),
+                        ),
                       ),
                       Text(
                         selectedAnswer,
-                        style: const TextStyle(fontSize: 14, color: Colors.grey),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
                       ),
                     ],
                   ),
@@ -240,11 +295,18 @@ class StudentDetailScreen extends StatelessWidget {
                     children: [
                       const Text(
                         "Correct Answer: ",
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF4DB68D)),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF4DB68D),
+                        ),
                       ),
                       Text(
                         correctAnswer,
-                        style: const TextStyle(fontSize: 14, color: Colors.grey),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
                       ),
                     ],
                   ),

@@ -7,8 +7,7 @@ class ChatScreen extends StatefulWidget {
   final String name;
   final String imageUrl;
 
-  const ChatScreen({Key? key, required this.name, required this.imageUrl})
-    : super(key: key);
+  const ChatScreen({super.key, required this.name, required this.imageUrl});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -184,7 +183,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -398,7 +397,7 @@ class _ChatScreenState extends State<ChatScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
+        color: Colors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Text(

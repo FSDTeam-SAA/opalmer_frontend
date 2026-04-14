@@ -64,7 +64,7 @@ class StudentLessonOverviewScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -118,7 +118,10 @@ class StudentLessonOverviewScreen extends StatelessWidget {
                 children: [
                   const TextSpan(
                     text: "Workbook Task: ",
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF333333)),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF333333),
+                    ),
                   ),
                   TextSpan(
                     text: "Complete page 42, Questions 1-5\n\n",
@@ -126,10 +129,14 @@ class StudentLessonOverviewScreen extends StatelessWidget {
                   ),
                   const TextSpan(
                     text: "Questions to Think About:\n",
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF333333)),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF333333),
+                    ),
                   ),
                   TextSpan(
-                    text: "  • What is the main purpose of photosynthesis?\n"
+                    text:
+                        "  • What is the main purpose of photosynthesis?\n"
                         "  • Why is sunlight important?\n"
                         "  • How do plants store energy?",
                     style: TextStyle(color: Colors.grey.shade600),
@@ -158,7 +165,11 @@ class StudentLessonOverviewScreen extends StatelessWidget {
                 color: AppColors.primaryMid,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+              child: const Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
         ),

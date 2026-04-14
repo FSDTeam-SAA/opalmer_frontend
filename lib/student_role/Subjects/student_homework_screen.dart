@@ -24,7 +24,9 @@ class _StudentHomeworkScreenState extends State<StudentHomeworkScreen> {
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: isClassSelected ? _buildClassHomework() : _buildGroupsHomework(),
+              child: isClassSelected
+                  ? _buildClassHomework()
+                  : _buildGroupsHomework(),
             ),
           ),
         ],
@@ -47,7 +49,11 @@ class _StudentHomeworkScreenState extends State<StudentHomeworkScreen> {
                 color: AppColors.primaryMid,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+              child: const Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
         ),
@@ -79,15 +85,21 @@ class _StudentHomeworkScreenState extends State<StudentHomeworkScreen> {
                 onTap: () => setState(() => isClassSelected = true),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: isClassSelected ? AppColors.primaryMid : Colors.transparent,
+                    color: isClassSelected
+                        ? AppColors.primaryMid
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   alignment: Alignment.center,
                   child: Text(
                     "Class",
                     style: TextStyle(
-                      color: isClassSelected ? Colors.white : Colors.grey.shade600,
-                      fontWeight: isClassSelected ? FontWeight.bold : FontWeight.w500,
+                      color: isClassSelected
+                          ? Colors.white
+                          : Colors.grey.shade600,
+                      fontWeight: isClassSelected
+                          ? FontWeight.bold
+                          : FontWeight.w500,
                     ),
                   ),
                 ),
@@ -98,15 +110,21 @@ class _StudentHomeworkScreenState extends State<StudentHomeworkScreen> {
                 onTap: () => setState(() => isClassSelected = false),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: !isClassSelected ? AppColors.primaryMid : Colors.transparent,
+                    color: !isClassSelected
+                        ? AppColors.primaryMid
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   alignment: Alignment.center,
                   child: Text(
                     "Groups",
                     style: TextStyle(
-                      color: !isClassSelected ? Colors.white : Colors.grey.shade600,
-                      fontWeight: !isClassSelected ? FontWeight.bold : FontWeight.w500,
+                      color: !isClassSelected
+                          ? Colors.white
+                          : Colors.grey.shade600,
+                      fontWeight: !isClassSelected
+                          ? FontWeight.bold
+                          : FontWeight.w500,
                     ),
                   ),
                 ),
@@ -148,7 +166,11 @@ class _StudentHomeworkScreenState extends State<StudentHomeworkScreen> {
                 color: AppColors.textPrimary,
               ),
             ),
-            Icon(Icons.calendar_month_outlined, color: AppColors.primaryMid, size: 24),
+            Icon(
+              Icons.calendar_month_outlined,
+              color: AppColors.primaryMid,
+              size: 24,
+            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -219,7 +241,11 @@ class _StudentHomeworkScreenState extends State<StudentHomeworkScreen> {
                 color: AppColors.textPrimary,
               ),
             ),
-            Icon(Icons.calendar_month_outlined, color: AppColors.primaryMid, size: 24),
+            Icon(
+              Icons.calendar_month_outlined,
+              color: AppColors.primaryMid,
+              size: 24,
+            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -241,7 +267,7 @@ class _StudentHomeworkScreenState extends State<StudentHomeworkScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -251,7 +277,9 @@ class _StudentHomeworkScreenState extends State<StudentHomeworkScreen> {
         children: [
           const CircleAvatar(
             radius: 20,
-            backgroundImage: AssetImage('assets/images/classes/student_image.png'),
+            backgroundImage: AssetImage(
+              'assets/images/classes/student_image.png',
+            ),
           ),
           const SizedBox(width: 16),
           Text(
@@ -280,7 +308,7 @@ class _StudentHomeworkScreenState extends State<StudentHomeworkScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

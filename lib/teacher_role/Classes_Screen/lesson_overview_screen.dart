@@ -25,10 +25,7 @@ class LessonOverviewScreen extends StatelessWidget {
                         color: Color(0xFF871DAD),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.white,
-                      ),
+                      child: const Icon(Icons.arrow_back, color: Colors.white),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -45,7 +42,10 @@ class LessonOverviewScreen extends StatelessWidget {
             ),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -91,13 +91,16 @@ class LessonOverviewScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color: Colors.black.withValues(alpha: 0.04),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
                           ),
@@ -161,10 +164,14 @@ class LessonOverviewScreen extends StatelessWidget {
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           TextSpan(
-                            text: "  • What is the main purpose of photosynthesis?\n"
+                            text:
+                                "  • What is the main purpose of photosynthesis?\n"
                                 "  • Why is sunlight important?\n"
                                 "  • How do plants store energy?",
-                            style: TextStyle(color: Colors.grey.shade600, height: 1.8),
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              height: 1.8,
+                            ),
                           ),
                         ],
                       ),

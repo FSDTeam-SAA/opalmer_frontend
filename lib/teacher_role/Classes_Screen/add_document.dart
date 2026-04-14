@@ -29,10 +29,7 @@ class _AddDocumentScreenState extends State<AddDocumentScreen> {
                   color: Color(0xFF871DAD),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                ),
+                child: const Icon(Icons.arrow_back, color: Colors.white),
               ),
             ),
           ),
@@ -54,16 +51,17 @@ class _AddDocumentScreenState extends State<AddDocumentScreen> {
             children: [
               const Text(
                 "Upload new academic document here",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
               const SizedBox(height: 24),
-              
+
               // Dashed Upload Area
               CustomPaint(
-                painter: DashedBorderPainter(color: const Color(0xFF871DAD), strokeWidth: 1.5, gap: 6.0),
+                painter: DashedBorderPainter(
+                  color: const Color(0xFF871DAD),
+                  strokeWidth: 1.5,
+                  gap: 6.0,
+                ),
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 40),
@@ -84,7 +82,10 @@ class _AddDocumentScreenState extends State<AddDocumentScreen> {
                       ),
                       const SizedBox(height: 20),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           border: Border.all(color: const Color(0xFF871DAD)),
                           borderRadius: BorderRadius.circular(20),
@@ -103,13 +104,13 @@ class _AddDocumentScreenState extends State<AddDocumentScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-              
+
               // Uploaded files list
               _buildUploadedFile("Academic Notes PDF"),
               _buildUploadedFile("Academic Notes PDF"),
-              
+
               const Spacer(),
-              
+
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -150,7 +151,7 @@ class _AddDocumentScreenState extends State<AddDocumentScreen> {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -167,10 +168,7 @@ class _AddDocumentScreenState extends State<AddDocumentScreen> {
           Expanded(
             child: Text(
               fileName,
-              style: const TextStyle(
-                fontSize: 15,
-                color: Color(0xFF333333),
-              ),
+              style: const TextStyle(fontSize: 15, color: Color(0xFF333333)),
             ),
           ),
           Container(
@@ -179,11 +177,7 @@ class _AddDocumentScreenState extends State<AddDocumentScreen> {
               color: Colors.grey.shade200,
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.close,
-              size: 14,
-              color: Colors.black87,
-            ),
+            child: const Icon(Icons.close, size: 14, color: Colors.black87),
           ),
         ],
       ),
@@ -196,7 +190,11 @@ class DashedBorderPainter extends CustomPainter {
   final double strokeWidth;
   final double gap;
 
-  DashedBorderPainter({required this.color, this.strokeWidth = 1.0, this.gap = 5.0});
+  DashedBorderPainter({
+    required this.color,
+    this.strokeWidth = 1.0,
+    this.gap = 5.0,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -206,8 +204,13 @@ class DashedBorderPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     final path = Path()
-      ..addRRect(RRect.fromRectAndRadius(Rect.fromLTWH(0, 0, size.width, size.height), const Radius.circular(8)));
-    
+      ..addRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(0, 0, size.width, size.height),
+          const Radius.circular(8),
+        ),
+      );
+
     Path dashPath = Path();
     for (ui.PathMetric metric in path.computeMetrics()) {
       double distance = 0.0;
@@ -216,13 +219,16 @@ class DashedBorderPainter extends CustomPainter {
         double len = gap;
         if (distance + len > metric.length) len = metric.length - distance;
         if (draw) {
-          dashPath.addPath(metric.extractPath(distance, distance + len), Offset.zero);
+          dashPath.addPath(
+            metric.extractPath(distance, distance + len),
+            Offset.zero,
+          );
         }
         distance += len;
         draw = !draw;
       }
     }
-    
+
     canvas.drawPath(dashPath, paint);
   }
 

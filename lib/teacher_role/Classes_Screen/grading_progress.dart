@@ -29,10 +29,7 @@ class _GradingProgressScreenState extends State<GradingProgressScreen> {
                   color: Color(0xFF871DAD),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                ),
+                child: const Icon(Icons.arrow_back, color: Colors.white),
               ),
             ),
           ),
@@ -66,7 +63,8 @@ class _GradingProgressScreenState extends State<GradingProgressScreen> {
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.center_focus_strong_outlined, // closest to the scan/focus icon
+                    Icons
+                        .center_focus_strong_outlined, // closest to the scan/focus icon
                     color: Colors.white,
                     size: 24,
                   ),
@@ -135,7 +133,7 @@ class _GradingProgressScreenState extends State<GradingProgressScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -218,7 +216,7 @@ class _GradingProgressScreenState extends State<GradingProgressScreen> {
                           ),
                         ),
                       ],
-                    )
+                    ),
                   ],
                 ),
               ),

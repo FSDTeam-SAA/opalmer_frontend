@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/notification/notification.dart';
 import 'package:opalmer_education/teacher_role/profile_screen/rewards_badges.dart';
-import 'profile_setup.dart';
 import 'notification_setting.dart';
 import 'about_us.dart';
 import 'terms_condition.dart';
@@ -11,7 +10,7 @@ import 'language.dart';
 import '../../authentication_screen/two_factor_auth_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -103,7 +102,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       border: Border.all(color: Colors.white, width: 0),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 2,
                           offset: const Offset(0, 5),
                         ),
@@ -235,7 +234,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 5,
             offset: const Offset(0, 2),
           ),

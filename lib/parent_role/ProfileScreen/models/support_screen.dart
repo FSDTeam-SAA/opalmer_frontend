@@ -3,7 +3,7 @@ import 'package:opalmer_education/chat/screens/call.dart';
 import 'package:opalmer_education/teacher_role/profile_screen/language.dart';
 
 class SupportScreen extends StatefulWidget {
-  const SupportScreen({Key? key}) : super(key: key);
+  const SupportScreen({super.key});
 
   @override
   State<SupportScreen> createState() => _SupportScreenState();
@@ -172,7 +172,7 @@ class _SupportScreenState extends State<SupportScreen> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -382,7 +382,7 @@ class _SupportScreenState extends State<SupportScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
+        color: Colors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Text(

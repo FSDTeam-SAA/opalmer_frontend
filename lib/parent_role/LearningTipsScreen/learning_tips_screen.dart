@@ -4,7 +4,7 @@ import 'package:opalmer_education/parent_role/LearningTipsScreen/models/learning
 import 'package:opalmer_education/parent_role/LearningTipsScreen/learning_tip_detail_screen.dart';
 
 class LearningTipsScreen extends StatelessWidget {
-  const LearningTipsScreen({Key? key}) : super(key: key);
+  const LearningTipsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -67,9 +67,8 @@ class LearningTipsScreen extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => LearningTipDetailScreen(
-                            tip: tip,
-                          ),
+                          builder: (context) =>
+                              LearningTipDetailScreen(tip: tip),
                         ),
                       );
                     },

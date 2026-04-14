@@ -13,11 +13,41 @@ class StudentQuizListScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
-          _buildQuizCard(context, "Fraction and Decimals", "10 Questions · 5 min", 0.93, const Color(0xFF4AA678)),
-          _buildQuizCard(context, "Photosynthesis", "10 Questions · 5 min", 0.83, const Color(0xFFFEBD43)),
-          _buildQuizCard(context, "Fraction and Decimals", "10 Questions · 5 min", 0.73, const Color(0xFF4A90E2)),
-          _buildQuizCard(context, "Fraction and Decimals", "10 Questions · 5 min", 0.93, const Color(0xFF4AA678)),
-          _buildQuizCard(context, "Fraction and Decimals", "10 Questions · 5 min", 0.83, const Color(0xFFFEBD43)),
+          _buildQuizCard(
+            context,
+            "Fraction and Decimals",
+            "10 Questions · 5 min",
+            0.93,
+            const Color(0xFF4AA678),
+          ),
+          _buildQuizCard(
+            context,
+            "Photosynthesis",
+            "10 Questions · 5 min",
+            0.83,
+            const Color(0xFFFEBD43),
+          ),
+          _buildQuizCard(
+            context,
+            "Fraction and Decimals",
+            "10 Questions · 5 min",
+            0.73,
+            const Color(0xFF4A90E2),
+          ),
+          _buildQuizCard(
+            context,
+            "Fraction and Decimals",
+            "10 Questions · 5 min",
+            0.93,
+            const Color(0xFF4AA678),
+          ),
+          _buildQuizCard(
+            context,
+            "Fraction and Decimals",
+            "10 Questions · 5 min",
+            0.83,
+            const Color(0xFFFEBD43),
+          ),
         ],
       ),
     );
@@ -34,20 +64,37 @@ class StudentQuizListScreen extends StatelessWidget {
             onTap: () => Navigator.pop(context),
             child: Container(
               padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(color: AppColors.primaryMid, shape: BoxShape.circle),
-              child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+              decoration: const BoxDecoration(
+                color: AppColors.primaryMid,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
         ),
       ),
       title: const Text(
         "Quizzes",
-        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+        style: TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+          color: AppColors.textPrimary,
+        ),
       ),
     );
   }
 
-  Widget _buildQuizCard(BuildContext context, String title, String subtitle, double progress, Color barColor) {
+  Widget _buildQuizCard(
+    BuildContext context,
+    String title,
+    String subtitle,
+    double progress,
+    Color barColor,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -55,7 +102,11 @@ class StudentQuizListScreen extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
@@ -65,16 +116,42 @@ class StudentQuizListScreen extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: Image.asset('assets/images/science_icon.png', width: 44, height: 44, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(color: Colors.grey.shade200, width: 44, height: 44, child: const Icon(Icons.quiz_outlined))),
+                child: Image.asset(
+                  'assets/images/science_icon.png',
+                  width: 44,
+                  height: 44,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    color: Colors.grey.shade200,
+                    width: 44,
+                    height: 44,
+                    child: const Icon(Icons.quiz_outlined),
+                  ),
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: AppColors.textPrimary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     const SizedBox(height: 4),
-                    Text(subtitle, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -84,8 +161,22 @@ class StudentQuizListScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("0%", style: TextStyle(fontSize: 11, color: barColor, fontWeight: FontWeight.w600)),
-              Text("${(progress * 100).toInt()}%", style: TextStyle(fontSize: 11, color: barColor, fontWeight: FontWeight.w600)),
+              Text(
+                "0%",
+                style: TextStyle(
+                  fontSize: 11,
+                  color: barColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                "${(progress * 100).toInt()}%",
+                style: TextStyle(
+                  fontSize: 11,
+                  color: barColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 6),
@@ -103,13 +194,26 @@ class StudentQuizListScreen extends StatelessWidget {
             width: double.infinity,
             height: 44,
             child: ElevatedButton(
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StudentQuizQuestionsScreen())),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const StudentQuizQuestionsScreen(),
+                ),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryMid,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 elevation: 0,
               ),
-              child: const Text("Start Learning", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              child: const Text(
+                "Start Learning",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
         ],

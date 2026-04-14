@@ -30,7 +30,7 @@ class PrimaryButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(height / 2),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryMid.withOpacity(0.3),
+            color: AppColors.primaryMid.withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -57,10 +57,7 @@ class PrimaryButton extends StatelessWidget {
                 letterSpacing: 2,
               ),
             ),
-            if (icon != null) ...[
-              const SizedBox(width: 8),
-              icon!,
-            ],
+            if (icon != null) ...[const SizedBox(width: 8), icon!],
           ],
         ),
       ),

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
 class NotificationSettingScreen extends StatefulWidget {
-  const NotificationSettingScreen({Key? key}) : super(key: key);
+  const NotificationSettingScreen({super.key});
 
   @override
-  State<NotificationSettingScreen> createState() => _NotificationSettingScreenState();
+  State<NotificationSettingScreen> createState() =>
+      _NotificationSettingScreenState();
 }
 
 class _NotificationSettingScreenState extends State<NotificationSettingScreen> {
@@ -33,10 +34,7 @@ class _NotificationSettingScreenState extends State<NotificationSettingScreen> {
                   color: Color(0xFF871DAD),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                ),
+                child: const Icon(Icons.arrow_back, color: Colors.white),
               ),
             ),
           ),
@@ -55,7 +53,9 @@ class _NotificationSettingScreenState extends State<NotificationSettingScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
           child: Column(
             children: [
-              _buildSwitchRow("General Notifications", _generalNotifications, (val) {
+              _buildSwitchRow("General Notifications", _generalNotifications, (
+                val,
+              ) {
                 setState(() => _generalNotifications = val);
               }),
               _buildDivider(),
@@ -78,7 +78,11 @@ class _NotificationSettingScreenState extends State<NotificationSettingScreen> {
     );
   }
 
-  Widget _buildSwitchRow(String title, bool value, ValueChanged<bool> onChanged) {
+  Widget _buildSwitchRow(
+    String title,
+    bool value,
+    ValueChanged<bool> onChanged,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
@@ -106,9 +110,6 @@ class _NotificationSettingScreenState extends State<NotificationSettingScreen> {
   }
 
   Widget _buildDivider() {
-    return Container(
-      height: 1,
-      color: Colors.grey.shade200,
-    );
+    return Container(height: 1, color: Colors.grey.shade200);
   }
 }

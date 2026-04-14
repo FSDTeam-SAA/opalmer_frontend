@@ -41,7 +41,7 @@ class SubjectCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -88,7 +88,7 @@ class SubjectCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 const Icon(
-                   Icons.bar_chart_rounded,
+                  Icons.bar_chart_rounded,
                   color: Colors.orange,
                   size: 14,
                 ),
@@ -112,7 +112,10 @@ class SubjectCard extends StatelessWidget {
                   children: [
                     Text(
                       teacherName,
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     Text(
                       date,

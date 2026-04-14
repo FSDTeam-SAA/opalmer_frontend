@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:opalmer_education/teacher_role/Quiz_Screen/student_detail.dart';
 
 class AttendedStudentsScreen extends StatelessWidget {
-  const AttendedStudentsScreen({Key? key}) : super(key: key);
+  const AttendedStudentsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,14 +24,22 @@ class AttendedStudentsScreen extends StatelessWidget {
                   color: Color(0xFF871DAD),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                child: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
             ),
           ),
         ),
         title: const Text(
           "Attended Students",
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
         ),
       ),
       body: ListView.builder(
@@ -39,14 +47,20 @@ class AttendedStudentsScreen extends StatelessWidget {
         itemCount: 10, // Mock student count
         itemBuilder: (context, index) {
           // Cycle through colors: Green, Orange, Blue
-          final colors = [const Color(0xFF4DB68D), const Color(0xFFFFCC33), const Color(0xFF4FA0F3)];
+          final colors = [
+            const Color(0xFF4DB68D),
+            const Color(0xFFFFCC33),
+            const Color(0xFF4FA0F3),
+          ];
           final sideColor = colors[index % colors.length];
-          
+
           return GestureDetector(
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const StudentDetailScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const StudentDetailScreen(),
+                ),
               );
             },
             child: _buildStudentCard(
@@ -75,7 +89,11 @@ class AttendedStudentsScreen extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: IntrinsicHeight(
@@ -86,10 +104,13 @@ class AttendedStudentsScreen extends StatelessWidget {
               width: 6,
               decoration: BoxDecoration(
                 color: sideColor,
-                borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), bottomLeft: Radius.circular(12)),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  bottomLeft: Radius.circular(12),
+                ),
               ),
             ),
-            
+
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -97,7 +118,10 @@ class AttendedStudentsScreen extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        CircleAvatar(radius: 28, backgroundImage: NetworkImage(imageUrl)),
+                        CircleAvatar(
+                          radius: 28,
+                          backgroundImage: NetworkImage(imageUrl),
+                        ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(
@@ -105,12 +129,19 @@ class AttendedStudentsScreen extends StatelessWidget {
                             children: [
                               Text(
                                 name,
-                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF222222)),
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF222222),
+                                ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 details,
-                                style: TextStyle(fontSize: 13, color: Colors.grey.shade400),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey.shade400,
+                                ),
                               ),
                             ],
                           ),
@@ -123,7 +154,11 @@ class AttendedStudentsScreen extends StatelessWidget {
                       children: [
                         const Text(
                           "0%",
-                          style: TextStyle(fontSize: 11, color: Color(0xFF871DAD), fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF871DAD),
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -132,7 +167,9 @@ class AttendedStudentsScreen extends StatelessWidget {
                             child: LinearProgressIndicator(
                               value: progress,
                               backgroundColor: const Color(0xFFF1F0F0),
-                              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF871DAD)),
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                Color(0xFF871DAD),
+                              ),
                               minHeight: 6,
                             ),
                           ),
@@ -140,7 +177,11 @@ class AttendedStudentsScreen extends StatelessWidget {
                         const SizedBox(width: 10),
                         Text(
                           "${(progress * 100).toInt()}%",
-                          style: TextStyle(fontSize: 11, color: Colors.grey.shade400, fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey.shade400,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ],
                     ),

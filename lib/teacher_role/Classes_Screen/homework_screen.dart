@@ -35,10 +35,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
                         color: Color(0xFF871DAD),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.white,
-                      ),
+                      child: const Icon(Icons.arrow_back, color: Colors.white),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -54,7 +51,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // ── Tab Toggle ──
             Center(
               child: Container(
@@ -71,15 +68,21 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
                         onTap: () => setState(() => isClassSelected = true),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: isClassSelected ? const Color(0xFF871DAD) : Colors.transparent,
+                            color: isClassSelected
+                                ? const Color(0xFF871DAD)
+                                : Colors.transparent,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           alignment: Alignment.center,
                           child: Text(
                             "Class",
                             style: TextStyle(
-                              color: isClassSelected ? Colors.white : Colors.grey.shade600,
-                              fontWeight: isClassSelected ? FontWeight.bold : FontWeight.normal,
+                              color: isClassSelected
+                                  ? Colors.white
+                                  : Colors.grey.shade600,
+                              fontWeight: isClassSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
                               fontSize: 14,
                             ),
                           ),
@@ -91,15 +94,21 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
                         onTap: () => setState(() => isClassSelected = false),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: !isClassSelected ? const Color(0xFF871DAD) : Colors.transparent,
+                            color: !isClassSelected
+                                ? const Color(0xFF871DAD)
+                                : Colors.transparent,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           alignment: Alignment.center,
                           child: Text(
                             "Groups",
                             style: TextStyle(
-                              color: !isClassSelected ? Colors.white : Colors.grey.shade600,
-                              fontWeight: !isClassSelected ? FontWeight.bold : FontWeight.normal,
+                              color: !isClassSelected
+                                  ? Colors.white
+                                  : Colors.grey.shade600,
+                              fontWeight: !isClassSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
                               fontSize: 14,
                             ),
                           ),
@@ -111,7 +120,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            
+
             Expanded(
               child: isClassSelected ? _buildClassTab() : _buildGroupsTab(),
             ),
@@ -166,7 +175,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
             ),
           ),
           const SizedBox(height: 32),
-          
+
           // Archived Homework Header
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -187,7 +196,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // Archived Homework List
           _buildHomeworkCard(
             title: "Fractions Practice",
@@ -277,7 +286,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -311,10 +320,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
             children: [
               Text(
                 dueDate,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade500,
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
               ),
               if (showOptions)
                 Row(
@@ -367,7 +373,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -390,10 +396,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
                 const SizedBox(height: 4),
                 Text(
                   memberCount,
-                  style: TextStyle(
-                    color: Colors.grey.shade500,
-                    fontSize: 13,
-                  ),
+                  style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
                 ),
               ],
             ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class TermsConditionScreen extends StatelessWidget {
-  const TermsConditionScreen({Key? key}) : super(key: key);
+  const TermsConditionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,10 +23,7 @@ class TermsConditionScreen extends StatelessWidget {
                   color: Color(0xFF871DAD),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                ),
+                child: const Icon(Icons.arrow_back, color: Colors.white),
               ),
             ),
           ),
@@ -46,7 +43,7 @@ class TermsConditionScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-               _buildParagraph(
+              _buildParagraph(
                 "At Education, we believe education thrives when everyone—teachers, students, and parents—are connected, informed, and empowered. Our platform is built to transform the way schools manage learning by simplifying communication, streamlining classroom management, and strengthening the partnership between home and school.",
               ),
               const SizedBox(height: 24),
@@ -64,7 +61,7 @@ class TermsConditionScreen extends StatelessWidget {
               const SizedBox(height: 24),
               _buildHeading("Why It Matters"),
               _buildParagraph(
-                 "We're here to reduce administrative burden, foster",
+                "We're here to reduce administrative burden, foster",
               ),
             ],
           ),
@@ -102,12 +99,36 @@ class TermsConditionScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildBulletItem("📚", "Curriculum & Lesson Planning", "Organize and share structured learning plans."),
-        _buildBulletItem("👩‍🏫", "Grading & Assessment Tools", "Simplify evaluations and give immediate feedback."),
-        _buildBulletItem("📊", "Performance Insights", "Track student progress in real time with smart analytics."),
-        _buildBulletItem("💬", "Communication Channels", "Enable secure messaging between teachers, students, and parents."),
-        _buildBulletItem("✅", "Behavior Tracking", "Encourage positive behavior with transparent reporting."),
-        _buildBulletItem("🏫", "School-Home Collaboration", "Keep parents engaged and informed every step of the way."),
+        _buildBulletItem(
+          "📚",
+          "Curriculum & Lesson Planning",
+          "Organize and share structured learning plans.",
+        ),
+        _buildBulletItem(
+          "👩‍🏫",
+          "Grading & Assessment Tools",
+          "Simplify evaluations and give immediate feedback.",
+        ),
+        _buildBulletItem(
+          "📊",
+          "Performance Insights",
+          "Track student progress in real time with smart analytics.",
+        ),
+        _buildBulletItem(
+          "💬",
+          "Communication Channels",
+          "Enable secure messaging between teachers, students, and parents.",
+        ),
+        _buildBulletItem(
+          "✅",
+          "Behavior Tracking",
+          "Encourage positive behavior with transparent reporting.",
+        ),
+        _buildBulletItem(
+          "🏫",
+          "School-Home Collaboration",
+          "Keep parents engaged and informed every step of the way.",
+        ),
       ],
     );
   }
@@ -118,7 +139,10 @@ class TermsConditionScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(" •  ", style: TextStyle(color: Color(0xFF666666), fontSize: 16)),
+          const Text(
+            " •  ",
+            style: TextStyle(color: Color(0xFF666666), fontSize: 16),
+          ),
           Expanded(
             child: RichText(
               text: TextSpan(
@@ -127,7 +151,10 @@ class TermsConditionScreen extends StatelessWidget {
                   TextSpan(text: "$emoji "),
                   TextSpan(
                     text: "$title – ",
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF333333)),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF333333),
+                    ),
                   ),
                   TextSpan(
                     text: description,
