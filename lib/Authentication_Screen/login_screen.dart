@@ -7,6 +7,7 @@ import 'package:opalmer_education/core/widgets/primary_button.dart';
 import 'package:opalmer_education/custom_bottom_navigation_bar/main_shell.dart';
 import 'package:opalmer_education/parent_role/parent_main_shell.dart';
 import 'package:opalmer_education/student_role/StudentHomeDashboard/student_home_dashboard.dart';
+import 'package:opalmer_education/student_role/student_main_shell.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   final bool isRegistrationFlow;
@@ -186,7 +187,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       );
     } else if (role == UserRole.student) {
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const StudentHomeDashboard()),
+        MaterialPageRoute(builder: (_) => const StudentMainShell()),
         (route) => false,
       );
     } else {

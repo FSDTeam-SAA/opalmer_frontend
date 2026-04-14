@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:opalmer_education/notification/notification.dart';
+import 'package:opalmer_education/teacher_role/profile_screen/rewards_badges.dart';
 import 'profile_setup.dart';
 import 'notification_setting.dart';
 import 'about_us.dart';
@@ -58,16 +60,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   color: Colors.white,
                                 ),
                               ),
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.notifications_none_outlined,
-                                  color: Color(0xFF871DAD),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const NotificationScreen(),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.notifications_none_outlined,
+                                    color: Color(0xFF871DAD),
+                                  ),
                                 ),
                               ),
                             ],
@@ -131,9 +144,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 children: [
                   _buildMenuTile(
-                    "Edit Profile",
-                    Icons.person_outline,
-                    const ProfileSetupScreen(),
+                    "Rewards/Badges",
+                    Icons
+                        .workspace_premium_outlined, // using a ribbon/badge icon
+                    const RewardsBadgesScreen(),
                   ),
                   _buildMenuTile(
                     "Notifications Settings",

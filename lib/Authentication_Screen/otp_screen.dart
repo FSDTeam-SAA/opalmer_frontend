@@ -8,6 +8,8 @@ import 'package:opalmer_education/parent_role/ProfileScreen/profile_setup_screen
 import 'package:opalmer_education/student_role/StudentHomeDashboard/student_home_dashboard.dart';
 import 'package:opalmer_education/teacher_role/profile_screen/profile_setup.dart'
     as teacher_profile_setup;
+import 'package:opalmer_education/student_role/student_main_shell.dart';
+import 'package:opalmer_education/parent_role/ParentHomeDashboard/parent_home_dashboard.dart';
 
 class OtpScreen extends ConsumerStatefulWidget {
   final bool isRegistrationFlow;
@@ -70,7 +72,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
   void _routeToDashboard(UserRole role) {
     if (role == UserRole.student) {
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const StudentHomeDashboard()),
+        MaterialPageRoute(builder: (_) => const StudentMainShell()),
         (route) => false,
       );
     } else if (role == UserRole.parent) {
@@ -205,7 +207,29 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                 height: 56,
                 child: ElevatedButton(
                   onPressed: () {
-                    _handleVerificationSuccess();
+                    // Verification logic
+                    final role = ref.read(roleProvider);
+                    if (role == UserRole.student) {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(
+                          builder: (_) => const StudentMainShell(),
+                        ),
+                        (route) => false,
+                      );
+                    } else if (role == UserRole.parent) {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(
+                          builder: (_) => const ParentHomeDashboard(),
+                        ),
+                        (route) => false,
+                      );
+                    } else {
+                      // Default to teacher / main shell
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const MainShell()),
+                        (route) => false,
+                      );
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF871DAD),
