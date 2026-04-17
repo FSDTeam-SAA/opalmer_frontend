@@ -1,24 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/providers/student_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/student_role/Quizzes/student_quiz_questions_screen.dart';
 
-class StudentQuizListScreen extends StatelessWidget {
+class StudentQuizListScreen extends ConsumerWidget {
   const StudentQuizListScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final quizzesAsync = ref.watch(studentQuizzesProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
-      body: ListView(
-        padding: const EdgeInsets.all(24),
-        children: [
-          _buildQuizCard(context, "Fraction and Decimals", "10 Questions · 5 min", 0.93, const Color(0xFF4AA678)),
-          _buildQuizCard(context, "Photosynthesis", "10 Questions · 5 min", 0.83, const Color(0xFFFEBD43)),
-          _buildQuizCard(context, "Fraction and Decimals", "10 Questions · 5 min", 0.73, const Color(0xFF4A90E2)),
-          _buildQuizCard(context, "Fraction and Decimals", "10 Questions · 5 min", 0.93, const Color(0xFF4AA678)),
-          _buildQuizCard(context, "Fraction and Decimals", "10 Questions · 5 min", 0.83, const Color(0xFFFEBD43)),
-        ],
+      body: quizzesAsync.when(
+        data: (quizzes) {
+          if (quizzes.isEmpty) {
+            return const Center(child: Text("No quizzes found"));
+          }
+          return ListView.builder(
+            padding: const EdgeInsets.all(24),
+            itemCount: quizzes.length,
+            itemBuilder: (context, index) {
+              final quiz = quizzes[index];
+              final colors = [
+                const Color(0xFF4AA678),
+                const Color(0xFFFEBD43),
+                const Color(0xFF4A90E2),
+              ];
+              return _buildQuizCard(
+                context, 
+                quiz['title'] ?? "N/A", 
+                "${quiz['time'] ?? 0} min", 
+                0.0, 
+                colors[index % colors.length]
+              );
+            },
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error: $err')),
       ),
     );
   }

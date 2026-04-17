@@ -1,23 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/providers/student_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 
-class StudentAcademicNotesScreen extends StatelessWidget {
+class StudentAcademicNotesScreen extends ConsumerWidget {
   const StudentAcademicNotesScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final documentsAsync = ref.watch(studentAcademicDocumentsProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        children: [
-          _buildDocumentCard("Science Chapter 1 Notes"),
-          _buildDocumentCard("Photosynthesis Lab Report"),
-          _buildDocumentCard("Periodic Table Reference"),
-          _buildDocumentCard("Exam Study Guide"),
-          _buildDocumentCard("Homework Reference Sheet"),
-        ],
+      body: documentsAsync.when(
+        data: (documents) {
+          if (documents.isEmpty) {
+            return const Center(child: Text("No academic notes found"));
+          }
+          return ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            itemCount: documents.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            itemBuilder: (context, index) {
+              final doc = documents[index];
+              final date = doc['created_at'] != null 
+                ? doc['created_at'].toString().split('T')[0] 
+                : "N/A";
+              return _buildDocumentCard("Academic Note - $date");
+            },
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error: $err')),
       ),
     );
   }

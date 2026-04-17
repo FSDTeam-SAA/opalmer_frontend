@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/providers/student_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:opalmer_education/student_role/Quizzes/student_quiz_list_screen.dart';
 import 'package:opalmer_education/student_role/Quizzes/student_quiz_questions_screen.dart';
 
-class StudentQuizMainScreen extends StatelessWidget {
+class StudentQuizMainScreen extends ConsumerWidget {
   const StudentQuizMainScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -17,7 +19,7 @@ class StudentQuizMainScreen extends StatelessWidget {
           children: [
             _buildHeader(context),
             const SizedBox(height: 24),
-            _buildQuizSection(context),
+            _buildQuizSection(context, ref),
             const SizedBox(height: 32),
             _buildStatsSection(),
             const SizedBox(height: 32),
@@ -68,7 +70,9 @@ class StudentQuizMainScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildQuizSection(BuildContext context) {
+  Widget _buildQuizSection(BuildContext context, WidgetRef ref) {
+    final quizzesAsync = ref.watch(studentQuizzesProvider);
+
     return Column(
       children: [
         Padding(
@@ -93,13 +97,34 @@ class StudentQuizMainScreen extends StatelessWidget {
         const SizedBox(height: 16),
         SizedBox(
           height: 210,
-          child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            scrollDirection: Axis.horizontal,
-            children: [
-              _buildQuizCard(context, "Fraction and Decimals", "10 Questions · 5 min", 0.93, const Color(0xFF4AA678)),
-              _buildQuizCard(context, "Photosynthesis", "12 Questions · 8 min", 0.45, const Color(0xFFFEBD43)),
-            ],
+          child: quizzesAsync.when(
+            data: (quizzes) {
+              if (quizzes.isEmpty) {
+                return const Center(child: Text("No quizzes found"));
+              }
+              return ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                scrollDirection: Axis.horizontal,
+                itemCount: quizzes.length,
+                itemBuilder: (context, index) {
+                  final quiz = quizzes[index];
+                  final colors = [
+                    const Color(0xFF4AA678),
+                    const Color(0xFFFEBD43),
+                    Colors.blue,
+                  ];
+                  return _buildQuizCard(
+                    context, 
+                    quiz['title'] ?? "N/A", 
+                    "${quiz['time'] ?? 0} min", 
+                    0.0, 
+                    colors[index % colors.length]
+                  );
+                },
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, stack) => Center(child: Text('Error: $err')),
           ),
         ),
       ],

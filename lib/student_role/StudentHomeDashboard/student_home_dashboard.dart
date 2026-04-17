@@ -1,29 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/providers/auth_provider.dart';
+import 'package:opalmer_education/core/providers/student_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/student_role/Subjects/subjects_screen.dart';
 import 'package:opalmer_education/student_role/Subjects/widgets/subject_card.dart';
 import 'package:opalmer_education/notification/notification.dart';
 
-class StudentHomeDashboard extends StatelessWidget {
+class StudentHomeDashboard extends ConsumerWidget {
   const StudentHomeDashboard({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authStateProvider);
+    final studentName = user?.username ?? "Student";
+
     return Scaffold(
       backgroundColor: AppColors.scaffoldBg,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(context),
+            _buildHeader(context, studentName),
             const SizedBox(height: 10),
             _buildSectionHeader(context, "Subjects"),
             const SizedBox(height: 16),
-            _buildSubjectsList(),
+            _buildSubjectsList(ref),
             const SizedBox(height: 32),
             _buildSectionHeader(context, "Quizzes"),
             const SizedBox(height: 16),
-            _buildQuizzesList(),
+            _buildQuizzesList(ref),
             const SizedBox(height: 32),
           ],
         ),
@@ -31,7 +37,7 @@ class StudentHomeDashboard extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, String studentName) {
     return Stack(
       children: [
         // Wave Background
@@ -55,9 +61,9 @@ class StudentHomeDashboard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "Hi, Olivia Carter 👋",
-                      style: TextStyle(
+                    Text(
+                      "Hi, $studentName 👋",
+                      style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -140,45 +146,72 @@ class StudentHomeDashboard extends StatelessWidget {
     );
   }
 
-  Widget _buildSubjectsList() {
+  Widget _buildSubjectsList(WidgetRef ref) {
+    final lessonsAsync = ref.watch(studentLessonsProvider);
+
     return SizedBox(
       height: 150,
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        scrollDirection: Axis.horizontal,
-        itemCount: 3,
-        separatorBuilder: (context, index) => const SizedBox(width: 16),
-        itemBuilder: (context, index) {
-          return const SubjectCard();
+      child: lessonsAsync.when(
+        data: (lessons) {
+          if (lessons.isEmpty) {
+            return const Center(child: Text("No subjects found"));
+          }
+          return ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            scrollDirection: Axis.horizontal,
+            itemCount: lessons.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 16),
+            itemBuilder: (context, index) {
+              final lesson = lessons[index];
+              return SubjectCard(
+                subjectName: lesson['title'] ?? "N/A",
+                teacherName: lesson['teacher']?['username'] ?? "N/A",
+              );
+            },
+          );
         },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error: $err')),
       ),
     );
   }
 
 
-  Widget _buildQuizzesList() {
-    return ListView.separated(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: 3,
-      separatorBuilder: (context, index) => const SizedBox(height: 16),
-      itemBuilder: (context, index) {
-        final colors = [
-          const Color(0xFF2E9B5B),
-          const Color(0xFFE8A317),
-          Colors.blue,
-        ];
-        final progress = [0.93, 0.83, 0.73];
-        return _buildQuizCard(
-          color: colors[index % colors.length],
-          progress: progress[index % progress.length],
+  Widget _buildQuizzesList(WidgetRef ref) {
+    final quizzesAsync = ref.watch(studentQuizzesProvider);
+
+    return quizzesAsync.when(
+      data: (quizzes) {
+        if (quizzes.isEmpty) {
+          return const Center(child: Text("No quizzes available"));
+        }
+        return ListView.separated(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: quizzes.length > 3 ? 3 : quizzes.length, // Show top 3 on dashboard
+          separatorBuilder: (context, index) => const SizedBox(height: 16),
+          itemBuilder: (context, index) {
+            final quiz = quizzes[index];
+            final colors = [
+              const Color(0xFF2E9B5B),
+              const Color(0xFFE8A317),
+              Colors.blue,
+            ];
+            return _buildQuizCard(
+              title: quiz['title'] ?? "N/A",
+              color: colors[index % colors.length],
+              progress: 0.0, // Progress needs a specific API to track
+            );
+          },
         );
       },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text('Error: $err')),
     );
   }
 
-  Widget _buildQuizCard({required Color color, required double progress}) {
+  Widget _buildQuizCard({required String title, required Color color, required double progress}) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -214,9 +247,9 @@ class StudentHomeDashboard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "Fraction and Decimals",
-                      style: TextStyle(
+                    Text(
+                      title,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,

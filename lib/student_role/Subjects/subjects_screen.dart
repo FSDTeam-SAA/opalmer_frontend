@@ -1,25 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/providers/student_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/student_role/Subjects/widgets/subject_card.dart';
 
-class SubjectsScreen extends StatelessWidget {
+class SubjectsScreen extends ConsumerWidget {
   const SubjectsScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final lessonsAsync = ref.watch(studentLessonsProvider);
+
     return Scaffold(
       backgroundColor: AppColors.scaffoldBg,
       body: Column(
         children: [
           _buildHeader(context),
           Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
-              itemCount: 6,
-              separatorBuilder: (context, index) => const SizedBox(height: 16),
-              itemBuilder: (context, index) {
-                return const SubjectCard(width: double.infinity);
+            child: lessonsAsync.when(
+              data: (lessons) {
+                if (lessons.isEmpty) {
+                  return const Center(child: Text("No subjects found"));
+                }
+                return ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
+                  itemCount: lessons.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 16),
+                  itemBuilder: (context, index) {
+                    final lesson = lessons[index];
+                    return SubjectCard(
+                      width: double.infinity,
+                      subjectName: lesson['title'] ?? "N/A",
+                      teacherName: lesson['teacher']?['username'] ?? "N/A",
+                      date: lesson['created_at'] != null 
+                        ? lesson['created_at'].toString().split('T')[0] 
+                        : "N/A",
+                    );
+                  },
+                );
               },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, stack) => Center(child: Text('Error: $err')),
             ),
           ),
         ],
