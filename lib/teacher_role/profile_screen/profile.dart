@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/providers/auth_provider.dart';
+import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/notification/notification.dart';
 import 'package:opalmer_education/teacher_role/profile_screen/rewards_badges.dart';
 import 'notification_setting.dart';
@@ -8,17 +11,19 @@ import 'disput_center.dart';
 import 'block_list.dart';
 import 'language.dart';
 import '../../authentication_screen/two_factor_auth_screen.dart';
+import 'package:opalmer_education/authentication_screen/login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  const ProfileScreen({Key? key}) : super(key: key);
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(authStateProvider);
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -109,11 +114,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.asset(
-                        'assets/images/profile /olivia.png',
-                        fit: BoxFit.cover,
-                      ),
+                      borderRadius: BorderRadius.circular(50),
+                      child:
+                          user?.avatar != null &&
+                              user!.avatar!.startsWith('http')
+                          ? Image.network(
+                              user.avatar!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Image.asset(
+                                'assets/images/profile /olivia.png',
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : Image.asset(
+                              'assets/images/profile /olivia.png',
+                              fit: BoxFit.cover,
+                            ),
                     ),
                   ),
                 ),
@@ -122,9 +138,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             // Name and Email
             const SizedBox(height: 60), // Spacer for the overlapping avatar
-            const Text(
-              "Olivia Carter",
-              style: TextStyle(
+            Text(
+              user?.username ?? "User",
+              style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF222222),
@@ -132,7 +148,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              "oliviacarter@gmail.com",
+              user?.email ?? "no-email@opalmer.com",
               style: TextStyle(fontSize: 15, color: Colors.grey.shade500),
             ),
             const SizedBox(height: 32),
@@ -188,8 +204,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Padding(
                     padding: const EdgeInsets.only(top: 8, bottom: 40),
                     child: InkWell(
-                      onTap: () {
+                      onTap: () async {
                         // Logout action
+                        await ref.read(authServiceProvider).logout();
+                        ref.read(authStateProvider.notifier).state = null;
+                        if (mounted) {
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const LoginScreen(isRegistrationFlow: false),
+                            ),
+                            (route) => false,
+                          );
+                        }
                       },
                       borderRadius: BorderRadius.circular(12),
                       child: Padding(

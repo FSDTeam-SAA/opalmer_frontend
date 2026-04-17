@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/providers/auth_provider.dart';
+import 'package:opalmer_education/core/providers/student_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 
-class StudentAttendanceScreen extends StatelessWidget {
+class StudentAttendanceScreen extends ConsumerWidget {
   const StudentAttendanceScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final attendanceAsync = ref.watch(studentAttendanceProvider);
+    final user = ref.watch(authStateProvider);
+    final studentName = user?.username ?? "Student";
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
@@ -16,24 +23,29 @@ class StudentAttendanceScreen extends StatelessWidget {
             const SizedBox(height: 16),
             _buildTableHeader(),
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.only(top: 8, bottom: 20),
-                children: [
-                  _buildAttendanceRow("06-03-25", "Mia Johnson", "Present"),
-                  _buildAttendanceRow("06-03-25", "Mia Johnson", "Absent"),
-                  _buildAttendanceRow("06-03-25", "Mia Johnson", "left classroom"),
-                  _buildAttendanceRow("06-03-25", "Mia Johnson", "Present"),
-                  _buildAttendanceRow("06-03-25", "Mia Johnson", "Present"),
-                  _buildAttendanceRow("06-03-25", "Mia Johnson", "Present"),
-                  _buildAttendanceRow("06-03-25", "Mia Johnson", "Present"),
-                  _buildAttendanceRow("06-03-25", "Mia Johnson", "Absent"),
-                  _buildAttendanceRow("06-03-25", "Mia Johnson", "Present"),
-                  _buildAttendanceRow("06-03-25", "Mia Johnson", "Present"),
-                  _buildAttendanceRow("06-03-25", "Mia Johnson", "Present"),
-                  _buildAttendanceRow("06-03-25", "Mia Johnson", "Present"),
-                  _buildAttendanceRow("06-03-25", "Mia Johnson", "Present"),
-                  _buildAttendanceRow("06-03-25", "Mia Johnson", "Present"),
-                ],
+              child: attendanceAsync.when(
+                data: (records) {
+                  if (records.isEmpty) {
+                    return const Center(child: Text("No attendance records found"));
+                  }
+                  return ListView.builder(
+                    padding: const EdgeInsets.only(top: 8, bottom: 20),
+                    itemCount: records.length,
+                    itemBuilder: (context, index) {
+                      final record = records[index];
+                      final date = record['date'] != null 
+                        ? record['date'].toString().split('T')[0] 
+                        : "N/A";
+                      return _buildAttendanceRow(
+                        date, 
+                        studentName, 
+                        record['present'] ?? "N/A"
+                      );
+                    },
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, stack) => Center(child: Text('Error: $err')),
               ),
             ),
           ],

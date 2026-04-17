@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/providers/student_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 
-class StudentHomeworkScreen extends StatefulWidget {
+class StudentHomeworkScreen extends ConsumerStatefulWidget {
   const StudentHomeworkScreen({Key? key}) : super(key: key);
 
   @override
-  State<StudentHomeworkScreen> createState() => _StudentHomeworkScreenState();
+  ConsumerState<StudentHomeworkScreen> createState() =>
+      _StudentHomeworkScreenState();
 }
 
-class _StudentHomeworkScreenState extends State<StudentHomeworkScreen> {
+class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
   bool isClassSelected = true;
 
   @override
   Widget build(BuildContext context) {
+    final homeworkAsync = ref.watch(studentHomeworkProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
@@ -136,7 +141,14 @@ class _StudentHomeworkScreenState extends State<StudentHomeworkScreen> {
     );
   }
 
-  Widget _buildClassHomework() {
+  Widget _buildClassHomework(List<dynamic> homework) {
+    final activeHomework = homework
+        .where((h) => h['archived'] == false)
+        .toList();
+    final archivedHomework = homework
+        .where((h) => h['archived'] == true)
+        .toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -149,11 +161,24 @@ class _StudentHomeworkScreenState extends State<StudentHomeworkScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        _buildHomeworkCard(
-          title: "Fractions Practice",
-          description: "Solve question 1-10 on page 42 of the textbook.",
-          dueDate: "Due: June 13,2025",
-        ),
+        if (activeHomework.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Text(
+              "No homework for today",
+              style: TextStyle(color: Colors.grey),
+            ),
+          )
+        else
+          ...activeHomework.map(
+            (h) => _buildHomeworkCard(
+              title: h['title'] ?? "N/A",
+              description: "Attached files: ${h['file']?.length ?? 0}",
+              dueDate: h['created_at'] != null
+                  ? "Created: ${h['created_at'].toString().split('T')[0]}"
+                  : "N/A",
+            ),
+          ),
         const SizedBox(height: 32),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -174,21 +199,24 @@ class _StudentHomeworkScreenState extends State<StudentHomeworkScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        _buildHomeworkCard(
-          title: "Fractions Practice",
-          description: "Solve question 1-10 on page 42 of the textbook.",
-          dueDate: "Due: June 13,2025",
-        ),
-        _buildHomeworkCard(
-          title: "Fractions Practice",
-          description: "Solve question 1-10 on page 42 of the textbook.",
-          dueDate: "Due: June 13,2025",
-        ),
-        _buildHomeworkCard(
-          title: "Fractions Practice",
-          description: "Solve question 1-10 on page 42 of the textbook.",
-          dueDate: "Due: June 13,2025",
-        ),
+        if (archivedHomework.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Text(
+              "No archived homework",
+              style: TextStyle(color: Colors.grey),
+            ),
+          )
+        else
+          ...archivedHomework.map(
+            (h) => _buildHomeworkCard(
+              title: h['title'] ?? "N/A",
+              description: "Attached files: ${h['file']?.length ?? 0}",
+              dueDate: h['created_at'] != null
+                  ? h['created_at'].toString().split('T')[0]
+                  : "N/A",
+            ),
+          ),
         const SizedBox(height: 20),
       ],
     );

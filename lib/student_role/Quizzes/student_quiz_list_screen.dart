@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/providers/student_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/student_role/Quizzes/student_quiz_questions_screen.dart';
 
-class StudentQuizListScreen extends StatelessWidget {
+class StudentQuizListScreen extends ConsumerWidget {
   const StudentQuizListScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final quizzesAsync = ref.watch(studentQuizzesProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),

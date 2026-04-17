@@ -7,6 +7,8 @@ import 'package:opalmer_education/core/widgets/primary_button.dart';
 import 'package:opalmer_education/custom_bottom_navigation_bar/main_shell.dart';
 import 'package:opalmer_education/parent_role/parent_main_shell.dart';
 import 'package:opalmer_education/student_role/student_main_shell.dart';
+import 'package:opalmer_education/core/providers/auth_provider.dart';
+import 'package:opalmer_education/core/models/user_model.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   final bool isRegistrationFlow;
@@ -165,7 +167,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     _formController.forward();
   }
 
-  void _onButtonTap() {
+  Future<void> _onButtonTap() async {
+    final schoolId = _schoolIdController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (schoolId.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter both ID and Password")),
+      );
+      return;
+    }
+
     if (widget.isRegistrationFlow) {
       Navigator.of(context).push(
         MaterialPageRoute(
@@ -175,7 +187,54 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       return;
     }
 
-    _routeToDashboard(ref.read(roleProvider));
+    // Connect to backend
+    ref.read(loginLoadingProvider.notifier).state = true;
+    try {
+      final loginResponse = await ref.read(authServiceProvider).login(schoolId, password);
+      
+      if (loginResponse != null) {
+        // Validation: Ensure the user's role matches what was selected
+        final selectedRole = ref.read(roleProvider);
+        final backendRoleStr = (loginResponse.user.type ?? loginResponse.user.role).toLowerCase();
+        
+        // Map backend string to UserRole for comparison
+        UserRole backendRole;
+        if (backendRoleStr == 'student') {
+          backendRole = UserRole.student;
+        } else if (backendRoleStr == 'parent') {
+          backendRole = UserRole.parent;
+        } else if (backendRoleStr == 'teacher') {
+          backendRole = UserRole.teacher;
+        } else {
+          backendRole = UserRole.guest;
+        }
+
+        if (selectedRole != UserRole.guest && backendRole != selectedRole) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Access Denied: You are not registered as a ${selectedRole.name}.")),
+          );
+          return;
+        }
+
+        // Update global state
+        ref.read(authStateProvider.notifier).state = loginResponse.user;
+        
+        // Update user role from backend
+        ref.read(roleProvider.notifier).setRole(backendRole);
+        
+        _routeToDashboard(backendRole);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Login failed. Please check your credentials.")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
+      );
+    } finally {
+      ref.read(loginLoadingProvider.notifier).state = false;
+    }
   }
 
   void _routeToDashboard(UserRole role) {
@@ -189,10 +248,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         MaterialPageRoute(builder: (_) => const StudentMainShell()),
         (route) => false,
       );
-    } else {
+    } else if (role == UserRole.teacher) {
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const MainShell()),
         (route) => false,
+      );
+    } else {
+      // Default or Guest
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Unknown user role.")),
       );
     }
   }
@@ -456,11 +520,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                     opacity: _buttonFade,
                     child: SlideTransition(
                       position: _buttonSlide,
-                      child: PrimaryButton(
-                        text: "LOG IN NOW",
-                        onPressed: _onButtonTap,
-                        isGradient:
-                            false, // Login screen used solid purple in my original check
+                      child: Consumer(
+                        builder: (context, ref, child) {
+                          final isLoading = ref.watch(loginLoadingProvider);
+                          return PrimaryButton(
+                            text: isLoading ? "LOGGING IN..." : "LOG IN NOW",
+                            onPressed: isLoading ? null : () => _onButtonTap(),
+                            isGradient: false,
+                          );
+                        },
                       ),
                     ),
                   ),
