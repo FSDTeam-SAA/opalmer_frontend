@@ -4,6 +4,7 @@ import 'package:opalmer_education/core/providers/auth_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/notification/notification.dart';
 import 'package:opalmer_education/teacher_role/profile_screen/rewards_badges.dart';
+import 'package:opalmer_education/user_role_screen/user_role_screen.dart';
 import 'notification_setting.dart';
 import 'about_us.dart';
 import 'terms_condition.dart';
@@ -209,12 +210,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         await ref.read(authServiceProvider).logout();
                         ref.read(authStateProvider.notifier).state = null;
                         if (mounted) {
-                          Navigator.of(context).pushAndRemoveUntil(
+                          Navigator.pushReplacement(
+                            context,
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  const LoginScreen(isRegistrationFlow: false),
+                              builder: (context) => const UserRoleScreen(),
                             ),
-                            (route) => false,
                           );
                         }
                       },
