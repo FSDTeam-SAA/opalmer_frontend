@@ -74,7 +74,7 @@ class StudentHomeDashboard extends ConsumerWidget {
                       "Your learning starts here.",
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                       ),
                     ),
                   ],
@@ -84,13 +84,15 @@ class StudentHomeDashboard extends ConsumerWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const NotificationScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const NotificationScreen(),
+                      ),
                     );
                   },
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 1),
                     ),
@@ -128,7 +130,9 @@ class StudentHomeDashboard extends ConsumerWidget {
               if (title == "Subjects") {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const SubjectsScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const SubjectsScreen(),
+                  ),
                 );
               }
             },
@@ -176,7 +180,6 @@ class StudentHomeDashboard extends ConsumerWidget {
     );
   }
 
-
   Widget _buildQuizzesList(WidgetRef ref) {
     final quizzesAsync = ref.watch(studentQuizzesProvider);
 
@@ -189,7 +192,9 @@ class StudentHomeDashboard extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 24),
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: quizzes.length > 3 ? 3 : quizzes.length, // Show top 3 on dashboard
+          itemCount: quizzes.length > 3
+              ? 3
+              : quizzes.length, // Show top 3 on dashboard
           separatorBuilder: (context, index) => const SizedBox(height: 16),
           itemBuilder: (context, index) {
             final quiz = quizzes[index];
@@ -211,7 +216,11 @@ class StudentHomeDashboard extends ConsumerWidget {
     );
   }
 
-  Widget _buildQuizCard({required String title, required Color color, required double progress}) {
+  Widget _buildQuizCard({
+    required String title,
+    required Color color,
+    required double progress,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -219,7 +228,7 @@ class StudentHomeDashboard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

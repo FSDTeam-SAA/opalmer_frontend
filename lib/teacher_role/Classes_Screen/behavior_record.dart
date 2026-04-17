@@ -29,10 +29,7 @@ class _BehaviorRecordScreenState extends State<BehaviorRecordScreen> {
                   color: Color(0xFF871DAD),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                ),
+                child: const Icon(Icons.arrow_back, color: Colors.white),
               ),
             ),
           ),
@@ -63,9 +60,7 @@ class _BehaviorRecordScreenState extends State<BehaviorRecordScreen> {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (_) => const AddBehaviorScreen(),
-            ),
+            MaterialPageRoute(builder: (_) => const AddBehaviorScreen()),
           );
         },
         child: Container(
@@ -76,17 +71,13 @@ class _BehaviorRecordScreenState extends State<BehaviorRecordScreen> {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
             ],
           ),
-          child: const Icon(
-            Icons.add,
-            color: Colors.white,
-            size: 32,
-          ),
+          child: const Icon(Icons.add, color: Colors.white, size: 32),
         ),
       ),
     );
@@ -101,7 +92,7 @@ class _BehaviorRecordScreenState extends State<BehaviorRecordScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -124,9 +115,14 @@ class _BehaviorRecordScreenState extends State<BehaviorRecordScreen> {
               ),
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
-                  color: isPositive ? const Color(0xFFCBEAD7) : const Color(0xFFF7CFD1),
+                  color: isPositive
+                      ? const Color(0xFFCBEAD7)
+                      : const Color(0xFFF7CFD1),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -134,10 +130,12 @@ class _BehaviorRecordScreenState extends State<BehaviorRecordScreen> {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: isPositive ? const Color(0xFF388D5E) : const Color(0xFFC04345),
+                    color: isPositive
+                        ? const Color(0xFF388D5E)
+                        : const Color(0xFFC04345),
                   ),
                 ),
-              )
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -148,9 +146,7 @@ class _BehaviorRecordScreenState extends State<BehaviorRecordScreen> {
               Container(
                 width: 44,
                 height: 44,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                ),
+                decoration: const BoxDecoration(shape: BoxShape.circle),
                 clipBehavior: Clip.hardEdge,
                 child: Image.asset(
                   'assets/images/classes/student_image.png',
@@ -188,7 +184,11 @@ class _BehaviorRecordScreenState extends State<BehaviorRecordScreen> {
                   color: Color(0xFF871DAD),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.edit_outlined, color: Colors.white, size: 16),
+                child: const Icon(
+                  Icons.edit_outlined,
+                  color: Colors.white,
+                  size: 16,
+                ),
               ),
               const SizedBox(width: 10),
               Container(
@@ -198,7 +198,11 @@ class _BehaviorRecordScreenState extends State<BehaviorRecordScreen> {
                   color: Color(0xFFEF4444), // Red for delete
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.delete_outline, color: Colors.white, size: 16),
+                child: const Icon(
+                  Icons.delete_outline,
+                  color: Colors.white,
+                  size: 16,
+                ),
               ),
             ],
           ),

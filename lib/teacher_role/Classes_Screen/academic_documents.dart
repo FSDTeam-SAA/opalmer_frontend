@@ -5,7 +5,8 @@ class AcademicDocumentsScreen extends StatefulWidget {
   const AcademicDocumentsScreen({Key? key}) : super(key: key);
 
   @override
-  State<AcademicDocumentsScreen> createState() => _AcademicDocumentsScreenState();
+  State<AcademicDocumentsScreen> createState() =>
+      _AcademicDocumentsScreenState();
 }
 
 class _AcademicDocumentsScreenState extends State<AcademicDocumentsScreen> {
@@ -29,10 +30,7 @@ class _AcademicDocumentsScreenState extends State<AcademicDocumentsScreen> {
                   color: Color(0xFF871DAD),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                ),
+                child: const Icon(Icons.arrow_back, color: Colors.white),
               ),
             ),
           ),
@@ -108,7 +106,7 @@ class _AcademicDocumentsScreenState extends State<AcademicDocumentsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -133,10 +131,7 @@ class _AcademicDocumentsScreenState extends State<AcademicDocumentsScreen> {
           const Expanded(
             child: Text(
               "Academic Notes PDF",
-              style: TextStyle(
-                fontSize: 15,
-                color: Color(0xFF333333),
-              ),
+              style: TextStyle(fontSize: 15, color: Color(0xFF333333)),
             ),
           ),
           Container(
@@ -146,7 +141,11 @@ class _AcademicDocumentsScreenState extends State<AcademicDocumentsScreen> {
               color: Color(0xFF871DAD),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.file_download_outlined, color: Colors.white, size: 18),
+            child: const Icon(
+              Icons.file_download_outlined,
+              color: Colors.white,
+              size: 18,
+            ),
           ),
           const SizedBox(width: 10),
           Container(
@@ -156,7 +155,11 @@ class _AcademicDocumentsScreenState extends State<AcademicDocumentsScreen> {
               color: Color(0xFFEF4444),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.delete_outline, color: Colors.white, size: 18),
+            child: const Icon(
+              Icons.delete_outline,
+              color: Colors.white,
+              size: 18,
+            ),
           ),
         ],
       ),

@@ -83,7 +83,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
+                      color: Colors.black.withValues(alpha: 0.08),
                       blurRadius: 12,
                       offset: const Offset(0, 2),
                     ),
@@ -96,7 +96,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
                     color: _activeColor,
                     boxShadow: [
                       BoxShadow(
-                        color: _activeColor.withOpacity(0.4),
+                        color: _activeColor.withValues(alpha: 0.4),
                         blurRadius: 14,
                         offset: const Offset(0, 5),
                       ),
@@ -213,7 +213,7 @@ class _BottomBarPainter extends CustomPainter {
       ..lineTo(0, h)
       ..close();
 
-    canvas.drawShadow(path, Colors.black.withOpacity(0.08), 12, false);
+    canvas.drawShadow(path, Colors.black.withValues(alpha: 0.08), 12, false);
     canvas.drawPath(path, paint);
   }
 

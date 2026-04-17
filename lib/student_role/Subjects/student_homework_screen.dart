@@ -7,7 +7,8 @@ class StudentHomeworkScreen extends ConsumerStatefulWidget {
   const StudentHomeworkScreen({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<StudentHomeworkScreen> createState() => _StudentHomeworkScreenState();
+  ConsumerState<StudentHomeworkScreen> createState() =>
+      _StudentHomeworkScreenState();
 }
 
 class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
@@ -26,17 +27,11 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
           _buildTabToggle(),
           const SizedBox(height: 24),
           Expanded(
-            child: homeworkAsync.when(
-              data: (homework) {
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: isClassSelected 
-                    ? _buildClassHomework(homework) 
-                    : _buildGroupsHomework(),
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => Center(child: Text('Error: $err')),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: isClassSelected
+                  ? _buildClassHomework()
+                  : _buildGroupsHomework(),
             ),
           ),
         ],
@@ -59,7 +54,11 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
                 color: AppColors.primaryMid,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+              child: const Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
         ),
@@ -91,15 +90,21 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
                 onTap: () => setState(() => isClassSelected = true),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: isClassSelected ? AppColors.primaryMid : Colors.transparent,
+                    color: isClassSelected
+                        ? AppColors.primaryMid
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   alignment: Alignment.center,
                   child: Text(
                     "Class",
                     style: TextStyle(
-                      color: isClassSelected ? Colors.white : Colors.grey.shade600,
-                      fontWeight: isClassSelected ? FontWeight.bold : FontWeight.w500,
+                      color: isClassSelected
+                          ? Colors.white
+                          : Colors.grey.shade600,
+                      fontWeight: isClassSelected
+                          ? FontWeight.bold
+                          : FontWeight.w500,
                     ),
                   ),
                 ),
@@ -110,15 +115,21 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
                 onTap: () => setState(() => isClassSelected = false),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: !isClassSelected ? AppColors.primaryMid : Colors.transparent,
+                    color: !isClassSelected
+                        ? AppColors.primaryMid
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   alignment: Alignment.center,
                   child: Text(
                     "Groups",
                     style: TextStyle(
-                      color: !isClassSelected ? Colors.white : Colors.grey.shade600,
-                      fontWeight: !isClassSelected ? FontWeight.bold : FontWeight.w500,
+                      color: !isClassSelected
+                          ? Colors.white
+                          : Colors.grey.shade600,
+                      fontWeight: !isClassSelected
+                          ? FontWeight.bold
+                          : FontWeight.w500,
                     ),
                   ),
                 ),
@@ -131,8 +142,12 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
   }
 
   Widget _buildClassHomework(List<dynamic> homework) {
-    final activeHomework = homework.where((h) => h['archived'] == false).toList();
-    final archivedHomework = homework.where((h) => h['archived'] == true).toList();
+    final activeHomework = homework
+        .where((h) => h['archived'] == false)
+        .toList();
+    final archivedHomework = homework
+        .where((h) => h['archived'] == true)
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -149,16 +164,21 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
         if (activeHomework.isEmpty)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 20),
-            child: Text("No homework for today", style: TextStyle(color: Colors.grey)),
+            child: Text(
+              "No homework for today",
+              style: TextStyle(color: Colors.grey),
+            ),
           )
         else
-          ...activeHomework.map((h) => _buildHomeworkCard(
-                title: h['title'] ?? "N/A",
-                description: "Attached files: ${h['file']?.length ?? 0}",
-                dueDate: h['created_at'] != null 
-                  ? "Created: ${h['created_at'].toString().split('T')[0]}" 
+          ...activeHomework.map(
+            (h) => _buildHomeworkCard(
+              title: h['title'] ?? "N/A",
+              description: "Attached files: ${h['file']?.length ?? 0}",
+              dueDate: h['created_at'] != null
+                  ? "Created: ${h['created_at'].toString().split('T')[0]}"
                   : "N/A",
-              )),
+            ),
+          ),
         const SizedBox(height: 32),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -171,23 +191,32 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
                 color: AppColors.textPrimary,
               ),
             ),
-            Icon(Icons.calendar_month_outlined, color: AppColors.primaryMid, size: 24),
+            Icon(
+              Icons.calendar_month_outlined,
+              color: AppColors.primaryMid,
+              size: 24,
+            ),
           ],
         ),
         const SizedBox(height: 16),
         if (archivedHomework.isEmpty)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 20),
-            child: Text("No archived homework", style: TextStyle(color: Colors.grey)),
+            child: Text(
+              "No archived homework",
+              style: TextStyle(color: Colors.grey),
+            ),
           )
         else
-          ...archivedHomework.map((h) => _buildHomeworkCard(
-                title: h['title'] ?? "N/A",
-                description: "Attached files: ${h['file']?.length ?? 0}",
-                dueDate: h['created_at'] != null 
-                  ? h['created_at'].toString().split('T')[0] 
+          ...archivedHomework.map(
+            (h) => _buildHomeworkCard(
+              title: h['title'] ?? "N/A",
+              description: "Attached files: ${h['file']?.length ?? 0}",
+              dueDate: h['created_at'] != null
+                  ? h['created_at'].toString().split('T')[0]
                   : "N/A",
-              )),
+            ),
+          ),
         const SizedBox(height: 20),
       ],
     );
@@ -240,7 +269,11 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
                 color: AppColors.textPrimary,
               ),
             ),
-            Icon(Icons.calendar_month_outlined, color: AppColors.primaryMid, size: 24),
+            Icon(
+              Icons.calendar_month_outlined,
+              color: AppColors.primaryMid,
+              size: 24,
+            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -262,7 +295,7 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -272,7 +305,9 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
         children: [
           const CircleAvatar(
             radius: 20,
-            backgroundImage: AssetImage('assets/images/classes/student_image.png'),
+            backgroundImage: AssetImage(
+              'assets/images/classes/student_image.png',
+            ),
           ),
           const SizedBox(width: 16),
           Text(
@@ -301,7 +336,7 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

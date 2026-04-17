@@ -4,7 +4,6 @@ import 'package:opalmer_education/core/providers/auth_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/notification/notification.dart';
 import 'package:opalmer_education/teacher_role/profile_screen/rewards_badges.dart';
-import 'profile_setup.dart';
 import 'notification_setting.dart';
 import 'about_us.dart';
 import 'terms_condition.dart';
@@ -14,7 +13,7 @@ import 'language.dart';
 import '../../authentication_screen/two_factor_auth_screen.dart';
 import 'package:opalmer_education/authentication_screen/login_screen.dart';
 
-class ProfileScreen extends ConsumerStatefulWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
 
   @override
@@ -108,7 +107,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       border: Border.all(color: Colors.white, width: 0),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 2,
                           offset: const Offset(0, 5),
                         ),
@@ -116,19 +115,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(50),
-                      child: user?.avatar != null && user!.avatar!.startsWith('http')
-                        ? Image.network(
-                            user.avatar!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Image.asset(
+                      child:
+                          user?.avatar != null &&
+                              user!.avatar!.startsWith('http')
+                          ? Image.network(
+                              user.avatar!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Image.asset(
+                                'assets/images/profile /olivia.png',
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : Image.asset(
                               'assets/images/profile /olivia.png',
                               fit: BoxFit.cover,
                             ),
-                          )
-                        : Image.asset(
-                            'assets/images/profile /olivia.png',
-                            fit: BoxFit.cover,
-                          ),
                     ),
                   ),
                 ),
@@ -209,7 +210,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ref.read(authStateProvider.notifier).state = null;
                         if (mounted) {
                           Navigator.of(context).pushAndRemoveUntil(
-                            MaterialPageRoute(builder: (_) => const LoginScreen(isRegistrationFlow: false)),
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const LoginScreen(isRegistrationFlow: false),
+                            ),
                             (route) => false,
                           );
                         }
@@ -257,7 +261,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 5,
             offset: const Offset(0, 2),
           ),

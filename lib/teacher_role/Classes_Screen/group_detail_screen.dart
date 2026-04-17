@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'add_homework_screen.dart';
 
 class GroupDetailScreen extends StatefulWidget {
   const GroupDetailScreen({super.key});
@@ -31,10 +30,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
                         color: Color(0xFF871DAD),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.white,
-                      ),
+                      child: const Icon(Icons.arrow_back, color: Colors.white),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -53,20 +49,26 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFF871DAD), width: 1.5),
+                      border: Border.all(
+                        color: const Color(0xFF871DAD),
+                        width: 1.5,
+                      ),
                     ),
                     child: const Icon(
                       Icons.edit,
                       color: Color(0xFF871DAD),
                       size: 20,
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -88,7 +90,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
                     _buildMemberCard(name: "Mia johnson"),
 
                     const SizedBox(height: 24),
-                    
+
                     // Today's Homework
                     const Text(
                       "Today's Homework",
@@ -101,12 +103,13 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
                     const SizedBox(height: 16),
                     _buildHomeworkCard(
                       title: "Fractions Practice",
-                      description: "Solve question 1-10 on page 42 of the textbook.",
+                      description:
+                          "Solve question 1-10 on page 42 of the textbook.",
                       dueDate: "Due: June 13,2025",
                       showOptions: true,
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Archived Homework Header
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -127,17 +130,19 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Archived Homework List
                     _buildHomeworkCard(
                       title: "Fractions Practice",
-                      description: "Solve question 1-10 on page 42 of the textbook.",
+                      description:
+                          "Solve question 1-10 on page 42 of the textbook.",
                       dueDate: "Due: June 13,2025",
                       showOptions: false,
                     ),
                     _buildHomeworkCard(
                       title: "Fractions Practice",
-                      description: "Solve question 1-10 on page 42 of the textbook.",
+                      description:
+                          "Solve question 1-10 on page 42 of the textbook.",
                       dueDate: "Due: June 13,2025",
                       showOptions: false,
                     ),
@@ -160,7 +165,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -171,9 +176,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
           Container(
             width: 44,
             height: 44,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-            ),
+            decoration: const BoxDecoration(shape: BoxShape.circle),
             clipBehavior: Clip.hardEdge,
             child: Image.asset(
               'assets/images/classes/student_image.png',
@@ -225,7 +228,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -259,10 +262,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
             children: [
               Text(
                 dueDate,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade500,
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
               ),
               if (showOptions)
                 Row(

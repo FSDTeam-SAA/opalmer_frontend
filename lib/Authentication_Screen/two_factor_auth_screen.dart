@@ -79,7 +79,7 @@ class _TwoFactorScreenState extends State<TwoFactorAuthScreen> {
                         );
                       }
                     },
-                    activeColor: Colors.white,
+                    activeThumbColor: Colors.white,
                     activeTrackColor: const Color(0xFF871DAD),
                   ),
                 ],

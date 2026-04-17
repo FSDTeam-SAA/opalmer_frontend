@@ -7,10 +7,10 @@ class ComposeMessageScreen extends StatefulWidget {
   final String imageUrl;
 
   const ComposeMessageScreen({
-    Key? key,
+    super.key,
     required this.name,
     required this.imageUrl,
-  }) : super(key: key);
+  });
 
   @override
   State<ComposeMessageScreen> createState() => _ComposeMessageScreenState();
@@ -39,14 +39,22 @@ class _ComposeMessageScreenState extends State<ComposeMessageScreen> {
                   color: Color(0xFF871DAD),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                child: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
             ),
           ),
         ),
         title: const Text(
           "Compose Message",
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
         ),
       ),
       body: Column(
@@ -56,7 +64,11 @@ class _ComposeMessageScreenState extends State<ComposeMessageScreen> {
             padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
             child: const Text(
               "Message",
-              style: TextStyle(fontSize: 14, color: Color(0xFF222222), fontWeight: FontWeight.w500),
+              style: TextStyle(
+                fontSize: 14,
+                color: Color(0xFF222222),
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
           Padding(
@@ -94,17 +106,25 @@ class _ComposeMessageScreenState extends State<ComposeMessageScreen> {
                         // Return to dashboard and select Draft tab (index 1)
                         Navigator.pushAndRemoveUntil(
                           context,
-                          MaterialPageRoute(builder: (context) => const ChatDashboard(initialTab: 1)),
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const ChatDashboard(initialTab: 1),
+                          ),
                           (route) => false,
                         );
                       },
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Color(0xFF871DAD)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       child: const Text(
                         "SAVE AS DRAFT",
-                        style: TextStyle(color: Color(0xFF871DAD), fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: Color(0xFF871DAD),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
@@ -127,12 +147,17 @@ class _ComposeMessageScreenState extends State<ComposeMessageScreen> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF871DAD),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         elevation: 0,
                       ),
                       child: const Text(
                         "SEND",
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),

@@ -43,7 +43,11 @@ class StudentLessonsScreen extends StatelessWidget {
                     color: AppColors.textPrimary,
                   ),
                 ),
-                Icon(Icons.calendar_month_outlined, color: AppColors.primaryMid, size: 24),
+                Icon(
+                  Icons.calendar_month_outlined,
+                  color: AppColors.primaryMid,
+                  size: 24,
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -87,7 +91,11 @@ class StudentLessonsScreen extends StatelessWidget {
                 color: AppColors.primaryMid,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+              child: const Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
         ),
@@ -117,7 +125,7 @@ class StudentLessonsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -161,7 +169,9 @@ class StudentLessonsScreen extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const StudentLessonOverviewScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const StudentLessonOverviewScreen(),
+                    ),
                   );
                 },
                 child: const Text(

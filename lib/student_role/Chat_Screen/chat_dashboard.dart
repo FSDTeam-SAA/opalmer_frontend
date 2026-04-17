@@ -7,7 +7,7 @@ import 'package:opalmer_education/notification/notification.dart';
 
 class ChatDashboard extends StatefulWidget {
   final int initialTab;
-  const ChatDashboard({Key? key, this.initialTab = 0}) : super(key: key);
+  const ChatDashboard({super.key, this.initialTab = 0});
 
   @override
   State<ChatDashboard> createState() => _ChatDashboardState();
@@ -517,7 +517,7 @@ class _SlidableListItemState extends State<_SlidableListItem>
                         width: 56,
                         height: 56,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF871DAD).withOpacity(0.1),
+                          color: const Color(0xFF871DAD).withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(

@@ -67,10 +67,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
               padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
               child: Text(
                 "Choose your language to proceed",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF444444),
-                ),
+                style: TextStyle(fontSize: 16, color: Color(0xFF444444)),
               ),
             ),
             const SizedBox(height: 16),
@@ -126,12 +123,14 @@ class _LanguageScreenState extends State<LanguageScreen> {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: isSelected ? const Color(0xFF871DAD) : Colors.grey.shade200,
+                            color: isSelected
+                                ? const Color(0xFF871DAD)
+                                : Colors.grey.shade200,
                             width: 1,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
+                              color: Colors.black.withValues(alpha: 0.04),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),

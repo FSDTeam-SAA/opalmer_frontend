@@ -31,10 +31,7 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
                         color: Color(0xFF871DAD),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.white,
-                      ),
+                      child: const Icon(Icons.arrow_back, color: Colors.white),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -51,7 +48,10 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
             ),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -68,17 +68,25 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
                     TextField(
                       decoration: InputDecoration(
                         hintText: "Enter title here",
-                        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                        hintStyle: TextStyle(
+                          color: Colors.grey.shade400,
+                          fontSize: 14,
+                        ),
                         filled: true,
                         fillColor: const Color(0xFFFAFAFA),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(color: Colors.grey.shade300),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Color(0xFF871DAD)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF871DAD),
+                          ),
                         ),
                       ),
                     ),
@@ -98,17 +106,25 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
                       maxLines: 4,
                       decoration: InputDecoration(
                         hintText: "Write",
-                        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                        hintStyle: TextStyle(
+                          color: Colors.grey.shade400,
+                          fontSize: 14,
+                        ),
                         filled: true,
                         fillColor: const Color(0xFFFAFAFA),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(color: Colors.grey.shade300),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Color(0xFF871DAD)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF871DAD),
+                          ),
                         ),
                       ),
                     ),
@@ -124,7 +140,7 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    
+
                     CustomPaint(
                       painter: DashedRectPainter(
                         color: const Color(0xFF871DAD),
@@ -154,8 +170,13 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
                             OutlinedButton(
                               onPressed: () {},
                               style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: Color(0xFF871DAD)),
-                                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                                side: const BorderSide(
+                                  color: Color(0xFF871DAD),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 40,
+                                  vertical: 12,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -177,13 +198,16 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
 
                     // Uploaded File Preview
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(8),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color: Colors.black.withValues(alpha: 0.04),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
                           ),
@@ -283,8 +307,14 @@ class DashedRectPainter extends CustomPainter {
     double y = size.height;
 
     // Modern flutter way for dashed border:
-    Path path = Path()..addRRect(RRect.fromRectAndRadius(Rect.fromLTWH(0, 0, x, y), const Radius.circular(8)));
-    
+    Path path = Path()
+      ..addRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(0, 0, x, y),
+          const Radius.circular(8),
+        ),
+      );
+
     Path dashPath = Path();
     double dashWidth = 5.0;
     double dashSpace = 5.0;
@@ -300,7 +330,7 @@ class DashedRectPainter extends CustomPainter {
       }
       distance = 0.0;
     }
-    
+
     canvas.drawPath(dashPath, dashedPaint);
   }
 

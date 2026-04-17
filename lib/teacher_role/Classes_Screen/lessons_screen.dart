@@ -32,10 +32,7 @@ class _LessonsScreenState extends State<LessonsScreen> {
                         color: Color(0xFF871DAD),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.white,
-                      ),
+                      child: const Icon(Icons.arrow_back, color: Colors.white),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -52,7 +49,10 @@ class _LessonsScreenState extends State<LessonsScreen> {
             ),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -97,7 +97,7 @@ class _LessonsScreenState extends State<LessonsScreen> {
                       ),
                     ),
                     const SizedBox(height: 40),
-                    
+
                     // Archived Lessons Header
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -118,29 +118,33 @@ class _LessonsScreenState extends State<LessonsScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Archived Lessons List
                     _buildLessonCard(
                       title: "Photosynthesis",
-                      description: "Solve question 1-10 on page 42 of the textbook.",
+                      description:
+                          "Solve question 1-10 on page 42 of the textbook.",
                       dueDate: "Due: June 13,2025",
                       showOptions: true,
                     ),
                     _buildLessonCard(
                       title: "Fractions Practice",
-                      description: "Solve question 1-10 on page 42 of the textbook.",
-                      dueDate: "Due: June 13,2025",
-                      showOptions: false,
-                    ),
-                     _buildLessonCard(
-                      title: "Fractions Practice",
-                      description: "Solve question 1-10 on page 42 of the textbook.",
+                      description:
+                          "Solve question 1-10 on page 42 of the textbook.",
                       dueDate: "Due: June 13,2025",
                       showOptions: false,
                     ),
                     _buildLessonCard(
                       title: "Fractions Practice",
-                      description: "Solve question 1-10 on page 42 of the textbook.",
+                      description:
+                          "Solve question 1-10 on page 42 of the textbook.",
+                      dueDate: "Due: June 13,2025",
+                      showOptions: false,
+                    ),
+                    _buildLessonCard(
+                      title: "Fractions Practice",
+                      description:
+                          "Solve question 1-10 on page 42 of the textbook.",
                       dueDate: "Due: June 13,2025",
                       showOptions: false,
                     ),
@@ -168,7 +172,7 @@ class _LessonsScreenState extends State<LessonsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -202,10 +206,7 @@ class _LessonsScreenState extends State<LessonsScreen> {
             children: [
               Text(
                 dueDate,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade500,
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
               ),
               Row(
                 children: [

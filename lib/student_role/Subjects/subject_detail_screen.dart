@@ -9,7 +9,8 @@ import 'package:opalmer_education/student_role/Subjects/student_grading_progress
 
 class SubjectDetailScreen extends StatelessWidget {
   final String subjectName;
-  const SubjectDetailScreen({Key? key, this.subjectName = "Science"}) : super(key: key);
+  const SubjectDetailScreen({Key? key, this.subjectName = "Science"})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +61,11 @@ class SubjectDetailScreen extends StatelessWidget {
                 color: AppColors.primaryMid,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+              child: const Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
         ),
@@ -116,7 +121,7 @@ class SubjectDetailScreen extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               fontSize: 14,
             ),
           ),
@@ -209,9 +214,17 @@ class SubjectDetailScreen extends StatelessWidget {
                 children: const [
                   Text(
                     "Weekly",
-                    style: TextStyle(color: AppColors.primaryMid, fontSize: 13, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: AppColors.primaryMid,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                  Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.primaryMid, size: 18),
+                  Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: AppColors.primaryMid,
+                    size: 18,
+                  ),
                 ],
               ),
             ),
@@ -226,7 +239,7 @@ class SubjectDetailScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -244,20 +257,35 @@ class SubjectDetailScreen extends StatelessWidget {
                 ),
               ),
               titlesData: FlTitlesData(
-                rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                topTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
                 bottomTitles: AxisTitles(
                   sideTitles: SideTitles(
                     showTitles: true,
                     reservedSize: 30,
                     getTitlesWidget: (value, meta) {
-                      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                      const days = [
+                        'Sun',
+                        'Mon',
+                        'Tue',
+                        'Wed',
+                        'Thu',
+                        'Fri',
+                        'Sat',
+                      ];
                       if (value >= 0 && value < days.length) {
                         return Padding(
                           padding: const EdgeInsets.only(top: 8.0),
                           child: Text(
                             days[value.toInt()],
-                            style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
+                            style: TextStyle(
+                              color: Colors.grey.shade500,
+                              fontSize: 11,
+                            ),
                           ),
                         );
                       }
@@ -273,7 +301,10 @@ class SubjectDetailScreen extends StatelessWidget {
                       if (value % 20 == 0) {
                         return Text(
                           value.toInt().toString(),
-                          style: TextStyle(color: Colors.grey.shade400, fontSize: 11),
+                          style: TextStyle(
+                            color: Colors.grey.shade400,
+                            fontSize: 11,
+                          ),
                         );
                       }
                       return const SizedBox.shrink();
@@ -304,7 +335,8 @@ class SubjectDetailScreen extends StatelessWidget {
                   dotData: FlDotData(
                     show: true,
                     getDotPainter: (spot, percent, barData, index) {
-                      if (index == 4) { // Thursday - peak in mockup
+                      if (index == 4) {
+                        // Thursday - peak in mockup
                         return FlDotCirclePainter(
                           radius: 6,
                           color: Colors.white,
@@ -319,8 +351,8 @@ class SubjectDetailScreen extends StatelessWidget {
                     show: true,
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.primaryMid.withOpacity(0.35),
-                        AppColors.primaryMid.withOpacity(0.01),
+                        AppColors.primaryMid.withValues(alpha: 0.35),
+                        AppColors.primaryMid.withValues(alpha: 0.01),
                       ],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
@@ -345,7 +377,9 @@ class SubjectDetailScreen extends StatelessWidget {
     ];
 
     return Column(
-      children: options.map((opt) => _buildOptionTile(context, opt["title"] as String)).toList(),
+      children: options
+          .map((opt) => _buildOptionTile(context, opt["title"] as String))
+          .toList(),
     );
   }
 
@@ -357,7 +391,7 @@ class SubjectDetailScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -373,32 +407,46 @@ class SubjectDetailScreen extends StatelessWidget {
             color: Color(0xFF333333),
           ),
         ),
-        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey),
+        trailing: const Icon(
+          Icons.arrow_forward_ios_rounded,
+          size: 16,
+          color: Colors.grey,
+        ),
         onTap: () {
           if (title == "Home Work") {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const StudentHomeworkScreen()),
+              MaterialPageRoute(
+                builder: (context) => const StudentHomeworkScreen(),
+              ),
             );
           } else if (title == "Attendance") {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const StudentAttendanceScreen()),
+              MaterialPageRoute(
+                builder: (context) => const StudentAttendanceScreen(),
+              ),
             );
           } else if (title == "Lessons") {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const StudentLessonsScreen()),
+              MaterialPageRoute(
+                builder: (context) => const StudentLessonsScreen(),
+              ),
             );
           } else if (title == "Academic Notes") {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const StudentAcademicNotesScreen()),
+              MaterialPageRoute(
+                builder: (context) => const StudentAcademicNotesScreen(),
+              ),
             );
           } else if (title == "Grading Progress") {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const StudentGradingProgressScreen()),
+              MaterialPageRoute(
+                builder: (context) => const StudentGradingProgressScreen(),
+              ),
             );
           }
         },

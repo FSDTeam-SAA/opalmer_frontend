@@ -23,7 +23,10 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
             children: [
               // ── Header ──
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 child: Row(
                   children: [
                     GestureDetector(
@@ -154,7 +157,9 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                               width: 1.5,
                             ),
                             image: const DecorationImage(
-                              image: AssetImage('assets/images/classes/student_image.png'),
+                              image: AssetImage(
+                                'assets/images/classes/student_image.png',
+                              ),
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -195,7 +200,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color: Colors.black.withValues(alpha: 0.04),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -216,10 +221,15 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                                 ),
                               ),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: const Color(0xFF871DAD)),
+                                  border: Border.all(
+                                    color: const Color(0xFF871DAD),
+                                  ),
                                 ),
                                 child: Row(
                                   children: const [
@@ -232,7 +242,11 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                                       ),
                                     ),
                                     SizedBox(width: 4),
-                                    Icon(Icons.keyboard_arrow_down, color: Color(0xFF871DAD), size: 16),
+                                    Icon(
+                                      Icons.keyboard_arrow_down,
+                                      color: Color(0xFF871DAD),
+                                      size: 16,
+                                    ),
                                   ],
                                 ),
                               ),
@@ -268,7 +282,8 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const AcademicDocumentsScreen(),
+                            builder: (context) =>
+                                const AcademicDocumentsScreen(),
                           ),
                         );
                       },
@@ -285,7 +300,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                       },
                       child: _buildListTile("Grading Progress"),
                     ),
-                    
+
                     const SizedBox(height: 40),
                   ],
                 ),
@@ -350,7 +365,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -403,10 +418,10 @@ class _ProgressChartPainter extends CustomPainter {
 
       // Grid line
       final Paint gridPaint = Paint()
-        ..color = Colors.grey.withOpacity(0.3)
+        ..color = Colors.grey.withValues(alpha: 0.3)
         ..strokeWidth = 1
         ..style = PaintingStyle.stroke;
-      
+
       // Dashed line manual draw
       double startX = leftMargin;
       while (startX < w) {
@@ -420,14 +435,19 @@ class _ProgressChartPainter extends CustomPainter {
         style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
       );
       textPainter.layout();
-      textPainter.paint(
-        canvas,
-        Offset(0, y - textPainter.height / 2),
-      );
+      textPainter.paint(canvas, Offset(0, y - textPainter.height / 2));
     }
 
     // X Labels
-    final List<String> xLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    final List<String> xLabels = [
+      "Sun",
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+    ];
     final double xStep = chartW / (xLabels.length - 1);
 
     for (int i = 0; i < xLabels.length; i++) {
@@ -482,8 +502,18 @@ class _ProgressChartPainter extends CustomPainter {
           final t = j / 20.0;
           final t2 = t * t;
           final t3 = t2 * t;
-          final x = 0.5 * ((2.0 * p1.dx) + (-p0.dx + p2.dx) * t + (2.0 * p0.dx - 5.0 * p1.dx + 4.0 * p2.dx - p3.dx) * t2 + (-p0.dx + 3.0 * p1.dx - 3.0 * p2.dx + p3.dx) * t3);
-          final y = 0.5 * ((2.0 * p1.dy) + (-p0.dy + p2.dy) * t + (2.0 * p0.dy - 5.0 * p1.dy + 4.0 * p2.dy - p3.dy) * t2 + (-p0.dy + 3.0 * p1.dy - 3.0 * p2.dy + p3.dy) * t3);
+          final x =
+              0.5 *
+              ((2.0 * p1.dx) +
+                  (-p0.dx + p2.dx) * t +
+                  (2.0 * p0.dx - 5.0 * p1.dx + 4.0 * p2.dx - p3.dx) * t2 +
+                  (-p0.dx + 3.0 * p1.dx - 3.0 * p2.dx + p3.dx) * t3);
+          final y =
+              0.5 *
+              ((2.0 * p1.dy) +
+                  (-p0.dy + p2.dy) * t +
+                  (2.0 * p0.dy - 5.0 * p1.dy + 4.0 * p2.dy - p3.dy) * t2 +
+                  (-p0.dy + 3.0 * p1.dy - 3.0 * p2.dy + p3.dy) * t3);
           path.lineTo(x, y);
         }
       }
@@ -510,8 +540,8 @@ class _ProgressChartPainter extends CustomPainter {
         Offset(0, topMargin),
         Offset(0, topMargin + chartH),
         [
-          const Color(0xFF8E24AA).withOpacity(0.3),
-          const Color(0xFF8E24AA).withOpacity(0.0),
+          const Color(0xFF8E24AA).withValues(alpha: 0.3),
+          const Color(0xFF8E24AA).withValues(alpha: 0.0),
         ],
       )
       ..style = PaintingStyle.fill;
@@ -532,7 +562,11 @@ class _ProgressChartPainter extends CustomPainter {
     final Paint peakLinePaint = Paint()
       ..color = const Color(0xFFFFA726)
       ..strokeWidth = 1.0;
-    canvas.drawLine(Offset(peak.dx, peak.dy), Offset(peak.dx, topMargin + chartH), peakLinePaint);
+    canvas.drawLine(
+      Offset(peak.dx, peak.dy),
+      Offset(peak.dx, topMargin + chartH),
+      peakLinePaint,
+    );
 
     // Circle at peak
     final Paint peakCircleBgPaint = Paint()
@@ -549,18 +583,26 @@ class _ProgressChartPainter extends CustomPainter {
     final String peakLabel = "55%";
     textPainter.text = TextSpan(
       text: peakLabel,
-      style: const TextStyle(color: Color(0xFF222222), fontSize: 12, fontWeight: FontWeight.bold),
+      style: const TextStyle(
+        color: Color(0xFF222222),
+        fontSize: 12,
+        fontWeight: FontWeight.bold,
+      ),
     );
     textPainter.layout();
-    
+
     final RRect bubbleRRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: Offset(peak.dx, peak.dy - 20), width: textPainter.width + 16, height: textPainter.height + 12),
+      Rect.fromCenter(
+        center: Offset(peak.dx, peak.dy - 20),
+        width: textPainter.width + 16,
+        height: textPainter.height + 12,
+      ),
       const Radius.circular(8),
     );
 
     // Draw shadow bubble
     final Paint shadowPaint = Paint()
-      ..color = Colors.black.withOpacity(0.06)
+      ..color = Colors.black.withValues(alpha: 0.06)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
     canvas.drawRRect(bubbleRRect, shadowPaint);
 
@@ -571,7 +613,10 @@ class _ProgressChartPainter extends CustomPainter {
 
     textPainter.paint(
       canvas,
-      Offset(peak.dx - textPainter.width / 2, peak.dy - 20 - textPainter.height / 2),
+      Offset(
+        peak.dx - textPainter.width / 2,
+        peak.dy - 20 - textPainter.height / 2,
+      ),
     );
   }
 

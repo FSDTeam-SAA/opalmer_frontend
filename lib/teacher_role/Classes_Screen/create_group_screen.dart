@@ -9,7 +9,10 @@ class CreateGroupScreen extends StatefulWidget {
 
 class _CreateGroupScreenState extends State<CreateGroupScreen> {
   // Using a set to track selected student indices
-  final Set<int> _selectedIndices = {0, 1}; // Pre-selecting first two to match screenshot
+  final Set<int> _selectedIndices = {
+    0,
+    1,
+  }; // Pre-selecting first two to match screenshot
 
   @override
   Widget build(BuildContext context) {
@@ -33,10 +36,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                         color: Color(0xFF871DAD),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.white,
-                      ),
+                      child: const Icon(Icons.arrow_back, color: Colors.white),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -54,7 +54,10 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
 
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -71,17 +74,25 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                     TextField(
                       decoration: InputDecoration(
                         hintText: "Enter title here",
-                        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                        hintStyle: TextStyle(
+                          color: Colors.grey.shade400,
+                          fontSize: 14,
+                        ),
                         filled: true,
                         fillColor: Colors.white, // In screenshot it looks white
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(color: Colors.grey.shade300),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Color(0xFF871DAD)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF871DAD),
+                          ),
                         ),
                       ),
                     ),
@@ -100,14 +111,17 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
 
                     // Students List
                     for (int i = 0; i < 7; i++)
-                      _buildSelectableStudentCard(index: i, name: "Mia johnson"),
-                      
+                      _buildSelectableStudentCard(
+                        index: i,
+                        name: "Mia johnson",
+                      ),
+
                     const SizedBox(height: 20),
                   ],
                 ),
               ),
             ),
-            
+
             // Create Button
             Padding(
               padding: const EdgeInsets.all(20),
@@ -142,9 +156,12 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     );
   }
 
-  Widget _buildSelectableStudentCard({required int index, required String name}) {
+  Widget _buildSelectableStudentCard({
+    required int index,
+    required String name,
+  }) {
     bool isSelected = _selectedIndices.contains(index);
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -163,7 +180,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -174,9 +191,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             Container(
               width: 44,
               height: 44,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-              ),
+              decoration: const BoxDecoration(shape: BoxShape.circle),
               clipBehavior: Clip.hardEdge,
               child: Image.asset(
                 'assets/images/classes/student_image.png',
@@ -200,21 +215,23 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isSelected ? const Color(0xFF871DAD) : Colors.grey.shade400,
+                  color: isSelected
+                      ? const Color(0xFF871DAD)
+                      : Colors.grey.shade400,
                   width: 2,
                 ),
               ),
               child: Center(
-                child: isSelected 
-                  ? Container(
-                      width: 12,
-                      height: 12,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF871DAD),
-                        shape: BoxShape.circle,
-                      ),
-                    )
-                  : null,
+                child: isSelected
+                    ? Container(
+                        width: 12,
+                        height: 12,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF871DAD),
+                          shape: BoxShape.circle,
+                        ),
+                      )
+                    : null,
               ),
             ),
           ],

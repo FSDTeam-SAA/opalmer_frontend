@@ -3,7 +3,7 @@ import 'package:opalmer_education/teacher_role/Quiz_Screen/attended_students.dar
 import 'package:opalmer_education/teacher_role/Quiz_Screen/create_quiz.dart';
 
 class QuizDetailScreen extends StatelessWidget {
-  const QuizDetailScreen({Key? key}) : super(key: key);
+  const QuizDetailScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,14 +25,22 @@ class QuizDetailScreen extends StatelessWidget {
                   color: Color(0xFF871DAD),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                child: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
             ),
           ),
         ),
         title: const Text(
           "Quiz Detail",
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
         ),
         actions: [
           Padding(
@@ -40,7 +48,12 @@ class QuizDetailScreen extends StatelessWidget {
             child: Center(
               child: GestureDetector(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateQuizScreen()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CreateQuizScreen(),
+                    ),
+                  );
                 },
                 child: Container(
                   width: 40,
@@ -49,7 +62,11 @@ class QuizDetailScreen extends StatelessWidget {
                     color: Color(0xFF871DAD),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.edit_outlined, color: Colors.white, size: 20),
+                  child: const Icon(
+                    Icons.edit_outlined,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
               ),
             ),
@@ -63,19 +80,23 @@ class QuizDetailScreen extends StatelessWidget {
             children: [
               // Summary Green Card
               _buildSummaryCard(),
-              
+
               const SizedBox(height: 24),
               _buildInfoRow("Grade :", "6th"),
               const SizedBox(height: 12),
               _buildInfoRow("Subject :", "Math"),
-              
+
               const SizedBox(height: 28),
               const Text(
                 "Questions",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF222222)),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF222222),
+                ),
               ),
               const SizedBox(height: 16),
-              
+
               _buildQuestionTile(
                 number: 1,
                 question: "What is 1/2 as a decimal?",
@@ -109,7 +130,7 @@ class QuizDetailScreen extends StatelessWidget {
               ),
             ],
           ),
-          
+
           // Fixed Bottom Button
           Positioned(
             bottom: 12,
@@ -117,7 +138,12 @@ class QuizDetailScreen extends StatelessWidget {
             right: 20,
             child: GestureDetector(
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const AttendedStudentsScreen()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AttendedStudentsScreen(),
+                  ),
+                );
               },
               child: Container(
                 height: 60,
@@ -125,13 +151,22 @@ class QuizDetailScreen extends StatelessWidget {
                   color: const Color(0xFF871DAD),
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
-                    BoxShadow(color: const Color(0xFF871DAD).withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 4)),
+                    BoxShadow(
+                      color: const Color(0xFF871DAD).withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
                   ],
                 ),
                 alignment: Alignment.center,
                 child: const Text(
                   "(20) STUDENTS ATTENDED",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 0.5),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
             ),
@@ -145,10 +180,16 @@ class QuizDetailScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF4DB68D), // Matching the greenish-blue mockup color
+        color: const Color(
+          0xFF4DB68D,
+        ), // Matching the greenish-blue mockup color
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: const Color(0xFF4DB68D).withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: const Color(0xFF4DB68D).withValues(alpha: 0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Row(
@@ -169,7 +210,11 @@ class QuizDetailScreen extends StatelessWidget {
               children: [
                 const Text(
                   "Fractions and Decimals",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 const Text(
@@ -178,14 +223,21 @@ class QuizDetailScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: const Text(
                     "Published",
-                    style: TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -201,12 +253,20 @@ class QuizDetailScreen extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Color(0xFF222222)),
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF222222),
+          ),
         ),
         const SizedBox(width: 8),
         Text(
           value,
-          style: const TextStyle(fontSize: 20, color: Colors.grey, fontWeight: FontWeight.w400),
+          style: const TextStyle(
+            fontSize: 20,
+            color: Colors.grey,
+            fontWeight: FontWeight.w400,
+          ),
         ),
       ],
     );
@@ -225,7 +285,11 @@ class QuizDetailScreen extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 12, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Theme(
@@ -235,7 +299,11 @@ class QuizDetailScreen extends StatelessWidget {
           tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           title: Text(
             "$number. $question",
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFF222222)),
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF222222),
+            ),
           ),
           iconColor: const Color(0xFF333333),
           collapsedIconColor: const Color(0xFF333333),
@@ -251,7 +319,10 @@ class QuizDetailScreen extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 4),
                       child: Text(
                         "$char. ${options[i]}",
-                        style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
                     );
                   }),
@@ -263,11 +334,18 @@ class QuizDetailScreen extends StatelessWidget {
                     children: [
                       const Text(
                         "Answer: ",
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF222222)),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF222222),
+                        ),
                       ),
                       Text(
                         answer,
-                        style: TextStyle(fontSize: 14, color: Colors.grey.shade400),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade400,
+                        ),
                       ),
                     ],
                   ),

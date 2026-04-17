@@ -4,7 +4,7 @@ import 'package:opalmer_education/teacher_role/Quiz_Screen/create_quiz.dart';
 import 'package:opalmer_education/teacher_role/Classes_Screen/scan_document.dart';
 
 class GradingToolScreen extends StatefulWidget {
-  const GradingToolScreen({Key? key}) : super(key: key);
+  const GradingToolScreen({super.key});
 
   @override
   State<GradingToolScreen> createState() => _GradingToolScreenState();
@@ -20,7 +20,10 @@ class _GradingToolScreenState extends State<GradingToolScreen> {
       floatingActionButton: FloatingActionButton(
         heroTag: 'grading_fab',
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateQuizScreen()));
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CreateQuizScreen()),
+          );
         },
         backgroundColor: const Color(0xFF871DAD),
         child: const Icon(Icons.add, color: Colors.white, size: 28),
@@ -29,11 +32,11 @@ class _GradingToolScreenState extends State<GradingToolScreen> {
         children: [
           // Header
           _buildHeader(),
-          
+
           // Tab Switcher
           const SizedBox(height: 24),
           _buildTabSwitcher(),
-          
+
           // Grading List
           Expanded(
             child: ListView.builder(
@@ -45,17 +48,21 @@ class _GradingToolScreenState extends State<GradingToolScreen> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const QuizDetailScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const QuizDetailScreen(),
+                      ),
                     );
                   },
                   child: _buildGradingItem(
-                    title: isEven ? "Fractions and Decimals" : "Mean and Median",
+                    title: isEven
+                        ? "Fractions and Decimals"
+                        : "Mean and Median",
                     questions: "10 Questions",
                     time: "5 min",
                     status: _isDraftTab ? "Draft" : "Published",
-                    imageUrl: isEven 
-                      ? "https://img.freepik.com/free-photo/view-planet-earth-from-space_23-2148705432.jpg"
-                      : "https://img.freepik.com/free-photo/businessman-working-laptop-office_23-2148817045.jpg",
+                    imageUrl: isEven
+                        ? "https://img.freepik.com/free-photo/view-planet-earth-from-space_23-2148705432.jpg"
+                        : "https://img.freepik.com/free-photo/businessman-working-laptop-office_23-2148817045.jpg",
                   ),
                 );
               },
@@ -90,7 +97,12 @@ class _GradingToolScreenState extends State<GradingToolScreen> {
           if (!_isDraftTab)
             GestureDetector(
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const ScanDocumentScreen()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ScanDocumentScreen(),
+                  ),
+                );
               },
               child: Container(
                 width: 38,
@@ -117,7 +129,7 @@ class _GradingToolScreenState extends State<GradingToolScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 24),
       height: 54,
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F0F0).withOpacity(0.5),
+        color: const Color(0xFFF1F0F0).withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
       ),
       padding: const EdgeInsets.all(5),
@@ -128,7 +140,9 @@ class _GradingToolScreenState extends State<GradingToolScreen> {
               onTap: () => setState(() => _isDraftTab = true),
               child: Container(
                 decoration: BoxDecoration(
-                  color: _isDraftTab ? const Color(0xFF871DAD) : Colors.transparent,
+                  color: _isDraftTab
+                      ? const Color(0xFF871DAD)
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 alignment: Alignment.center,
@@ -148,7 +162,9 @@ class _GradingToolScreenState extends State<GradingToolScreen> {
               onTap: () => setState(() => _isDraftTab = false),
               child: Container(
                 decoration: BoxDecoration(
-                  color: !_isDraftTab ? const Color(0xFF871DAD) : Colors.transparent,
+                  color: !_isDraftTab
+                      ? const Color(0xFF871DAD)
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 alignment: Alignment.center,
@@ -184,7 +200,7 @@ class _GradingToolScreenState extends State<GradingToolScreen> {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -217,10 +233,7 @@ class _GradingToolScreenState extends State<GradingToolScreen> {
                 const SizedBox(height: 6),
                 Text(
                   "$questions · $time",
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade500,
-                  ),
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
                 ),
               ],
             ),
@@ -228,7 +241,9 @@ class _GradingToolScreenState extends State<GradingToolScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: isDraft ? const Color(0xFFFFCC33).withOpacity(0.2) : const Color(0xFF4FA0F3).withOpacity(0.15),
+              color: isDraft
+                  ? const Color(0xFFFFCC33).withValues(alpha: 0.2)
+                  : const Color(0xFF4FA0F3).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
@@ -236,7 +251,9 @@ class _GradingToolScreenState extends State<GradingToolScreen> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: isDraft ? const Color(0xFFF39C12) : const Color(0xFF007AFF),
+                color: isDraft
+                    ? const Color(0xFFF39C12)
+                    : const Color(0xFF007AFF),
               ),
             ),
           ),

@@ -203,8 +203,8 @@ class _HomeDashboardState extends State<HomeDashboard>
                                         fontWeight: FontWeight.w500,
                                         shadows: [
                                           Shadow(
-                                            color: Colors.black.withOpacity(
-                                              0.1,
+                                            color: Colors.black.withValues(
+                                              alpha: 0.1,
                                             ),
                                             offset: const Offset(0, 1),
                                             blurRadius: 2,
@@ -458,7 +458,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
@@ -575,7 +575,7 @@ class _HomeDashboardState extends State<HomeDashboard>
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

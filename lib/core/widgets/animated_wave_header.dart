@@ -6,10 +6,10 @@ class AnimatedWaveHeader extends StatefulWidget {
   final Color baseColor;
 
   const AnimatedWaveHeader({
-    Key? key,
+    super.key,
     this.height = 220,
     this.baseColor = const Color(0xFF871DAD),
-  }) : super(key: key);
+  });
 
   @override
   State<AnimatedWaveHeader> createState() => _AnimatedWaveHeaderState();
@@ -125,7 +125,7 @@ class WavePainter extends CustomPainter {
       amplitude: 20,
       frequency: 1.2,
       phaseShift: -animationValue * math.pi * 2 * 1.3,
-      color: Colors.white.withOpacity(0.15),
+      color: Colors.white.withValues(alpha: 0.15),
     );
 
     // Layer 3 (Front, base color moving organically)

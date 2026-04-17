@@ -8,7 +8,7 @@ void main() {
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent, // transparent status bar
-      statusBarIconBrightness: Brightness.light, 
+      statusBarIconBrightness: Brightness.light,
     ),
   );
   runApp(const ProviderScope(child: MyApp()));

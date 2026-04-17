@@ -60,10 +60,14 @@ class StudentQuizMainScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.notifications_none_rounded, color: Colors.white, size: 24),
+            child: const Icon(
+              Icons.notifications_none_rounded,
+              color: Colors.white,
+              size: 24,
+            ),
           ),
         ],
       ),
@@ -82,13 +86,26 @@ class StudentQuizMainScreen extends ConsumerWidget {
             children: [
               const Text(
                 "Quizzes",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
               ),
               GestureDetector(
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StudentQuizListScreen())),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const StudentQuizListScreen(),
+                  ),
+                ),
                 child: const Text(
                   "View All",
-                  style: TextStyle(color: AppColors.primaryMid, fontWeight: FontWeight.w600, decoration: TextDecoration.underline),
+                  style: TextStyle(
+                    color: AppColors.primaryMid,
+                    fontWeight: FontWeight.w600,
+                    decoration: TextDecoration.underline,
+                  ),
                 ),
               ),
             ],
@@ -97,41 +114,38 @@ class StudentQuizMainScreen extends ConsumerWidget {
         const SizedBox(height: 16),
         SizedBox(
           height: 210,
-          child: quizzesAsync.when(
-            data: (quizzes) {
-              if (quizzes.isEmpty) {
-                return const Center(child: Text("No quizzes found"));
-              }
-              return ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                scrollDirection: Axis.horizontal,
-                itemCount: quizzes.length,
-                itemBuilder: (context, index) {
-                  final quiz = quizzes[index];
-                  final colors = [
-                    const Color(0xFF4AA678),
-                    const Color(0xFFFEBD43),
-                    Colors.blue,
-                  ];
-                  return _buildQuizCard(
-                    context, 
-                    quiz['title'] ?? "N/A", 
-                    "${quiz['time'] ?? 0} min", 
-                    0.0, 
-                    colors[index % colors.length]
-                  );
-                },
-              );
-            },
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (err, stack) => Center(child: Text('Error: $err')),
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            scrollDirection: Axis.horizontal,
+            children: [
+              _buildQuizCard(
+                context,
+                "Fraction and Decimals",
+                "10 Questions · 5 min",
+                0.93,
+                const Color(0xFF4AA678),
+              ),
+              _buildQuizCard(
+                context,
+                "Photosynthesis",
+                "12 Questions · 8 min",
+                0.45,
+                const Color(0xFFFEBD43),
+              ),
+            ],
           ),
         ),
       ],
     );
   }
 
-  Widget _buildQuizCard(BuildContext context, String title, String subtitle, double progress, Color barColor) {
+  Widget _buildQuizCard(
+    BuildContext context,
+    String title,
+    String subtitle,
+    double progress,
+    Color barColor,
+  ) {
     return Container(
       width: 280,
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -140,7 +154,11 @@ class StudentQuizMainScreen extends ConsumerWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
@@ -150,16 +168,42 @@ class StudentQuizMainScreen extends ConsumerWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: Image.asset('assets/images/science_icon.png', width: 44, height: 44, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(color: Colors.grey.shade200, width: 44, height: 44, child: const Icon(Icons.quiz_outlined))),
+                child: Image.asset(
+                  'assets/images/science_icon.png',
+                  width: 44,
+                  height: 44,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    color: Colors.grey.shade200,
+                    width: 44,
+                    height: 44,
+                    child: const Icon(Icons.quiz_outlined),
+                  ),
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: AppColors.textPrimary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     const SizedBox(height: 4),
-                    Text(subtitle, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -169,8 +213,22 @@ class StudentQuizMainScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("0%", style: TextStyle(fontSize: 11, color: Color(0xFF4AA678), fontWeight: FontWeight.w600)),
-              Text("${(progress * 100).toInt()}%", style: const TextStyle(fontSize: 11, color: Color(0xFF4AA678), fontWeight: FontWeight.w600)),
+              const Text(
+                "0%",
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Color(0xFF4AA678),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                "${(progress * 100).toInt()}%",
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: Color(0xFF4AA678),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 6),
@@ -188,13 +246,26 @@ class StudentQuizMainScreen extends ConsumerWidget {
             width: double.infinity,
             height: 40,
             child: ElevatedButton(
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StudentQuizQuestionsScreen())),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const StudentQuizQuestionsScreen(),
+                ),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryMid,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 elevation: 0,
               ),
-              child: const Text("Start Learning", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              child: const Text(
+                "Start Learning",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
         ],
@@ -208,7 +279,14 @@ class StudentQuizMainScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Stats", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+          const Text(
+            "Stats",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
           const SizedBox(height: 16),
           GridView.count(
             crossAxisCount: 2,
@@ -218,10 +296,22 @@ class StudentQuizMainScreen extends ConsumerWidget {
             crossAxisSpacing: 16,
             childAspectRatio: 1.5,
             children: [
-              _buildStatTile("Quizzes Completed", "12", const Color(0xFFFEBD43)),
+              _buildStatTile(
+                "Quizzes Completed",
+                "12",
+                const Color(0xFFFEBD43),
+              ),
               _buildStatTile("Correct Answers", "80%", const Color(0xFF4AA678)),
-              _buildStatTile("Wrong Answers", "20%", const Color(0xFF4AA678).withOpacity(0.85)),
-              _buildStatTile("Best Subject", "Science", const Color(0xFFFEBD43)),
+              _buildStatTile(
+                "Wrong Answers",
+                "20%",
+                const Color(0xFF4AA678).withValues(alpha: 0.85),
+              ),
+              _buildStatTile(
+                "Best Subject",
+                "Science",
+                const Color(0xFFFEBD43),
+              ),
             ],
           ),
         ],
@@ -232,13 +322,30 @@ class StudentQuizMainScreen extends ConsumerWidget {
   Widget _buildStatTile(String label, String value, Color color) {
     return Container(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(16)),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(label, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500)),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
           const SizedBox(height: 8),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
@@ -250,7 +357,14 @@ class StudentQuizMainScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Progress", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+          const Text(
+            "Progress",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
           const SizedBox(height: 16),
           Container(
             height: 220,
@@ -258,21 +372,51 @@ class StudentQuizMainScreen extends ConsumerWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Column(
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text("Progress", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primaryMid)),
+                    const Text(
+                      "Progress",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryMid,
+                      ),
+                    ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.primaryMid)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppColors.primaryMid),
+                      ),
                       child: Row(
                         children: const [
-                          Text("Weekly", style: TextStyle(color: AppColors.primaryMid, fontSize: 11, fontWeight: FontWeight.w600)),
-                          Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.primaryMid, size: 16),
+                          Text(
+                            "Weekly",
+                            style: TextStyle(
+                              color: AppColors.primaryMid,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: AppColors.primaryMid,
+                            size: 16,
+                          ),
                         ],
                       ),
                     ),
@@ -282,26 +426,68 @@ class StudentQuizMainScreen extends ConsumerWidget {
                 Expanded(
                   child: LineChart(
                     LineChartData(
-                      gridData: FlGridData(show: true, drawVerticalLine: false, getDrawingHorizontalLine: (value) => FlLine(color: Colors.grey.shade100, strokeWidth: 1)),
+                      gridData: FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
+                        getDrawingHorizontalLine: (value) =>
+                            FlLine(color: Colors.grey.shade100, strokeWidth: 1),
+                      ),
                       titlesData: FlTitlesData(
-                        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        topTitles: AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
                         leftTitles: AxisTitles(
                           sideTitles: SideTitles(
                             showTitles: true,
                             reservedSize: 25,
-                            getTitlesWidget: (value, meta) => Text(value.toInt().toString(), style: TextStyle(color: Colors.grey.shade400, fontSize: 10)),
+                            getTitlesWidget: (value, meta) => Text(
+                              value.toInt().toString(),
+                              style: TextStyle(
+                                color: Colors.grey.shade400,
+                                fontSize: 10,
+                              ),
+                            ),
                           ),
                         ),
                       ),
                       borderData: FlBorderData(show: false),
-                      minX: 0, maxX: 6, minY: 0, maxY: 100,
+                      minX: 0,
+                      maxX: 6,
+                      minY: 0,
+                      maxY: 100,
                       lineBarsData: [
                         LineChartBarData(
-                          spots: const [FlSpot(0, 20), FlSpot(1, 30), FlSpot(2, 25), FlSpot(3, 45), FlSpot(4, 30), FlSpot(5, 55), FlSpot(6, 40)],
-                          isCurved: true, color: AppColors.primaryMid, barWidth: 3, isStrokeCapRound: true, dotData: FlDotData(show: false),
-                          belowBarData: BarAreaData(show: true, gradient: LinearGradient(colors: [AppColors.primaryMid.withOpacity(0.2), AppColors.primaryMid.withOpacity(0.0)], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
+                          spots: const [
+                            FlSpot(0, 20),
+                            FlSpot(1, 30),
+                            FlSpot(2, 25),
+                            FlSpot(3, 45),
+                            FlSpot(4, 30),
+                            FlSpot(5, 55),
+                            FlSpot(6, 40),
+                          ],
+                          isCurved: true,
+                          color: AppColors.primaryMid,
+                          barWidth: 3,
+                          isStrokeCapRound: true,
+                          dotData: FlDotData(show: false),
+                          belowBarData: BarAreaData(
+                            show: true,
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColors.primaryMid.withValues(alpha: 0.2),
+                                AppColors.primaryMid.withValues(alpha: 0.0),
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                          ),
                         ),
                       ],
                     ),
