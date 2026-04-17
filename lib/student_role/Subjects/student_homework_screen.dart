@@ -21,20 +21,24 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
-      body: Column(
-        children: [
-          const SizedBox(height: 16),
-          _buildTabToggle(),
-          const SizedBox(height: 24),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: isClassSelected
-                  ? _buildClassHomework()
-                  : _buildGroupsHomework(),
+      body: homeworkAsync.when(
+        data: (homework) => Column(
+          children: [
+            const SizedBox(height: 16),
+            _buildTabToggle(),
+            const SizedBox(height: 24),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: isClassSelected
+                    ? _buildClassHomework(homework)
+                    : _buildGroupsHomework(),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error: $err')),
       ),
     );
   }

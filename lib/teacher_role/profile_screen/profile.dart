@@ -13,7 +13,7 @@ import 'language.dart';
 import '../../authentication_screen/two_factor_auth_screen.dart';
 import 'package:opalmer_education/authentication_screen/login_screen.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
 
   @override
