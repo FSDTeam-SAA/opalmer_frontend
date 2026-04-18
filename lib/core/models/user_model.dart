@@ -4,6 +4,7 @@ class UserModel {
   final String id;
   final String username;
   final String? email;
+  final String? phoneNumber;
   final String role;
   final String? type;
   final String? schoolId;
@@ -15,6 +16,7 @@ class UserModel {
     required this.id,
     required this.username,
     this.email,
+    this.phoneNumber,
     required this.role,
     this.type,
     this.schoolId,
@@ -54,8 +56,10 @@ class UserModel {
       id: (json['id'] ?? json['_id'] ?? '').toString(),
       username: (json['username'] ?? json['name'] ?? '').toString(),
       email: json['email']?.toString(),
+      phoneNumber: json['phoneNumber']?.toString(),
       role: (json['role'] ?? json['type'] ?? '').toString(),
       type: json['type']?.toString(),
+      schoolId: json['schoolId']?.toString(),
       studentId: (json['Id'] ?? json['studentId'])?.toString(),
       gradeLevel: json['gradeLevel']?.toString(),
       avatar: json['avatar'] is Map ? json['avatar']['url']?.toString() : (json['avatar']?.toString() ?? ''),
@@ -67,6 +71,7 @@ class UserModel {
       'id': id,
       'username': username,
       'email': email,
+      'phoneNumber': phoneNumber,
       'role': role,
       'type': type,
       'schoolId': schoolId,
@@ -74,6 +79,32 @@ class UserModel {
       'gradeLevel': gradeLevel,
       'avatar': avatar,
     };
+  }
+
+  UserModel copyWith({
+    String? id,
+    String? username,
+    String? email,
+    String? phoneNumber,
+    String? role,
+    String? type,
+    String? schoolId,
+    String? studentId,
+    String? gradeLevel,
+    String? avatar,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      username: username ?? this.username,
+      email: email ?? this.email,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      role: role ?? this.role,
+      type: type ?? this.type,
+      schoolId: schoolId ?? this.schoolId,
+      studentId: studentId ?? this.studentId,
+      gradeLevel: gradeLevel ?? this.gradeLevel,
+      avatar: avatar ?? this.avatar,
+    );
   }
 }
 

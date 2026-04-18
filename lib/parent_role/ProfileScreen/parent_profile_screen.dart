@@ -94,11 +94,14 @@ class _ParentProfileScreenState extends ConsumerState<ParentProfileScreen> {
                     color: Colors.white,
                     shape: BoxShape.circle,
                   ),
-                  child: const CircleAvatar(
+                  child: CircleAvatar(
                     radius: 65,
-                    backgroundImage: NetworkImage(
-                      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80",
-                    ),
+                    backgroundImage:
+                        user?.avatar != null && user!.avatar!.isNotEmpty
+                            ? NetworkImage(user.avatar!)
+                            : const AssetImage(
+                                'assets/images/profile/parent.png',
+                              ),
                   ),
                 ),
               ),
@@ -108,7 +111,7 @@ class _ParentProfileScreenState extends ConsumerState<ParentProfileScreen> {
           const SizedBox(height: 80), // Space for overlapping avatar
           // ── Name & Email ──
           Text(
-            "${user?.username ?? 'User'}",
+            user?.username ?? 'User',
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
@@ -116,8 +119,8 @@ class _ParentProfileScreenState extends ConsumerState<ParentProfileScreen> {
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            "sarahmichelle@gmail.com",
+          Text(
+            user?.email ?? '',
             style: TextStyle(fontSize: 14, color: Colors.grey),
           ),
 
