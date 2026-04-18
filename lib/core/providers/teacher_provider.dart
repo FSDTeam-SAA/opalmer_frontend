@@ -32,9 +32,27 @@ final teacherClassesProvider = FutureProvider<List<TeacherClassModel>>((ref) asy
       return cls;
     }));
 
-
     return updatedClasses;
   }
   
   return [];
 });
+
+final classStudentsProvider = FutureProvider.family<List<dynamic>, String>((ref, classId) async {
+  final apiClient = ref.read(apiClientProvider);
+  final response = await apiClient.get('/student-assign-to-class/class/$classId');
+  if (response.statusCode == 200 && response.data['success'] == true) {
+    return response.data['data'];
+  }
+  return [];
+});
+
+final classLessonsProvider = FutureProvider.family<List<dynamic>, String>((ref, classId) async {
+  final apiClient = ref.read(apiClientProvider);
+  final response = await apiClient.get('/lessons/class/$classId');
+  if (response.statusCode == 200 && response.data['success'] == true) {
+    return response.data['data'];
+  }
+  return [];
+});
+

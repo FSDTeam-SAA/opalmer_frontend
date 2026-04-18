@@ -112,6 +112,7 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
                       children: List.generate(classes.length, (index) {
                         final cls = classes[index];
                         return _buildClassCard(
+                          cls: cls,
                           subject: "Grade ${cls.grade} - ${cls.subject}",
                           date: "TBD", // API doesn't provide a specific next class date yet
                           students: "${cls.studentCount} Students",
@@ -174,6 +175,7 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
   }
 
   Widget _buildClassCard({
+    required TeacherClassModel cls,
     required String subject,
     required String date,
     required String students,
@@ -185,9 +187,12 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const ClassDetailsScreen()),
+          MaterialPageRoute(
+            builder: (context) => ClassDetailsScreen(classData: cls),
+          ),
         );
       },
+
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(20),
