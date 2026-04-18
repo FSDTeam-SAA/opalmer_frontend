@@ -1,20 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/models/teacher_class_model.dart';
+import '../../core/providers/teacher_provider.dart';
 
 import 'student_attendence.dart';
 import 'student_profile.dart';
 import 'lessons_screen.dart';
 import 'homework_screen.dart';
 
-class ClassDetailsScreen extends StatefulWidget {
-  const ClassDetailsScreen({Key? key}) : super(key: key);
+class ClassDetailsScreen extends ConsumerStatefulWidget {
+  final TeacherClassModel classData;
+  const ClassDetailsScreen({Key? key, required this.classData}) : super(key: key);
 
   @override
-  State<ClassDetailsScreen> createState() => _ClassDetailsScreenState();
+  ConsumerState<ClassDetailsScreen> createState() => _ClassDetailsScreenState();
 }
 
-class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
+class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
   @override
   Widget build(BuildContext context) {
+    final studentsAsync = ref.watch(classStudentsProvider(widget.classData.id));
+    final lessonsAsync = ref.watch(classLessonsProvider(widget.classData.id));
+
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
       body: SafeArea(
@@ -60,17 +67,18 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const HomeworkScreen(),
+                            builder: (_) => HomeworkScreen(classId: widget.classData.id),
                           ),
                         );
                       },
+
                       child: Container(
                         width: 36,
                         height: 36,
                         decoration: const BoxDecoration(
                           color: Color(
                             0xFF904BBB,
-                          ), // Slightly brighter purple as per design variation if needed, or stick to 0xFF871DAD
+                          ),
                           shape: BoxShape.circle,
                         ),
                         padding: const EdgeInsets.all(8),
@@ -104,9 +112,9 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // ── Subtitle ──
-                    const Text(
-                      "Grade 6 - Science",
-                      style: TextStyle(
+                    Text(
+                      "Grade ${widget.classData.grade} - ${widget.classData.subject}",
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF333333),
@@ -120,7 +128,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                         Expanded(
                           child: _buildStatBox(
                             "Students",
-                            "28",
+                            "${widget.classData.studentCount}",
                             const Color(0xFF3F99B4),
                           ),
                         ),
@@ -128,8 +136,8 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                         Expanded(
                           child: _buildStatBox(
                             "Date",
-                            "6/6/25",
-                            const Color(0xFFB87841), // Brownish orange
+                            "TBD",
+                            const Color(0xFFB87841),
                           ),
                         ),
                       ],
@@ -140,16 +148,16 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                         Expanded(
                           child: _buildStatBox(
                             "Attendance",
-                            "92%",
-                            const Color(0xFF4AA678), // Green
+                            widget.classData.attendance,
+                            const Color(0xFF4AA678),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: _buildStatBox(
                             "Performance",
-                            "85%",
-                            const Color(0xFFFEBD43), // Yellow
+                            widget.classData.performance,
+                            const Color(0xFFFEBD43),
                           ),
                         ),
                       ],
@@ -178,13 +186,13 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                               ),
                             );
                           },
-                          child: Text(
+                          child: const Text(
                             "View All",
                             style: TextStyle(
                               fontSize: 14,
-                              color: const Color(0xFF871DAD),
+                              color: Color(0xFF871DAD),
                               decoration: TextDecoration.underline,
-                              decorationColor: const Color(0xFF871DAD),
+                              decorationColor: Color(0xFF871DAD),
                             ),
                           ),
                         ),
@@ -194,23 +202,29 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
 
                     SizedBox(
                       height: 136,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        clipBehavior: Clip.none,
-                        children: [
-                          _buildLessonCard(
-                            title: "Fractions Practice",
-                            description:
-                                "Solve question 1-10 on page 42 of the textbook.",
-                            dueDate: "Due: June 13,2025",
-                          ),
-                          _buildLessonCard(
-                            title: "Fractions Practice",
-                            description:
-                                "Solve question 1-10 on page 42 of the textbook.",
-                            dueDate: "Due: June 13,2025",
-                          ),
-                        ],
+                      child: lessonsAsync.when(
+                        data: (lessons) {
+                          if (lessons.isEmpty) {
+                            return const Center(child: Text("No lessons found."));
+                          }
+                          return ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            clipBehavior: Clip.none,
+                            itemCount: lessons.length,
+                            itemBuilder: (context, index) {
+                              final lesson = lessons[index];
+                              return _buildLessonCard(
+                                title: lesson['name'] ?? 'No Title',
+                                description: lesson['description'] ?? 'No Description',
+                                dueDate: lesson['date'] != null 
+                                  ? "Date: ${lesson['date'].toString().split('T')[0]}" 
+                                  : "Date: TBD",
+                              );
+                            },
+                          );
+                        },
+                        loading: () => const Center(child: CircularProgressIndicator()),
+                        error: (err, stack) => Center(child: Text("Error: $err")),
                       ),
                     ),
 
@@ -227,21 +241,34 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    _buildStudentCard(
-                      name: "Mia Johnson",
-                      subtext: "Grade 6 - Age 12",
-                      status: "Excellent",
-                      statusColor: const Color(0xFF4AA678), // Green
-                      attendance: "92%",
-                      progress: "75%",
-                    ),
-                    _buildStudentCard(
-                      name: "Mia Johnson",
-                      subtext: "Grade 6 - Age 12",
-                      status: "Excellent",
-                      statusColor: const Color(0xFFFEBD43), // Yellow
-                      attendance: "92%",
-                      progress: "75%",
+                    studentsAsync.when(
+                      data: (students) {
+                        if (students.isEmpty) {
+                          return const Center(child: Text("No students enrolled."));
+                        }
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: students.length,
+                          itemBuilder: (context, index) {
+                            final assignment = students[index];
+                            final student = assignment['studentId'];
+                            if (student == null) return const SizedBox();
+                            
+                            return _buildStudentCard(
+                              name: student['username'] ?? student['name'] ?? 'Unknown',
+                              subtext: "Grade ${student['gradeLevel'] ?? widget.classData.grade}",
+                              status: "Active", // Backend doesn't have a status field per student
+                              statusColor: const Color(0xFF4AA678),
+                              attendance: "N/A",
+                              progress: "N/A",
+                              avatarUrl: student['avatar'] is Map ? student['avatar']['url'] : student['avatar'],
+                            );
+                          },
+                        );
+                      },
+                      loading: () => const Center(child: CircularProgressIndicator()),
+                      error: (err, stack) => Center(child: Text("Error: $err")),
                     ),
                     const SizedBox(height: 20),
                   ],
@@ -360,6 +387,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
     required Color statusColor,
     required String attendance,
     required String progress,
+    String? avatarUrl,
   }) {
     return GestureDetector(
       onTap: () {
@@ -417,12 +445,22 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                               height: 50,
                               decoration: const BoxDecoration(
                                 shape: BoxShape.circle,
+                                color: Color(0xFFF3F4F6),
                               ),
                               clipBehavior: Clip.hardEdge,
-                              child: Image.asset(
-                                'assets/images/classes/student_image.png',
-                                fit: BoxFit.cover,
-                              ),
+                              child: avatarUrl != null && avatarUrl.isNotEmpty
+                                  ? Image.network(
+                                      avatarUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => Image.asset(
+                                        'assets/images/classes/student_image.png',
+                                        fit: BoxFit.cover,
+                                      ),
+                                    )
+                                  : Image.asset(
+                                      'assets/images/classes/student_image.png',
+                                      fit: BoxFit.cover,
+                                    ),
                             ),
                           ),
                           const SizedBox(width: 14),
@@ -448,9 +486,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                                         vertical: 4,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: const Color(
-                                          0xFF4AA678,
-                                        ), // Always green background for the badge based on the image
+                                        color: const Color(0xFF4AA678),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Text(

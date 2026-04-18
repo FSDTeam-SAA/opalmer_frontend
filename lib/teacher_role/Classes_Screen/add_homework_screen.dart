@@ -1,13 +1,73 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/providers/auth_provider.dart';
+import '../../core/providers/teacher_provider.dart';
 
-class AddHomeworkScreen extends StatefulWidget {
-  const AddHomeworkScreen({super.key});
+class AddHomeworkScreen extends ConsumerStatefulWidget {
+  final String classId;
+  const AddHomeworkScreen({super.key, required this.classId});
 
   @override
-  State<AddHomeworkScreen> createState() => _AddHomeworkScreenState();
+  ConsumerState<AddHomeworkScreen> createState() => _AddHomeworkScreenState();
 }
 
-class _AddHomeworkScreenState extends State<AddHomeworkScreen> {
+class _AddHomeworkScreenState extends ConsumerState<AddHomeworkScreen> {
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _noteController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _saveHomework() async {
+    if (_titleController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a title')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final user = ref.read(authStateProvider);
+      final apiClient = ref.read(apiClientProvider);
+
+      if (user == null) throw Exception('User not logged in');
+
+      final response = await apiClient.post('/homework/create', data: {
+        'classId': widget.classId,
+        'userId': user.id,
+        'title': _titleController.text,
+        'description': _noteController.text, // Backend uses description
+      });
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Homework added successfully!')),
+          );
+          ref.invalidate(classHomeworkProvider(widget.classId));
+          Navigator.pop(context);
+        }
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to add homework');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,6 +125,7 @@ class _AddHomeworkScreenState extends State<AddHomeworkScreen> {
                     ),
                     const SizedBox(height: 8),
                     TextField(
+                      controller: _titleController,
                       decoration: InputDecoration(
                         hintText: "Enter title here",
                         hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
@@ -94,6 +155,7 @@ class _AddHomeworkScreenState extends State<AddHomeworkScreen> {
                     ),
                     const SizedBox(height: 8),
                     TextField(
+                      controller: _noteController,
                       maxLines: 4,
                       decoration: InputDecoration(
                         hintText: "Write",
@@ -121,9 +183,7 @@ class _AddHomeworkScreenState extends State<AddHomeworkScreen> {
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
+                  onPressed: _isLoading ? null : _saveHomework,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF871DAD),
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -132,15 +192,21 @@ class _AddHomeworkScreenState extends State<AddHomeworkScreen> {
                     ),
                     elevation: 0,
                   ),
-                  child: const Text(
-                    "SAVE",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.0,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Text(
+                          "SAVE",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
                 ),
               ),
             ),
@@ -150,3 +216,4 @@ class _AddHomeworkScreenState extends State<AddHomeworkScreen> {
     );
   }
 }
+

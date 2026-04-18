@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/providers/teacher_provider.dart';
 import 'add_homework_screen.dart';
 import 'group_detail_screen.dart';
 import 'create_group_screen.dart';
 
-class HomeworkScreen extends StatefulWidget {
-  const HomeworkScreen({super.key});
+class HomeworkScreen extends ConsumerStatefulWidget {
+  final String classId;
+  const HomeworkScreen({super.key, required this.classId});
 
   @override
-  State<HomeworkScreen> createState() => _HomeworkScreenState();
+  ConsumerState<HomeworkScreen> createState() => _HomeworkScreenState();
 }
 
-class _HomeworkScreenState extends State<HomeworkScreen> {
+class _HomeworkScreenState extends ConsumerState<HomeworkScreen> {
   bool isClassSelected = true;
 
   @override
@@ -131,6 +134,8 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
   }
 
   Widget _buildClassTab() {
+    final homeworkAsync = ref.watch(classHomeworkProvider(widget.classId));
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
@@ -152,7 +157,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const AddHomeworkScreen()),
+                  MaterialPageRoute(builder: (_) => AddHomeworkScreen(classId: widget.classId)),
                 );
               },
               style: ElevatedButton.styleFrom(
@@ -188,39 +193,40 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
                   color: Color(0xFF333333),
                 ),
               ),
-              Icon(
+              const Icon(
                 Icons.calendar_month_outlined,
-                color: const Color(0xFF871DAD),
+                color: Color(0xFF871DAD),
                 size: 24,
               ),
             ],
           ),
           const SizedBox(height: 16),
 
-          // Archived Homework List
-          _buildHomeworkCard(
-            title: "Fractions Practice",
-            description: "Solve question 1-10 on page 42 of the textbook.",
-            dueDate: "Due: June 13,2025",
-            showOptions: true,
-          ),
-          _buildHomeworkCard(
-            title: "Fractions Practice",
-            description: "Solve question 1-10 on page 42 of the textbook.",
-            dueDate: "Due: June 13,2025",
-            showOptions: false,
-          ),
-          _buildHomeworkCard(
-            title: "Fractions Practice",
-            description: "Solve question 1-10 on page 42 of the textbook.",
-            dueDate: "Due: June 13,2025",
-            showOptions: false,
-          ),
-          _buildHomeworkCard(
-            title: "Fractions Practice",
-            description: "Solve question 1-10 on page 42 of the textbook.",
-            dueDate: "Due: June 13,2025",
-            showOptions: false,
+          homeworkAsync.when(
+            data: (homeworkList) {
+              if (homeworkList.isEmpty) {
+                return const Center(child: Text("No homework found."));
+              }
+              // Separate active and archived if needed, for now just show all
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: homeworkList.length,
+                itemBuilder: (context, index) {
+                  final hw = homeworkList[index];
+                  return _buildHomeworkCard(
+                    title: hw['title'] ?? 'No Title',
+                    description: hw['description'] ?? 'No Description',
+                    dueDate: hw['created_at'] != null 
+                        ? "Created: ${hw['created_at'].toString().split('T')[0]}" 
+                        : "Date: TBD",
+                    showOptions: index == 0, // Just to match screenshot style
+                  );
+                },
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, stack) => Center(child: Text("Error: $err")),
           ),
         ],
       ),
@@ -228,6 +234,8 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
   }
 
   Widget _buildGroupsTab() {
+    final groupsAsync = ref.watch(userRoomsProvider);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
@@ -238,7 +246,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const CreateGroupScreen()),
+                  MaterialPageRoute(builder: (_) => CreateGroupScreen(classId: widget.classId)),
                 );
               },
               style: ElevatedButton.styleFrom(
@@ -261,12 +269,29 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          _buildGroupCard(groupName: "Alpha Group", memberCount: "4 Members"),
-          _buildGroupCard(groupName: "Alpha 1 Group", memberCount: "6 Members"),
-          _buildGroupCard(groupName: "Alpha 1 Group", memberCount: "6 Members"),
-          _buildGroupCard(groupName: "Alpha 1 Group", memberCount: "6 Members"),
-          _buildGroupCard(groupName: "Alpha 1 Group", memberCount: "6 Members"),
-          _buildGroupCard(groupName: "Alpha 1 Group", memberCount: "6 Members"),
+
+          groupsAsync.when(
+            data: (groups) {
+              if (groups.isEmpty) {
+                return const Center(child: Text("No groups found."));
+              }
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: groups.length,
+                itemBuilder: (context, index) {
+                  final group = groups[index];
+                  return _buildGroupCard(
+                    group: group,
+                    groupName: group['name'] ?? 'Unnamed Group',
+                    memberCount: "${(group['participants'] as List).length} Members",
+                  );
+                },
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, stack) => Center(child: Text("Error: $err")),
+          ),
         ],
       ),
     );
@@ -362,6 +387,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
   }
 
   Widget _buildGroupCard({
+    required Map<String, dynamic> group,
     required String groupName,
     required String memberCount,
   }) {
@@ -421,9 +447,15 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const GroupDetailScreen()),
+                MaterialPageRoute(
+                  builder: (_) => GroupDetailScreen(
+                    roomData: group,
+                    classId: widget.classId,
+                  ),
+                ),
               );
             },
+
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
@@ -445,3 +477,4 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
     );
   }
 }
+

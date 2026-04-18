@@ -1,20 +1,23 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/services/secure_storage_service.dart';
+import 'package:opalmer_education/core/providers/auth_provider.dart';
+import 'package:opalmer_education/core/models/user_model.dart';
 import '../onboarding_screen/onboarding_screen.dart';
 import '../parent_role/parent_main_shell.dart';
 import '../student_role/student_main_shell.dart';
 import '../custom_bottom_navigation_bar/main_shell.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
+class _SplashScreenState extends ConsumerState<SplashScreen>
     with TickerProviderStateMixin {
   late AnimationController _scaleController;
   late AnimationController _fadeController;
@@ -70,6 +73,11 @@ class _SplashScreenState extends State<SplashScreen>
       if (token != null && userDataStr != null && mounted) {
         try {
           final userData = jsonDecode(userDataStr);
+          
+          // Populate the authStateProvider so other screens know the user is logged in
+          final user = UserModel.fromJson(userData);
+          ref.read(authStateProvider.notifier).state = user;
+          
           final roleType = userData['type'];
 
           Widget targetScreen;
@@ -139,3 +147,4 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 }
+

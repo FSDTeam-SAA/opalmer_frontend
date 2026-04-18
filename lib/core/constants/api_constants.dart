@@ -14,7 +14,7 @@ class ApiConstants {
   static const String lessons = '/lessons';
   static const String homework = '/homework';
   static const String academicDocument = '/academicDocument/student-documents';
-  static const String stuAssignToClass = '/stuAssignToClass';
+  static const String stuAssignToClass = '/student-assign-to-class';
 
   // Quizzes Endpoints
   static const String quizzes = '/quizzes';
