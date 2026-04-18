@@ -282,6 +282,7 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> {
                 itemBuilder: (context, index) {
                   final group = groups[index];
                   return _buildGroupCard(
+                    group: group,
                     groupName: group['name'] ?? 'Unnamed Group',
                     memberCount: "${(group['participants'] as List).length} Members",
                   );
@@ -386,6 +387,7 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> {
   }
 
   Widget _buildGroupCard({
+    required Map<String, dynamic> group,
     required String groupName,
     required String memberCount,
   }) {
@@ -445,9 +447,15 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const GroupDetailScreen()),
+                MaterialPageRoute(
+                  builder: (_) => GroupDetailScreen(
+                    roomData: group,
+                    classId: widget.classId,
+                  ),
+                ),
               );
             },
+
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
