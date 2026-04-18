@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
 import 'package:opalmer_education/core/providers/student_provider.dart';
+import 'package:opalmer_education/core/providers/navigation_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/student_role/Subjects/subjects_screen.dart';
 import 'package:opalmer_education/student_role/Subjects/widgets/subject_card.dart';
 import 'package:opalmer_education/notification/notification.dart';
+import 'package:opalmer_education/student_role/Quizzes/student_quiz_questions_screen.dart';
 
 class StudentHomeDashboard extends ConsumerWidget {
   const StudentHomeDashboard({Key? key}) : super(key: key);
@@ -23,11 +26,11 @@ class StudentHomeDashboard extends ConsumerWidget {
           children: [
             _buildHeader(context, studentName),
             const SizedBox(height: 10),
-            _buildSectionHeader(context, "Subjects"),
+            _buildSectionHeader(context, ref, "Subjects"),
             const SizedBox(height: 16),
             _buildSubjectsList(ref),
             const SizedBox(height: 32),
-            _buildSectionHeader(context, "Quizzes"),
+            _buildSectionHeader(context, ref, "Quizzes"),
             const SizedBox(height: 16),
             _buildQuizzesList(ref),
             const SizedBox(height: 32),
@@ -111,7 +114,7 @@ class StudentHomeDashboard extends ConsumerWidget {
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title) {
+  Widget _buildSectionHeader(BuildContext context, WidgetRef ref, String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Row(
@@ -128,12 +131,9 @@ class StudentHomeDashboard extends ConsumerWidget {
           TextButton(
             onPressed: () {
               if (title == "Subjects") {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SubjectsScreen(),
-                  ),
-                );
+                ref.read(studentTabIndexProvider.notifier).state = 1;
+              } else if (title == "Quizzes") {
+                ref.read(studentTabIndexProvider.notifier).state = 3;
               }
             },
             child: const Text(
@@ -154,7 +154,7 @@ class StudentHomeDashboard extends ConsumerWidget {
     final lessonsAsync = ref.watch(studentLessonsProvider);
 
     return SizedBox(
-      height: 150,
+      height: 180, // Increased from 150 to accommodate multiline text
       child: lessonsAsync.when(
         data: (lessons) {
           if (lessons.isEmpty) {
@@ -168,8 +168,8 @@ class StudentHomeDashboard extends ConsumerWidget {
             itemBuilder: (context, index) {
               final lesson = lessons[index];
               return SubjectCard(
-                subjectName: lesson['title'] ?? "N/A",
-                teacherName: lesson['teacher']?['username'] ?? "N/A",
+                lesson: lesson,
+                subjectName: lesson.objective,
               );
             },
           );
@@ -204,7 +204,8 @@ class StudentHomeDashboard extends ConsumerWidget {
               Colors.blue,
             ];
             return _buildQuizCard(
-              title: quiz['title'] ?? "N/A",
+              context: context,
+              quiz: quiz,
               color: colors[index % colors.length],
               progress: 0.0, // Progress needs a specific API to track
             );
@@ -217,7 +218,8 @@ class StudentHomeDashboard extends ConsumerWidget {
   }
 
   Widget _buildQuizCard({
-    required String title,
+    required BuildContext context,
+    required QuizModel quiz,
     required Color color,
     required double progress,
   }) {
@@ -257,7 +259,7 @@ class StudentHomeDashboard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
+                      quiz.title,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -305,7 +307,12 @@ class StudentHomeDashboard extends ConsumerWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => StudentQuizQuestionsScreen(quiz: quiz),
+                ),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryMid,
                 foregroundColor: Colors.white,

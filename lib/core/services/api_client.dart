@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:opalmer_education/core/constants/api_constants.dart';
 import 'package:opalmer_education/core/services/secure_storage_service.dart';
 
@@ -14,13 +15,25 @@ class ApiClient {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          debugPrint('ApiClient: [${options.method}] REQUEST to: ${options.baseUrl}${options.path}');
+          debugPrint('ApiClient: [${options.method}] Data: ${options.data}');
+          
           final token = await _storage.getToken();
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
           }
           return handler.next(options);
         },
+        onResponse: (response, handler) {
+          debugPrint('ApiClient: [${response.requestOptions.method}] RESPONSE from: ${response.requestOptions.baseUrl}${response.requestOptions.path}');
+          debugPrint('ApiClient: [${response.requestOptions.method}] Status Code: ${response.statusCode}');
+          return handler.next(response);
+        },
         onError: (DioException e, handler) {
+          debugPrint('ApiClient: [${e.requestOptions.method}] ERROR from: ${e.requestOptions.baseUrl}${e.requestOptions.path}');
+          debugPrint('ApiClient: [${e.requestOptions.method}] Message: ${e.message}');
+          debugPrint('ApiClient: [${e.requestOptions.method}] Response Data: ${e.response?.data}');
+          
           if (e.response?.statusCode == 401) {
             // Handle token expiration - e.g., redirect to login or refresh token
           }

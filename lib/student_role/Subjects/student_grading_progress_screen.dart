@@ -1,54 +1,51 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/providers/student_provider.dart';
+import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 
-class StudentGradingProgressScreen extends StatelessWidget {
+class StudentGradingProgressScreen extends ConsumerWidget {
   const StudentGradingProgressScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final resultsAsync = ref.watch(studentQuizResultsProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        children: [
-          _buildProgressCard(
-            title: "Fractions Practice",
-            date: "12/05/2025",
-            progress: 0.93,
-            indicatorColor: const Color(0xFF4AA678),
-          ),
-          _buildProgressCard(
-            title: "Photosynthesis",
-            date: "12/05/2025",
-            progress: 0.93,
-            indicatorColor: const Color(0xFF4A90E2),
-          ),
-          _buildProgressCard(
-            title: "Force and Motion",
-            date: "12/05/2025",
-            progress: 0.93,
-            indicatorColor: const Color(0xFFFEBD43),
-          ),
-          _buildProgressCard(
-            title: "Fractions Practice",
-            date: "12/05/2025",
-            progress: 0.93,
-            indicatorColor: const Color(0xFF4AA678),
-          ),
-          _buildProgressCard(
-            title: "Photosynthesis",
-            date: "12/05/2025",
-            progress: 0.93,
-            indicatorColor: const Color(0xFF4A90E2),
-          ),
-          _buildProgressCard(
-            title: "Force and Motion",
-            date: "12/05/2025",
-            progress: 0.93,
-            indicatorColor: const Color(0xFFFEBD43),
-          ),
-        ],
+      body: resultsAsync.when(
+        data: (results) {
+          if (results.isEmpty) {
+            return const Center(child: Text("No quiz results found"));
+          }
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            itemCount: results.length,
+            itemBuilder: (context, index) {
+              final res = results[index];
+              final dateStr = res.createdAt != null 
+                ? "${res.createdAt!.day}/${res.createdAt!.month}/${res.createdAt!.year}" 
+                : "N/A";
+              
+              // Cycling through colors for UI variety like in the mockup
+              final List<Color> indicatorColors = [
+                const Color(0xFF4AA678),
+                const Color(0xFF4A90E2),
+                const Color(0xFFFEBD43),
+              ];
+              
+              return _buildProgressCard(
+                title: res.quizTitle,
+                date: dateStr,
+                progress: res.percentage,
+                indicatorColor: indicatorColors[index % indicatorColors.length],
+              );
+            },
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error: $err')),
       ),
     );
   }

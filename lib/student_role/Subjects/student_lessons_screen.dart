@@ -1,77 +1,77 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/providers/student_provider.dart';
+import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/student_role/Subjects/student_lesson_overview_screen.dart';
 
-class StudentLessonsScreen extends StatelessWidget {
+class StudentLessonsScreen extends ConsumerWidget {
   const StudentLessonsScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final lessonsAsync = ref.watch(studentLessonsProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 16),
-            const Text(
-              "Today's Lesson",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildLessonCard(
-              context,
-              title: "Photosynthesis",
-              description: "Solve question 1-10 on page 42 of the textbook.",
-              dueDate: "Due: June 13,2025",
-            ),
-            const SizedBox(height: 32),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text(
-                  "Archived Lessons",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+      body: lessonsAsync.when(
+        data: (lessons) {
+          if (lessons.isEmpty) {
+            return const Center(child: Text("No lessons found"));
+          }
+
+          final todayLessons = lessons.where((l) => !l.isArchived).toList();
+          final archivedLessons = lessons.where((l) => l.isArchived).toList();
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (todayLessons.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Today's Lesson",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
-                ),
-                Icon(
-                  Icons.calendar_month_outlined,
-                  color: AppColors.primaryMid,
-                  size: 24,
-                ),
+                  const SizedBox(height: 16),
+                  ...todayLessons.map((l) => _buildLessonCard(context, lesson: l)),
+                ],
+                if (archivedLessons.isNotEmpty) ...[
+                  const SizedBox(height: 32),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      Text(
+                        "Archived Lessons",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      Icon(
+                        Icons.calendar_month_outlined,
+                        color: AppColors.primaryMid,
+                        size: 24,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  ...archivedLessons.map((l) => _buildLessonCard(context, lesson: l)),
+                ],
+                const SizedBox(height: 100), // Bottom padding for FAB or Nav bar
               ],
             ),
-            const SizedBox(height: 16),
-            _buildLessonCard(
-              context,
-              title: "Fractions Practice",
-              description: "Solve question 1-10 on page 42 of the textbook.",
-              dueDate: "Due: June 13,2025",
-            ),
-            _buildLessonCard(
-              context,
-              title: "Fractions Practice",
-              description: "Solve question 1-10 on page 42 of the textbook.",
-              dueDate: "Due: June 13,2025",
-            ),
-            _buildLessonCard(
-              context,
-              title: "Fractions Practice",
-              description: "Solve question 1-10 on page 42 of the textbook.",
-              dueDate: "Due: June 13,2025",
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error: $err')),
       ),
     );
   }
@@ -113,10 +113,12 @@ class StudentLessonsScreen extends StatelessWidget {
 
   Widget _buildLessonCard(
     BuildContext context, {
-    required String title,
-    required String description,
-    required String dueDate,
+    required LessonModel lesson,
   }) {
+    final dateStr = lesson.createdAt != null 
+      ? "Created: ${lesson.createdAt!.toString().split(' ')[0]}" 
+      : "Open Date";
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
@@ -135,7 +137,7 @@ class StudentLessonsScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            title,
+            lesson.objective,
             style: const TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.bold,
@@ -144,7 +146,9 @@ class StudentLessonsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            description,
+            lesson.note,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey.shade600,
@@ -158,7 +162,7 @@ class StudentLessonsScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                dueDate,
+                dateStr,
                 style: TextStyle(
                   fontSize: 12,
                   color: Colors.grey.shade500,
@@ -170,7 +174,7 @@ class StudentLessonsScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const StudentLessonOverviewScreen(),
+                      builder: (context) => StudentLessonOverviewScreen(lesson: lesson),
                     ),
                   );
                 },

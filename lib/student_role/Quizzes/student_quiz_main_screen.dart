@@ -1,16 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/providers/student_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:opalmer_education/student_role/Quizzes/student_quiz_list_screen.dart';
 import 'package:opalmer_education/student_role/Quizzes/student_quiz_questions_screen.dart';
 
-class StudentQuizMainScreen extends ConsumerWidget {
+class StudentQuizMainScreen extends ConsumerStatefulWidget {
   const StudentQuizMainScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<StudentQuizMainScreen> createState() => _StudentQuizMainScreenState();
+}
+
+class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
+  String _filterPeriod = "Weekly";
+
+  @override
+  Widget build(BuildContext context) {
+    final quizzesAsync = ref.watch(studentQuizzesProvider);
+    final quizResultsAsync = ref.watch(studentQuizResultsProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -19,11 +30,11 @@ class StudentQuizMainScreen extends ConsumerWidget {
           children: [
             _buildHeader(context),
             const SizedBox(height: 24),
-            _buildQuizSection(context, ref),
+            _buildQuizSection(context, ref, quizzesAsync),
             const SizedBox(height: 32),
-            _buildStatsSection(),
+            _buildStatsSection(quizResultsAsync),
             const SizedBox(height: 32),
-            _buildProgressSection(),
+            _buildProgressSection(quizResultsAsync),
             const SizedBox(height: 40),
           ],
         ),
@@ -74,9 +85,11 @@ class StudentQuizMainScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildQuizSection(BuildContext context, WidgetRef ref) {
-    final quizzesAsync = ref.watch(studentQuizzesProvider);
-
+  Widget _buildQuizSection(
+    BuildContext context,
+    WidgetRef ref,
+    AsyncValue<List<QuizModel>> quizzesAsync,
+  ) {
     return Column(
       children: [
         Padding(
@@ -114,25 +127,29 @@ class StudentQuizMainScreen extends ConsumerWidget {
         const SizedBox(height: 16),
         SizedBox(
           height: 210,
-          child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            scrollDirection: Axis.horizontal,
-            children: [
-              _buildQuizCard(
-                context,
-                "Fraction and Decimals",
-                "10 Questions · 5 min",
-                0.93,
-                const Color(0xFF4AA678),
-              ),
-              _buildQuizCard(
-                context,
-                "Photosynthesis",
-                "12 Questions · 8 min",
-                0.45,
-                const Color(0xFFFEBD43),
-              ),
-            ],
+          child: quizzesAsync.when(
+            data: (quizzes) {
+              if (quizzes.isEmpty) {
+                return const Center(child: Text("No quizzes available"));
+              }
+              return ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                scrollDirection: Axis.horizontal,
+                itemCount: quizzes.length,
+                itemBuilder: (context, index) {
+                  final quiz = quizzes[index];
+                  return _buildQuizCard(
+                    context,
+                    quiz,
+                    // Mock progress/color logic for now based on title
+                    0.0,
+                    const Color(0xFFFEBD43),
+                  );
+                },
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, stack) => Center(child: Text("Error: $err")),
           ),
         ),
       ],
@@ -141,8 +158,7 @@ class StudentQuizMainScreen extends ConsumerWidget {
 
   Widget _buildQuizCard(
     BuildContext context,
-    String title,
-    String subtitle,
+    QuizModel quiz,
     double progress,
     Color barColor,
   ) {
@@ -168,17 +184,11 @@ class StudentQuizMainScreen extends ConsumerWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: Image.asset(
-                  'assets/images/science_icon.png',
+                child: Container(
                   width: 44,
                   height: 44,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    color: Colors.grey.shade200,
-                    width: 44,
-                    height: 44,
-                    child: const Icon(Icons.quiz_outlined),
-                  ),
+                  color: AppColors.primaryMid.withValues(alpha: 0.1),
+                  child: const Icon(Icons.quiz_outlined, color: AppColors.primaryMid),
                 ),
               ),
               const SizedBox(width: 12),
@@ -187,7 +197,7 @@ class StudentQuizMainScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
+                      quiz.title,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -198,7 +208,7 @@ class StudentQuizMainScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      subtitle,
+                      "5 Questions · 5 min",
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey.shade500,
@@ -249,7 +259,9 @@ class StudentQuizMainScreen extends ConsumerWidget {
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const StudentQuizQuestionsScreen(),
+                  builder: (_) => StudentQuizQuestionsScreen(
+                    quiz: quiz,
+                  ),
                 ),
               ),
               style: ElevatedButton.styleFrom(
@@ -273,7 +285,7 @@ class StudentQuizMainScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatsSection() {
+  Widget _buildStatsSection(AsyncValue<List<QuizResultModel>> quizResultsAsync) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -288,31 +300,49 @@ class StudentQuizMainScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
-            childAspectRatio: 1.5,
-            children: [
-              _buildStatTile(
-                "Quizzes Completed",
-                "12",
-                const Color(0xFFFEBD43),
-              ),
-              _buildStatTile("Correct Answers", "80%", const Color(0xFF4AA678)),
-              _buildStatTile(
-                "Wrong Answers",
-                "20%",
-                const Color(0xFF4AA678).withValues(alpha: 0.85),
-              ),
-              _buildStatTile(
-                "Best Subject",
-                "Science",
-                const Color(0xFFFEBD43),
-              ),
-            ],
+          quizResultsAsync.when(
+            data: (results) {
+              int completed = results.length;
+              double correctAvg = 0;
+              if (completed > 0) {
+                correctAvg = results.fold<double>(0, (sum, res) => sum + res.percentage) / completed;
+              }
+              String bestSubject = "N/A";
+              if (results.isNotEmpty) {
+                 // Sort by percentage and take the title of the highest
+                 bestSubject = results.reduce((a, b) => a.percentage > b.percentage ? a : b).quizTitle;
+                 if (bestSubject.length > 10) bestSubject = bestSubject.substring(0, 10) + "...";
+              }
+
+              return GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+                childAspectRatio: 1.5,
+                children: [
+                  _buildStatTile(
+                    "Quizzes Completed",
+                    completed.toString(),
+                    const Color(0xFFFEBD43),
+                  ),
+                  _buildStatTile("Correct Answers", "${(correctAvg * 100).toInt()}%", const Color(0xFF4AA678)),
+                  _buildStatTile(
+                    "Wrong Answers",
+                    "${(100 - (correctAvg * 100)).toInt()}%",
+                    const Color(0xFF4AA678).withValues(alpha: 0.85),
+                  ),
+                  _buildStatTile(
+                    "Best Subject",
+                    bestSubject,
+                    const Color(0xFFFEBD43),
+                  ),
+                ],
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, stack) => Center(child: Text("Error: $err")),
           ),
         ],
       ),
@@ -351,7 +381,7 @@ class StudentQuizMainScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildProgressSection() {
+  Widget _buildProgressSection(AsyncValue<List<QuizResultModel>> quizResultsAsync) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -380,120 +410,147 @@ class StudentQuizMainScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: quizResultsAsync.when(
+              data: (results) {
+                // Map weekly data (0 = Sun, 6 = Sat)
+                Map<int, double> weeklySpots = {};
+                for (var res in results) {
+                  if (res.createdAt != null) {
+                    if (_filterPeriod == "Weekly" &&
+                        DateTime.now().difference(res.createdAt!).inDays > 7) continue;
+                    
+                    int weekday = res.createdAt!.weekday % 7;
+                    weeklySpots[weekday] = res.percentage * 100;
+                  }
+                }
+
+                List<FlSpot> spots = [];
+                for (int i = 0; i < 7; i++) {
+                  spots.add(FlSpot(i.toDouble(), weeklySpots[i] ?? 0));
+                }
+
+                return Column(
                   children: [
-                    const Text(
-                      "Progress",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primaryMid,
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.primaryMid),
-                      ),
-                      child: Row(
-                        children: const [
-                          Text(
-                            "Weekly",
-                            style: TextStyle(
-                              color: AppColors.primaryMid,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Icon(
-                            Icons.keyboard_arrow_down_rounded,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Progress",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                             color: AppColors.primaryMid,
-                            size: 16,
                           ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: LineChart(
-                    LineChartData(
-                      gridData: FlGridData(
-                        show: true,
-                        drawVerticalLine: false,
-                        getDrawingHorizontalLine: (value) =>
-                            FlLine(color: Colors.grey.shade100, strokeWidth: 1),
-                      ),
-                      titlesData: FlTitlesData(
-                        rightTitles: AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
                         ),
-                        topTitles: AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        bottomTitles: AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        leftTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            reservedSize: 25,
-                            getTitlesWidget: (value, meta) => Text(
-                              value.toInt().toString(),
-                              style: TextStyle(
-                                color: Colors.grey.shade400,
-                                fontSize: 10,
-                              ),
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _filterPeriod = _filterPeriod == "Weekly" ? "Monthly" : "Weekly";
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
                             ),
-                          ),
-                        ),
-                      ),
-                      borderData: FlBorderData(show: false),
-                      minX: 0,
-                      maxX: 6,
-                      minY: 0,
-                      maxY: 100,
-                      lineBarsData: [
-                        LineChartBarData(
-                          spots: const [
-                            FlSpot(0, 20),
-                            FlSpot(1, 30),
-                            FlSpot(2, 25),
-                            FlSpot(3, 45),
-                            FlSpot(4, 30),
-                            FlSpot(5, 55),
-                            FlSpot(6, 40),
-                          ],
-                          isCurved: true,
-                          color: AppColors.primaryMid,
-                          barWidth: 3,
-                          isStrokeCapRound: true,
-                          dotData: FlDotData(show: false),
-                          belowBarData: BarAreaData(
-                            show: true,
-                            gradient: LinearGradient(
-                              colors: [
-                                AppColors.primaryMid.withValues(alpha: 0.2),
-                                AppColors.primaryMid.withValues(alpha: 0.0),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: AppColors.primaryMid),
+                            ),
+                            child: Row(
+                              children: [
+                                Text(
+                                  _filterPeriod,
+                                  style: const TextStyle(
+                                    color: AppColors.primaryMid,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  color: AppColors.primaryMid,
+                                  size: 16,
+                                ),
                               ],
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
                             ),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ),
-              ],
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: LineChart(
+                        LineChartData(
+                          gridData: FlGridData(
+                            show: true,
+                            drawVerticalLine: false,
+                            getDrawingHorizontalLine: (value) =>
+                                FlLine(color: Colors.grey.shade100, strokeWidth: 1),
+                          ),
+                          titlesData: FlTitlesData(
+                            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                            bottomTitles: AxisTitles(
+                              sideTitles: SideTitles(
+                                showTitles: true,
+                                getTitlesWidget: (value, meta) {
+                                  const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+                                  if (value >= 0 && value < days.length) {
+                                    return Text(days[value.toInt()], style: const TextStyle(fontSize: 10, color: Colors.grey));
+                                  }
+                                  return const SizedBox.shrink();
+                                }
+                              ),
+                            ),
+                            leftTitles: AxisTitles(
+                              sideTitles: SideTitles(
+                                showTitles: true,
+                                reservedSize: 25,
+                                getTitlesWidget: (value, meta) => Text(
+                                  value.toInt().toString(),
+                                  style: TextStyle(
+                                    color: Colors.grey.shade400,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          borderData: FlBorderData(show: false),
+                          minX: 0,
+                          maxX: 6,
+                          minY: 0,
+                          maxY: 100,
+                          lineBarsData: [
+                            LineChartBarData(
+                              spots: spots,
+                              isCurved: true,
+                              color: AppColors.primaryMid,
+                              barWidth: 3,
+                              isStrokeCapRound: true,
+                              dotData: const FlDotData(show: false),
+                              belowBarData: BarAreaData(
+                                show: true,
+                                gradient: LinearGradient(
+                                  colors: [
+                                    AppColors.primaryMid.withValues(alpha: 0.2),
+                                    AppColors.primaryMid.withValues(alpha: 0.0),
+                                  ],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, stack) => Center(child: Text("Error: $err")),
             ),
           ),
         ],

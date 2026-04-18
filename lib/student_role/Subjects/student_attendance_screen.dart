@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
 import 'package:opalmer_education/core/providers/student_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
@@ -33,13 +34,11 @@ class StudentAttendanceScreen extends ConsumerWidget {
                     itemCount: records.length,
                     itemBuilder: (context, index) {
                       final record = records[index];
-                      final date = record['date'] != null 
-                        ? record['date'].toString().split('T')[0] 
-                        : "N/A";
+                      final date = record.date.toString().split(' ')[0];
                       return _buildAttendanceRow(
                         date, 
                         studentName, 
-                        record['present'] ?? "N/A"
+                        record.status
                       );
                     },
                   );
