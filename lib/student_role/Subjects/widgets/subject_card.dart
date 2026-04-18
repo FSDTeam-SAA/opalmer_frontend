@@ -1,35 +1,60 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
+import 'package:opalmer_education/core/models/student_models.dart';
+import 'package:opalmer_education/core/providers/student_provider.dart';
 import 'package:opalmer_education/student_role/Subjects/subject_detail_screen.dart';
 
-class SubjectCard extends StatelessWidget {
+class SubjectCard extends ConsumerWidget {
   final String subjectName;
-  final String attendance;
-  final String performance;
-  final String date;
-  final String teacherName;
-  final String teacherImage;
   final double? width;
+  final LessonModel? lesson;
 
   const SubjectCard({
     Key? key,
     this.subjectName = "Science",
-    this.attendance = "92%",
-    this.performance = "85%",
-    this.date = "06-03-25",
-    this.teacherName = "Olivia Carter",
-    this.teacherImage = 'assets/images/profile /olivia.png',
     this.width,
+    this.lesson,
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    String attendanceVal = "0%";
+    String progressVal = "0%";
+    String dateStr = "N/A";
+
+    final attendanceAsync = ref.watch(studentAttendanceProvider);
+    final quizResultsAsync = ref.watch(studentQuizResultsProvider);
+
+    attendanceAsync.whenData((records) {
+      if (records.isNotEmpty) {
+        final presentCount = records.where((r) => r.status.toLowerCase() == "present").length;
+        attendanceVal = "${((presentCount / records.length) * 100).toInt()}%";
+      }
+    });
+
+    quizResultsAsync.whenData((results) {
+      if (results.isNotEmpty) {
+        final avg = results.fold<double>(0, (sum, res) => sum + res.percentage) / results.length;
+        progressVal = "${(avg * 100).toInt()}%";
+      }
+    });
+
+    if (lesson?.createdAt != null) {
+      dateStr = "${lesson!.createdAt!.day.toString().padLeft(2, '0')}-${lesson!.createdAt!.month.toString().padLeft(2, '0')}-${lesson!.createdAt!.year.toString().substring(2)}";
+    }
+
+    final teacher = lesson?.teacher;
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => SubjectDetailScreen(subjectName: subjectName),
+            builder: (context) => SubjectDetailScreen(
+              subjectName: subjectName,
+              lesson: lesson,
+            ),
           ),
         );
       },
@@ -74,6 +99,8 @@ class SubjectCard extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 const Icon(
@@ -83,7 +110,7 @@ class SubjectCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  attendance,
+                  attendanceVal,
                   style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
                 const SizedBox(width: 8),
@@ -94,7 +121,7 @@ class SubjectCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  performance,
+                  progressVal,
                   style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
@@ -104,28 +131,44 @@ class SubjectCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 18,
-                  backgroundImage: AssetImage(teacherImage),
+                  backgroundColor: AppColors.primaryMid.withValues(alpha: 0.1),
+                  backgroundImage: teacher?.avatar != null && teacher!.avatar!.isNotEmpty
+                      ? NetworkImage(teacher.avatar!) as ImageProvider
+                      : null,
+                  child: teacher?.avatar == null || teacher!.avatar!.isEmpty
+                      ? const Icon(Icons.person, color: AppColors.primaryMid, size: 20)
+                      : null,
                 ),
                 const SizedBox(width: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      teacherName,
+                      teacher?.username ?? "N/A",
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
-                      date,
+                      dateStr,
                       style: const TextStyle(fontSize: 11, color: Colors.grey),
                     ),
                   ],
                 ),
                 const Spacer(),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SubjectDetailScreen(
+                          subjectName: subjectName,
+                          lesson: lesson,
+                        ),
+                      ),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryMid,
                     foregroundColor: Colors.white,

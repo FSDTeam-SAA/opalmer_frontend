@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:opalmer_education/student_role/Subjects/student_homework_screen.dart';
@@ -6,14 +8,31 @@ import 'package:opalmer_education/student_role/Subjects/student_attendance_scree
 import 'package:opalmer_education/student_role/Subjects/student_lessons_screen.dart';
 import 'package:opalmer_education/student_role/Subjects/student_academic_notes_screen.dart';
 import 'package:opalmer_education/student_role/Subjects/student_grading_progress_screen.dart';
+import 'package:opalmer_education/core/providers/student_provider.dart';
+import 'package:opalmer_education/student_role/Chat_Screen/chat_screen.dart';
 
-class SubjectDetailScreen extends StatelessWidget {
+class SubjectDetailScreen extends ConsumerStatefulWidget {
   final String subjectName;
-  const SubjectDetailScreen({Key? key, this.subjectName = "Science"})
-    : super(key: key);
+  final LessonModel? lesson;
+
+  const SubjectDetailScreen({
+    Key? key,
+    this.subjectName = "Science",
+    this.lesson,
+  }) : super(key: key);
+
+  @override
+  ConsumerState<SubjectDetailScreen> createState() => _SubjectDetailScreenState();
+}
+
+class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
+  String _filterPeriod = "Weekly";
 
   @override
   Widget build(BuildContext context) {
+    final attendanceAsync = ref.watch(studentAttendanceProvider);
+    final quizResultsAsync = ref.watch(studentQuizResultsProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
@@ -23,7 +42,7 @@ class SubjectDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 16),
-            _buildStatCards(),
+            _buildStatCards(attendanceAsync, quizResultsAsync),
             const SizedBox(height: 32),
             const Text(
               "Teacher Profile",
@@ -36,7 +55,7 @@ class SubjectDetailScreen extends StatelessWidget {
             const SizedBox(height: 16),
             _buildTeacherProfile(),
             const SizedBox(height: 32),
-            _buildProgressSection(),
+            _buildProgressSection(quizResultsAsync),
             const SizedBox(height: 32),
             _buildOptionsList(context),
             const SizedBox(height: 40),
@@ -71,7 +90,7 @@ class SubjectDetailScreen extends StatelessWidget {
         ),
       ),
       title: Text(
-        subjectName,
+        widget.lesson?.objective ?? widget.subjectName,
         style: const TextStyle(
           fontSize: 22,
           fontWeight: FontWeight.bold,
@@ -81,13 +100,33 @@ class SubjectDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatCards() {
+  Widget _buildStatCards(
+    AsyncValue<List<AttendanceRecord>> attendanceAsync,
+    AsyncValue<List<QuizResultModel>> quizResultsAsync,
+  ) {
+    String attendanceVal = "0%";
+    String progressVal = "0%";
+
+    attendanceAsync.whenData((records) {
+      if (records.isNotEmpty) {
+        final presentCount = records.where((r) => r.status.toLowerCase() == "present").length;
+        attendanceVal = "${((presentCount / records.length) * 100).toInt()}%";
+      }
+    });
+
+    quizResultsAsync.whenData((results) {
+      if (results.isNotEmpty) {
+        final avg = results.fold<double>(0, (sum, res) => sum + res.percentage) / results.length;
+        progressVal = "${(avg * 100).toInt()}%";
+      }
+    });
+
     return Row(
       children: [
         Expanded(
           child: _buildStatCard(
             label: "Attendance",
-            value: "92%",
+            value: attendanceVal,
             emoji: "😊",
             color: const Color(0xFF4AA678),
           ),
@@ -96,7 +135,7 @@ class SubjectDetailScreen extends StatelessWidget {
         Expanded(
           child: _buildStatCard(
             label: "Progress",
-            value: "85%",
+            value: progressVal,
             color: const Color(0xFFFEBD43),
           ),
         ),
@@ -149,20 +188,27 @@ class SubjectDetailScreen extends StatelessWidget {
   }
 
   Widget _buildTeacherProfile() {
+    final teacher = widget.lesson?.teacher;
     return Row(
       children: [
-        const CircleAvatar(
+        CircleAvatar(
           radius: 28,
-          backgroundImage: AssetImage('assets/images/profile /olivia.png'),
+          backgroundColor: AppColors.primaryMid.withValues(alpha: 0.1),
+          backgroundImage: teacher?.avatar != null && teacher!.avatar!.isNotEmpty
+              ? NetworkImage(teacher.avatar!) as ImageProvider
+              : null,
+          child: teacher?.avatar == null || teacher!.avatar!.isEmpty
+              ? const Icon(Icons.person, color: AppColors.primaryMid)
+              : null,
         ),
         const SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
+            children: [
               Text(
-                "Olivia Carter",
-                style: TextStyle(
+                teacher?.username ?? "No Teacher Assigned",
+                style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
@@ -171,9 +217,33 @@ class SubjectDetailScreen extends StatelessWidget {
             ],
           ),
         ),
-        _buildCircleActionIcon(Icons.chat_bubble_outline_rounded),
+        GestureDetector(
+          onTap: () {
+            if (teacher != null) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ChatScreen(
+                    name: teacher.username,
+                    imageUrl: teacher.avatar ?? '',
+                  ),
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("No teacher assigned to this lesson")),
+              );
+            }
+          },
+          child: _buildCircleActionIcon(Icons.chat_bubble_outline_rounded),
+        ),
         const SizedBox(width: 12),
-        _buildCircleActionIcon(Icons.call_outlined),
+        GestureDetector(
+          onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Calling ${teacher?.username ?? 'Teacher'}...")),
+          ),
+          child: _buildCircleActionIcon(Icons.call_outlined),
+        ),
       ],
     );
   }
@@ -189,7 +259,7 @@ class SubjectDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProgressSection() {
+  Widget _buildProgressSection(AsyncValue<List<QuizResultModel>> quizResultsAsync) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -204,28 +274,35 @@ class SubjectDetailScreen extends StatelessWidget {
                 color: AppColors.textPrimary,
               ),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.primaryMid),
-              ),
-              child: Row(
-                children: const [
-                  Text(
-                    "Weekly",
-                    style: TextStyle(
-                      color: AppColors.primaryMid,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _filterPeriod = _filterPeriod == "Weekly" ? "Monthly" : "Weekly";
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.primaryMid),
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      _filterPeriod,
+                      style: const TextStyle(
+                        color: AppColors.primaryMid,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                  Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    color: AppColors.primaryMid,
-                    size: 18,
-                  ),
-                ],
+                    const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: AppColors.primaryMid,
+                      size: 18,
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -245,122 +322,122 @@ class SubjectDetailScreen extends StatelessWidget {
               ),
             ],
           ),
-          child: LineChart(
-            LineChartData(
-              gridData: FlGridData(
-                show: true,
-                drawVerticalLine: false,
-                getDrawingHorizontalLine: (value) => FlLine(
-                  color: Colors.grey.shade200,
-                  strokeWidth: 1,
-                  dashArray: [5, 5],
-                ),
-              ),
-              titlesData: FlTitlesData(
-                rightTitles: AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
-                topTitles: AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 30,
-                    getTitlesWidget: (value, meta) {
-                      const days = [
-                        'Sun',
-                        'Mon',
-                        'Tue',
-                        'Wed',
-                        'Thu',
-                        'Fri',
-                        'Sat',
-                      ];
-                      if (value >= 0 && value < days.length) {
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Text(
-                            days[value.toInt()],
-                            style: TextStyle(
-                              color: Colors.grey.shade500,
-                              fontSize: 11,
-                            ),
-                          ),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                ),
-                leftTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 30,
-                    getTitlesWidget: (value, meta) {
-                      if (value % 20 == 0) {
-                        return Text(
-                          value.toInt().toString(),
-                          style: TextStyle(
-                            color: Colors.grey.shade400,
-                            fontSize: 11,
-                          ),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                ),
-              ),
-              borderData: FlBorderData(show: false),
-              minX: 0,
-              maxX: 6,
-              minY: 0,
-              maxY: 100,
-              lineBarsData: [
-                LineChartBarData(
-                  spots: const [
-                    FlSpot(0, 30),
-                    FlSpot(1, 40),
-                    FlSpot(2, 35),
-                    FlSpot(3, 55),
-                    FlSpot(4, 75),
-                    FlSpot(5, 50),
-                    FlSpot(6, 50),
-                  ],
-                  isCurved: true,
-                  color: AppColors.primaryMid,
-                  barWidth: 4,
-                  isStrokeCapRound: true,
-                  dotData: FlDotData(
+          child: quizResultsAsync.when(
+            data: (results) {
+              // Map weekly data (0 = Sun, 6 = Sat)
+              Map<int, double> weeklySpots = {};
+              for (var res in results) {
+                if (res.createdAt != null) {
+                  // Only include results from the last 7 days for "Weekly"
+                  if (_filterPeriod == "Weekly" &&
+                      DateTime.now().difference(res.createdAt!).inDays > 7) continue;
+                  
+                  int weekday = res.createdAt!.weekday % 7; // Sunday = 0
+                  // Keep the highest score for that day or average? Let's take latest.
+                  weeklySpots[weekday] = res.percentage * 100;
+                }
+              }
+
+              List<FlSpot> spots = [];
+              for (int i = 0; i < 7; i++) {
+                spots.add(FlSpot(i.toDouble(), weeklySpots[i] ?? 0));
+              }
+
+              return LineChart(
+                LineChartData(
+                  gridData: FlGridData(
                     show: true,
-                    getDotPainter: (spot, percent, barData, index) {
-                      if (index == 4) {
-                        // Thursday - peak in mockup
-                        return FlDotCirclePainter(
-                          radius: 6,
-                          color: Colors.white,
-                          strokeWidth: 3,
-                          strokeColor: Colors.orange,
-                        );
-                      }
-                      return FlDotCirclePainter(radius: 0);
-                    },
-                  ),
-                  belowBarData: BarAreaData(
-                    show: true,
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.primaryMid.withValues(alpha: 0.35),
-                        AppColors.primaryMid.withValues(alpha: 0.01),
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
+                    drawVerticalLine: false,
+                    getDrawingHorizontalLine: (value) => FlLine(
+                      color: Colors.grey.shade200,
+                      strokeWidth: 1,
+                      dashArray: [5, 5],
                     ),
                   ),
+                  titlesData: FlTitlesData(
+                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 30,
+                        getTitlesWidget: (value, meta) {
+                          const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                          if (value >= 0 && value < days.length) {
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Text(
+                                days[value.toInt()],
+                                style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
+                              ),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 30,
+                        getTitlesWidget: (value, meta) {
+                          if (value % 20 == 0) {
+                            return Text(
+                              value.toInt().toString(),
+                              style: TextStyle(color: Colors.grey.shade400, fontSize: 11),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  minX: 0,
+                  maxX: 6,
+                  minY: 0,
+                  maxY: 100,
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: spots,
+                      isCurved: true,
+                      color: AppColors.primaryMid,
+                      barWidth: 4,
+                      isStrokeCapRound: true,
+                      dotData: FlDotData(
+                        show: true,
+                        getDotPainter: (spot, percent, barData, index) {
+                          // Highlight latest result day
+                          if (results.isNotEmpty && 
+                              spot.x == (results.first.createdAt?.weekday ?? -1) % 7) {
+                            return FlDotCirclePainter(
+                              radius: 6,
+                              color: Colors.white,
+                              strokeWidth: 3,
+                              strokeColor: Colors.orange,
+                            );
+                          }
+                          return FlDotCirclePainter(radius: 0);
+                        },
+                      ),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.primaryMid.withValues(alpha: 0.35),
+                            AppColors.primaryMid.withValues(alpha: 0.01),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, stack) => Center(child: Text("Error: $err")),
           ),
         ),
       ],

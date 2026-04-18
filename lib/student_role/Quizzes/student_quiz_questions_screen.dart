@@ -1,54 +1,107 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/models/student_models.dart';
+import 'package:opalmer_education/core/providers/auth_provider.dart';
+import 'package:opalmer_education/core/providers/student_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/student_role/Quizzes/student_quiz_result_screen.dart';
 
-class StudentQuizQuestionsScreen extends StatefulWidget {
-  const StudentQuizQuestionsScreen({Key? key}) : super(key: key);
+class StudentQuizQuestionsScreen extends ConsumerStatefulWidget {
+  final QuizModel quiz;
+  const StudentQuizQuestionsScreen({Key? key, required this.quiz}) : super(key: key);
 
   @override
-  State<StudentQuizQuestionsScreen> createState() =>
+  ConsumerState<StudentQuizQuestionsScreen> createState() =>
       _StudentQuizQuestionsScreenState();
 }
 
 class _StudentQuizQuestionsScreenState
-    extends State<StudentQuizQuestionsScreen> {
+    extends ConsumerState<StudentQuizQuestionsScreen> {
   final Map<int, int> _answers = {};
+  bool _isSubmitting = false;
+
+  Future<void> _submitQuiz(List<QuizQuestion> questions) async {
+    final user = ref.read(authStateProvider);
+    if (user == null) return;
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      int score = 0;
+      for (int i = 0; i < questions.length; i++) {
+        if (_answers.containsKey(i)) {
+          final selectedOption = questions[i].options[_answers[i]!];
+          if (selectedOption == questions[i].answer) {
+            score++;
+          }
+        }
+      }
+
+      final success = await ref.read(studentServiceProvider).submitQuiz(
+        widget.quiz.id,
+        user.id,
+        score,
+        questions.length,
+      );
+
+      if (success && mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const StudentQuizResultScreen()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to submit quiz. Please try again.")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final quizQAAsync = ref.watch(quizQAProvider(widget.quiz.id));
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              children: [
-                _buildQuizInfoCard(),
-                const SizedBox(height: 24),
-                _buildQuestionCard(
-                  1,
-                  "Convert the fraction to a decimal: 3/4",
-                  ["0.25", "0.5", "0.75", "1.25"],
+      body: quizQAAsync.when(
+        data: (quizQA) {
+          if (quizQA == null || quizQA.questions.isEmpty) {
+            return const Center(child: Text("No questions found for this quiz."));
+          }
+          final questions = quizQA.questions;
+          return Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  children: [
+                    _buildQuizInfoCard(questions.length),
+                    const SizedBox(height: 24),
+                    ...questions.asMap().entries.map((entry) {
+                      final idx = entry.key;
+                      final q = entry.value;
+                      return _buildQuestionCard(
+                        idx,
+                        q.question,
+                        q.options,
+                      );
+                    }).toList(),
+                  ],
                 ),
-                _buildQuestionCard(2, "Which of these is the smallest?", [
-                  "1/2",
-                  "0.4",
-                  "3/5",
-                  "0.75",
-                ]),
-                _buildQuestionCard(3, "What is 15% of 200?", [
-                  "20",
-                  "25",
-                  "30",
-                  "35",
-                ]),
-              ],
-            ),
-          ),
-          _buildFooter(context),
-        ],
+              ),
+              _buildFooter(context, questions),
+            ],
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error: $err')),
       ),
     );
   }
@@ -88,7 +141,7 @@ class _StudentQuizQuestionsScreenState
     );
   }
 
-  Widget _buildQuizInfoCard() {
+  Widget _buildQuizInfoCard(int totalQuestions) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -97,11 +150,11 @@ class _StudentQuizQuestionsScreenState
       ),
       child: Column(
         children: [
-          _buildInfoRow("Quiz Name", "Fraction and Decimals"),
+          _buildInfoRow("Quiz Name", widget.quiz.title),
           const SizedBox(height: 12),
-          _buildInfoRow("Total Questions", "10"),
+          _buildInfoRow("Total Questions", totalQuestions.toString()),
           const SizedBox(height: 12),
-          _buildInfoRow("Created By", "John Martin"),
+          _buildInfoRow("Teacher", widget.quiz.teacherName ?? "N/A"),
         ],
       ),
     );
@@ -131,7 +184,7 @@ class _StudentQuizQuestionsScreenState
     );
   }
 
-  Widget _buildQuestionCard(int number, String question, List<String> options) {
+  Widget _buildQuestionCard(int index, String question, List<String> options) {
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(20),
@@ -150,7 +203,7 @@ class _StudentQuizQuestionsScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "$number. $question",
+            "${index + 1}. $question",
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -160,12 +213,12 @@ class _StudentQuizQuestionsScreenState
           ),
           const SizedBox(height: 16),
           ...options.asMap().entries.map((entry) {
-            int idx = entry.key;
+            int optIdx = entry.key;
             String text = entry.value;
-            bool isSelected = _answers[number] == idx;
+            bool isSelected = _answers[index] == optIdx;
 
             return GestureDetector(
-              onTap: () => setState(() => _answers[number] = idx),
+              onTap: () => setState(() => _answers[index] = optIdx),
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Row(
@@ -196,16 +249,18 @@ class _StudentQuizQuestionsScreenState
                           : null,
                     ),
                     const SizedBox(width: 12),
-                    Text(
-                      text,
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: isSelected
-                            ? AppColors.primaryMid
-                            : AppColors.textPrimary,
-                        fontWeight: isSelected
-                            ? FontWeight.w600
-                            : FontWeight.normal,
+                    Expanded(
+                      child: Text(
+                        text,
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: isSelected
+                              ? AppColors.primaryMid
+                              : AppColors.textPrimary,
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                        ),
                       ),
                     ),
                   ],
@@ -218,7 +273,7 @@ class _StudentQuizQuestionsScreenState
     );
   }
 
-  Widget _buildFooter(BuildContext context) {
+  Widget _buildFooter(BuildContext context, List<QuizQuestion> questions) {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
       decoration: BoxDecoration(
@@ -235,24 +290,23 @@ class _StudentQuizQuestionsScreenState
         width: double.infinity,
         height: 56,
         child: ElevatedButton(
-          onPressed: () => Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const StudentQuizResultScreen()),
-          ),
+          onPressed: _isSubmitting ? null : () => _submitQuiz(questions),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryMid,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
           ),
-          child: const Text(
-            "COMPLETE QUIZ",
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
+          child: _isSubmitting
+              ? const CircularProgressIndicator(color: Colors.white)
+              : const Text(
+                  "COMPLETE QUIZ",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
         ),
       ),
     );

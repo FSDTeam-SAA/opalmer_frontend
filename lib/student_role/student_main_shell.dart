@@ -4,37 +4,38 @@ import 'package:opalmer_education/student_role/widgets/student_bottom_navbar.dar
 import 'package:opalmer_education/student_role/Quizzes/student_quiz_main_screen.dart';
 import 'package:opalmer_education/student_role/Subjects/subjects_screen.dart';
 import 'package:opalmer_education/student_role/Chat_Screen/chat_dashboard.dart';
+import 'package:opalmer_education/student_role/Profile/student_profile_screen.dart';
 import 'package:opalmer_education/teacher_role/profile_screen/profile.dart';
 
-class StudentMainShell extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/providers/navigation_provider.dart';
+
+class StudentMainShell extends ConsumerStatefulWidget {
   const StudentMainShell({super.key});
 
   @override
-  State<StudentMainShell> createState() => _StudentMainShellState();
+  ConsumerState<StudentMainShell> createState() => _StudentMainShellState();
 }
 
-class _StudentMainShellState extends State<StudentMainShell> {
-  int _currentIndex = 0;
-
+class _StudentMainShellState extends ConsumerState<StudentMainShell> {
   @override
   Widget build(BuildContext context) {
-    // These will be replaced as we build more screens
+    final currentIndex = ref.watch(studentTabIndexProvider);
+
     final List<Widget> pages = [
       const StudentHomeDashboard(),
       const SubjectsScreen(),
       const ChatDashboard(),
       const StudentQuizMainScreen(),
-      const ProfileScreen(),
+      const StudentProfileScreen(),
     ];
 
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: pages),
+      body: IndexedStack(index: currentIndex, children: pages),
       bottomNavigationBar: StudentBottomNavigationBar(
-        currentIndex: _currentIndex,
+        currentIndex: currentIndex,
         onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+          ref.read(studentTabIndexProvider.notifier).state = index;
         },
       ),
     );

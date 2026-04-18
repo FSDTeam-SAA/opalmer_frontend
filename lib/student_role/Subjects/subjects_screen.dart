@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/providers/student_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/student_role/Subjects/widgets/subject_card.dart';
@@ -30,11 +31,8 @@ class SubjectsScreen extends ConsumerWidget {
                     final lesson = lessons[index];
                     return SubjectCard(
                       width: double.infinity,
-                      subjectName: lesson['title'] ?? "N/A",
-                      teacherName: lesson['teacher']?['username'] ?? "N/A",
-                      date: lesson['created_at'] != null 
-                        ? lesson['created_at'].toString().split('T')[0] 
-                        : "N/A",
+                      lesson: lesson,
+                      subjectName: lesson.objective,
                     );
                   },
                 );

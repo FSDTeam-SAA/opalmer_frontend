@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:opalmer_education/core/constants/api_constants.dart';
 import 'package:opalmer_education/core/models/user_model.dart';
@@ -10,6 +11,7 @@ class AuthService {
   final SecureStorageService _storage = SecureStorageService();
 
   Future<LoginResponse?> login(String id, String password) async {
+    debugPrint('AuthService: Attempting login for ID: $id');
     try {
       final response = await _apiClient.post(
         ApiConstants.login,
@@ -19,9 +21,11 @@ class AuthService {
         },
       );
 
+      debugPrint('AuthService: Login response received: ${response.statusCode}');
       final dataMap = UserModel.recursiveSafeMap(response.data);
       
       if (response.statusCode == 200 && dataMap['success'] == true) {
+        debugPrint('AuthService: Login successful, saving token and user data');
         final loginResponse = LoginResponse.fromJson(dataMap);
         
         // Save token and user data
@@ -30,12 +34,18 @@ class AuthService {
         
         return loginResponse;
       }
+      debugPrint('AuthService: Login failed with success=false or wrong status code');
       return null;
     } on DioException catch (e) {
+      debugPrint('AuthService: DioException during login: ${e.message}');
+      debugPrint('AuthService: Response status: ${e.response?.statusCode}');
+      debugPrint('AuthService: Response data: ${e.response?.data}');
+      
       final errorData = UserModel.recursiveSafeMap(e.response?.data);
       final message = errorData['message']?.toString() ?? 'Login failed';
       throw Exception(message);
     } catch (e) {
+      debugPrint('AuthService: Unexpected error during login: ${e.toString()}');
       throw Exception('An unexpected error occurred: ${e.toString()}');
     }
   }

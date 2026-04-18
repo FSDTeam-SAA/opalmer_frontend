@@ -1,4 +1,5 @@
 import 'package:opalmer_education/core/constants/api_constants.dart';
+import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/services/api_client.dart';
 
 class StudentService {
@@ -21,30 +22,43 @@ class StudentService {
     }
   }
 
-  Future<List<dynamic>> getLessons() async {
+  Future<List<LessonModel>> getLessons() async {
     try {
       final response = await _apiClient.get(ApiConstants.lessons);
-      return response.data['data'];
+      final List<dynamic> data = response.data['data'] ?? [];
+      return data.map((json) => LessonModel.fromJson(json)).toList();
     } catch (e) {
       rethrow;
     }
   }
 
-  Future<List<dynamic>> getHomework() async {
+  Future<List<HomeworkModel>> getHomework(String userId) async {
     try {
-      final response = await _apiClient.get(ApiConstants.homework);
-      return response.data['data'];
+      final response = await _apiClient.get('${ApiConstants.homework}/user/$userId');
+      final List<dynamic> data = response.data['data'] ?? [];
+      return data.map((json) => HomeworkModel.fromJson(json)).toList();
     } catch (e) {
       rethrow;
     }
   }
 
-  Future<List<dynamic>> getQuizzes() async {
+  Future<List<QuizModel>> getQuizzes() async {
     try {
       final response = await _apiClient.get(ApiConstants.quizzes);
-      return response.data['data'];
+      final List<dynamic> data = response.data['data'] ?? [];
+      return data.map((json) => QuizModel.fromJson(json)).toList();
     } catch (e) {
-      rethrow;
+      return [];
+    }
+  }
+
+  Future<List<QuizResultModel>> getQuizResults(String studentId) async {
+    try {
+      final response = await _apiClient.get('${ApiConstants.quizResults}/$studentId');
+      final List<dynamic> data = response.data['data'] ?? [];
+      return data.map((json) => QuizResultModel.fromJson(json)).toList();
+    } catch (e) {
+      return [];
     }
   }
 
@@ -57,12 +71,42 @@ class StudentService {
     }
   }
 
-  Future<List<dynamic>> getAttendance(String userId, String classId) async {
+  Future<List<AttendanceRecord>> getAttendance(String userId, String classId) async {
     try {
       final response = await _apiClient.get(
         '${ApiConstants.attendance}/student?userId=$userId&classId=$classId'
       );
-      return response.data['data']['attendanceRecords'];
+      final List<dynamic> records = response.data['data']['attendanceRecords'] ?? [];
+      return records.map((json) => AttendanceRecord.fromJson(json)).toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<QuizQA?> getQuizQA(String quizId) async {
+    try {
+      final response = await _apiClient.get('${ApiConstants.quizQA}/$quizId');
+      if (response.data['data'] != null) {
+        return QuizQA.fromJson(response.data['data']);
+      }
+      return null;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<bool> submitQuiz(String quizId, String studentId, int score, int totalQuestions) async {
+    try {
+      final response = await _apiClient.post(
+        ApiConstants.submitQuiz,
+        data: {
+          'quizId': quizId,
+          'studentId': studentId,
+          'score': score,
+          'totalQuestion': totalQuestions,
+        },
+      );
+      return response.statusCode == 201 || response.statusCode == 200;
     } catch (e) {
       rethrow;
     }

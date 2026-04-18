@@ -153,7 +153,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               style: TextStyle(fontSize: 15, color: Colors.grey.shade500),
             ),
             const SizedBox(height: 32),
-
+            
             // Menu Items List
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),

@@ -43,4 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
-/opalmer-backend
+# Backend (Ignore subfolder)
+opalmer-backend/
+.env
+node_modules/

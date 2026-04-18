@@ -7,6 +7,8 @@ class UserModel {
   final String role;
   final String? type;
   final String? schoolId;
+  final String? studentId; // This is the 'Id' from backend
+  final String? gradeLevel;
   final String? avatar;
 
   UserModel({
@@ -16,6 +18,8 @@ class UserModel {
     required this.role,
     this.type,
     this.schoolId,
+    this.studentId,
+    this.gradeLevel,
     this.avatar,
   });
 
@@ -52,7 +56,8 @@ class UserModel {
       email: json['email']?.toString(),
       role: (json['role'] ?? json['type'] ?? '').toString(),
       type: json['type']?.toString(),
-      schoolId: json['schoolId']?.toString(),
+      studentId: (json['Id'] ?? json['studentId'])?.toString(),
+      gradeLevel: json['gradeLevel']?.toString(),
       avatar: json['avatar'] is Map ? json['avatar']['url']?.toString() : (json['avatar']?.toString() ?? ''),
     );
   }
@@ -65,6 +70,8 @@ class UserModel {
       'role': role,
       'type': type,
       'schoolId': schoolId,
+      'studentId': studentId,
+      'gradeLevel': gradeLevel,
       'avatar': avatar,
     };
   }

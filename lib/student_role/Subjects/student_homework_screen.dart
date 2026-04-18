@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/providers/student_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 
@@ -145,12 +146,12 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
     );
   }
 
-  Widget _buildClassHomework(List<dynamic> homework) {
+  Widget _buildClassHomework(List<HomeworkModel> homework) {
     final activeHomework = homework
-        .where((h) => h['archived'] == false)
+        .where((h) => h.archived == false)
         .toList();
     final archivedHomework = homework
-        .where((h) => h['archived'] == true)
+        .where((h) => h.archived == true)
         .toList();
 
     return Column(
@@ -176,10 +177,10 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
         else
           ...activeHomework.map(
             (h) => _buildHomeworkCard(
-              title: h['title'] ?? "N/A",
-              description: "Attached files: ${h['file']?.length ?? 0}",
-              dueDate: h['created_at'] != null
-                  ? "Created: ${h['created_at'].toString().split('T')[0]}"
+              title: h.title,
+              description: "Attached files: ${h.fileUrls.length}",
+              dueDate: h.createdAt != null
+                  ? "Created: ${h.createdAt.toString().split(' ')[0]}"
                   : "N/A",
             ),
           ),
@@ -214,10 +215,10 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
         else
           ...archivedHomework.map(
             (h) => _buildHomeworkCard(
-              title: h['title'] ?? "N/A",
-              description: "Attached files: ${h['file']?.length ?? 0}",
-              dueDate: h['created_at'] != null
-                  ? h['created_at'].toString().split('T')[0]
+              title: h.title,
+              description: "Attached files: ${h.fileUrls.length}",
+              dueDate: h.createdAt != null
+                  ? h.createdAt.toString().split(' ')[0]
                   : "N/A",
             ),
           ),
