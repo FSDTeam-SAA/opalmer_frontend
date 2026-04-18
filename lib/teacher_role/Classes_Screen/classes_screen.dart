@@ -1,18 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/providers/teacher_provider.dart';
+import '../../core/models/teacher_class_model.dart';
 import '../../notification/notification.dart';
 import 'class_details.dart';
 import 'add_class.dart';
 
-class ClassesScreen extends StatefulWidget {
+class ClassesScreen extends ConsumerStatefulWidget {
   const ClassesScreen({Key? key}) : super(key: key);
 
   @override
-  State<ClassesScreen> createState() => _ClassesScreenState();
+  ConsumerState<ClassesScreen> createState() => _ClassesScreenState();
 }
 
-class _ClassesScreenState extends State<ClassesScreen> {
+class _ClassesScreenState extends ConsumerState<ClassesScreen> {
+  final List<Color> _cardColors = [
+    const Color(0xFF4AA678), // Green
+    const Color(0xFFFEBD43), // Yellow
+    const Color(0xFF3F99B4), // Blue
+  ];
+
   @override
   Widget build(BuildContext context) {
+    final classesAsync = ref.watch(teacherClassesProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -87,45 +98,46 @@ class _ClassesScreenState extends State<ClassesScreen> {
               offset: const Offset(0, -10),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
-                    _buildClassCard(
-                      subject: "Grade 6 - Science",
-                      date: "6/6/25",
-                      students: "28 Students",
-                      attendance: "92%",
-                      performance: "85%",
-                      color: const Color(0xFF4AA678), // Green
+                child: classesAsync.when(
+                  data: (classes) {
+                    if (classes.isEmpty) {
+                      return const Center(
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 100),
+                          child: Text("No classes found."),
+                        ),
+                      );
+                    }
+                    return Column(
+                      children: List.generate(classes.length, (index) {
+                        final cls = classes[index];
+                        return _buildClassCard(
+                          subject: "Grade ${cls.grade} - ${cls.subject}",
+                          date: "TBD", // API doesn't provide a specific next class date yet
+                          students: "${cls.studentCount} Students",
+                          attendance: cls.attendance,
+                          performance: cls.performance,
+                          color: _cardColors[index % _cardColors.length],
+                        );
+                      }),
+                    );
+                  },
+                  loading: () => const Center(
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 100),
+                      child: CircularProgressIndicator(),
                     ),
-                    _buildClassCard(
-                      subject: "Grade 5 - Math",
-                      date: "6/6/25",
-                      students: "28 Students",
-                      attendance: "92%",
-                      performance: "85%",
-                      color: const Color(0xFFFEBD43), // Yellow
+                  ),
+                  error: (err, stack) => Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 100),
+                      child: Text("Error loading classes: $err"),
                     ),
-                    _buildClassCard(
-                      subject: "Grade 5 - Science",
-                      date: "6/6/25",
-                      students: "28 Students",
-                      attendance: "92%",
-                      performance: "85%",
-                      color: const Color(0xFF3F99B4), // Blue
-                    ),
-                    _buildClassCard(
-                      subject: "Grade 4 - Science",
-                      date: "6/6/25",
-                      students: "28 Students",
-                      attendance: "92%",
-                      performance: "85%",
-                      color: const Color(0xFF4AA678), // Green
-                    ),
-                    const SizedBox(height: 100), // padding for bottom nav
-                  ],
+                  ),
                 ),
               ),
             ),
+            const SizedBox(height: 100), // padding for bottom nav
           ],
         ),
       ),
@@ -318,3 +330,4 @@ class _ClassesScreenState extends State<ClassesScreen> {
     );
   }
 }
+
