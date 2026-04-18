@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 
 class ChildProfile {
+  final String? studentId;
   final String name;
   final String gradeAge;
   final double progress;
@@ -12,6 +13,7 @@ class ChildProfile {
   final String imageUrl;
 
   const ChildProfile({
+    this.studentId,
     required this.name,
     required this.gradeAge,
     required this.progress,
@@ -21,6 +23,44 @@ class ChildProfile {
     required this.leftBorderColor,
     required this.imageUrl,
   });
+
+  factory ChildProfile.fromJson(Map<String, dynamic> json) {
+    // Default dummy values for missing metrics
+    double prog = (json['progress'] ?? 0).toDouble();
+    String tag = json['tagText'] ?? "Evaluating";
+    
+    // Auto-map colors based on tagText
+    Color tColor = const Color(0xFF4CB07D);
+    Color lBorderColor = const Color(0xFF4CB07D);
+    
+    if (tag == "Excellent") {
+      tColor = const Color(0xFF4CB07D);
+      lBorderColor = const Color(0xFF4CB07D);
+    } else if (tag == "Good") {
+      tColor = const Color(0xFFF4B84F);
+      lBorderColor = const Color(0xFFF4B84F);
+    } else if (tag == "Fair") {
+      tColor = const Color(0xFFE91E63);
+      lBorderColor = const Color(0xFFE91E63);
+    } else {
+      tColor = Colors.grey;
+      lBorderColor = Colors.grey;
+    }
+
+    return ChildProfile(
+      studentId: json['Id'] ?? json['_id'],
+      name: json['username'] ?? 'Unknown',
+      gradeAge: 'Grade ${json['gradeLevel'] ?? 'N/A'} - Age ${json['age'] ?? 'N/A'}',
+      progress: prog,
+      tagText: tag,
+      tagColor: tColor,
+      barColor: AppColors.primaryMid,
+      leftBorderColor: lBorderColor,
+      imageUrl: (json['avatar'] != null && json['avatar']['url'] != null && json['avatar']['url'].toString().isNotEmpty)
+          ? json['avatar']['url']
+          : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
+    );
+  }
 }
 
 // Dummy data to use across screens

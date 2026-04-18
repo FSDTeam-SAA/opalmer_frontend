@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:opalmer_education/core/services/api_client.dart';
+import 'package:opalmer_education/core/services/secure_storage_service.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/parent_role/ChildsProfilesScreen/models/child_profile.dart';
 import 'package:opalmer_education/parent_role/SubjectsScreen/models/subject.dart'
@@ -14,17 +17,75 @@ class AddChildDialog extends StatefulWidget {
 class _AddChildDialogState extends State<AddChildDialog> {
   final TextEditingController _searchController = TextEditingController();
   List<ChildProfile> _searchResults = [];
+  final ApiClient _apiClient = ApiClient();
+  final SecureStorageService _storage = SecureStorageService();
+  bool _isLoading = false;
 
-  void _onSearchChanged(String query) {
+  void _onSearchChanged(String query) async {
     if (query.isNotEmpty) {
-      setState(() {
-        // Mock search: show first two profiles as results
-        _searchResults = mockChildProfiles.take(2).toList();
-      });
+      if (query.length > 2) {
+        setState(() {
+          _isLoading = true;
+        });
+        try {
+          final response = await _apiClient.get(
+            '/users/search-student',
+            queryParameters: {'Id': query},
+          );
+          if (response.data['success'] == true) {
+            final List students = response.data['data'] ?? [];
+            if (mounted) {
+              setState(() {
+                _searchResults = students.map((s) => ChildProfile.fromJson(s)).toList();
+              });
+            }
+          }
+        } catch (e) {
+          if (mounted) {
+            setState(() {
+              _searchResults = [];
+            });
+          }
+        } finally {
+          if (mounted) {
+            setState(() {
+              _isLoading = false;
+            });
+          }
+        }
+      }
     } else {
       setState(() {
         _searchResults = [];
       });
+    }
+  }
+
+  void _addRelation(ChildProfile profile) async {
+    try {
+      String? userData = await _storage.getUserData();
+      if (userData == null) return;
+      final userMap = jsonDecode(userData);
+      final parentId = userMap['id'] ?? userMap['_id'];
+
+      final response = await _apiClient.post(
+          '/parent/child',
+          data: {
+            'parentId': parentId,
+            'childId': profile.studentId,
+          }
+      );
+
+      if (response.data['success'] == true) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Child added successfully.")));
+          Navigator.of(context).pop(true);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed: ${e.toString()}")));
+      }
     }
   }
 
@@ -111,6 +172,11 @@ class _AddChildDialogState extends State<AddChildDialog> {
                   ),
                 ),
               ),
+
+              if (_isLoading) ...[
+                const SizedBox(height: 16),
+                const Center(child: CircularProgressIndicator(color: AppColors.primaryMid)),
+              ],
 
               // Search results area
               if (_searchResults.isNotEmpty) ...[
@@ -276,8 +342,7 @@ class _AddChildDialogState extends State<AddChildDialog> {
             padding: const EdgeInsets.only(right: 12),
             child: ElevatedButton(
               onPressed: () {
-                // Action to Add specific profile relation (API integration later)
-                // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Sending invite...")));
+                _addRelation(profile);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryMid,
