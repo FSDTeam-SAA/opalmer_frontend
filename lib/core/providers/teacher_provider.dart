@@ -56,3 +56,25 @@ final classLessonsProvider = FutureProvider.family<List<dynamic>, String>((ref, 
   return [];
 });
 
+final classHomeworkProvider = FutureProvider.family<List<dynamic>, String>((ref, classId) async {
+  final apiClient = ref.read(apiClientProvider);
+  final response = await apiClient.get('/homework/class/$classId');
+  if (response.statusCode == 200 && response.data['success'] == true) {
+    return response.data['data'];
+  }
+  return [];
+});
+
+final userRoomsProvider = FutureProvider<List<dynamic>>((ref) async {
+  final user = ref.watch(authStateProvider);
+  if (user == null) return [];
+  
+  final apiClient = ref.read(apiClientProvider);
+  final response = await apiClient.get('/rooms/user/${user.id}');
+  if (response.statusCode == 200 && response.data['success'] == true) {
+    return response.data['data'];
+  }
+  return [];
+});
+
+

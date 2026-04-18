@@ -67,10 +67,11 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const HomeworkScreen(),
+                            builder: (_) => HomeworkScreen(classId: widget.classData.id),
                           ),
                         );
                       },
+
                       child: Container(
                         width: 36,
                         height: 36,

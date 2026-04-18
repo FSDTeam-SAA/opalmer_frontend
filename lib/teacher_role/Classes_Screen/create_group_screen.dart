@@ -1,21 +1,87 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/providers/auth_provider.dart';
+import '../../core/providers/teacher_provider.dart';
 
-class CreateGroupScreen extends StatefulWidget {
-  const CreateGroupScreen({super.key});
+class CreateGroupScreen extends ConsumerStatefulWidget {
+  final String classId;
+  const CreateGroupScreen({super.key, required this.classId});
 
   @override
-  State<CreateGroupScreen> createState() => _CreateGroupScreenState();
+  ConsumerState<CreateGroupScreen> createState() => _CreateGroupScreenState();
 }
 
-class _CreateGroupScreenState extends State<CreateGroupScreen> {
-  // Using a set to track selected student indices
-  final Set<int> _selectedIndices = {
-    0,
-    1,
-  }; // Pre-selecting first two to match screenshot
+class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
+  final TextEditingController _titleController = TextEditingController();
+  final Set<String> _selectedStudentIds = {};
+  bool _isLoading = false;
+
+  Future<void> _createGroup() async {
+    if (_titleController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a group title')),
+      );
+      return;
+    }
+
+    if (_selectedStudentIds.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select at least one student')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final user = ref.read(authStateProvider);
+      final apiClient = ref.read(apiClientProvider);
+
+      if (user == null) throw Exception('User not logged in');
+
+      // Prepare participants list including the teacher
+      final List<Map<String, String>> participants = [
+        {'userId': user.id},
+        ..._selectedStudentIds.map((id) => {'userId': id}),
+      ];
+
+      final response = await apiClient.post('/rooms', data: {
+        'name': _titleController.text,
+        'participants': participants,
+      });
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Group created successfully!')),
+          );
+          ref.invalidate(userRoomsProvider);
+          Navigator.pop(context);
+        }
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to create group');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final studentsAsync = ref.watch(classStudentsProvider(widget.classId));
+
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
       body: SafeArea(
@@ -72,6 +138,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                     ),
                     const SizedBox(height: 8),
                     TextField(
+                      controller: _titleController,
                       decoration: InputDecoration(
                         hintText: "Enter title here",
                         hintStyle: TextStyle(
@@ -79,7 +146,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                           fontSize: 14,
                         ),
                         filled: true,
-                        fillColor: Colors.white, // In screenshot it looks white
+                        fillColor: Colors.white,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 14,
@@ -110,11 +177,35 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                     const SizedBox(height: 16),
 
                     // Students List
-                    for (int i = 0; i < 7; i++)
-                      _buildSelectableStudentCard(
-                        index: i,
-                        name: "Mia johnson",
-                      ),
+                    studentsAsync.when(
+                      data: (students) {
+                        if (students.isEmpty) {
+                          return const Center(child: Text("No students available."));
+                        }
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: students.length,
+                          itemBuilder: (context, index) {
+                            final assignment = students[index];
+                            final student = assignment['studentId'];
+                            if (student == null) return const SizedBox();
+                            
+                            final studentId = student['_id'];
+                            final studentName = student['username'] ?? student['name'] ?? 'Unknown';
+                            final avatarUrl = student['avatar'] is Map ? student['avatar']['url'] : student['avatar'];
+
+                            return _buildSelectableStudentCard(
+                              id: studentId,
+                              name: studentName,
+                              avatarUrl: avatarUrl,
+                            );
+                          },
+                        );
+                      },
+                      loading: () => const Center(child: CircularProgressIndicator()),
+                      error: (err, stack) => Center(child: Text("Error: $err")),
+                    ),
 
                     const SizedBox(height: 20),
                   ],
@@ -128,9 +219,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
+                  onPressed: _isLoading ? null : _createGroup,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF871DAD),
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -139,14 +228,20 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                     ),
                     elevation: 0,
                   ),
-                  child: Text(
-                    "(${_selectedIndices.length}) CREATE",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : Text(
+                          "(${_selectedStudentIds.length}) CREATE",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
             ),
@@ -157,18 +252,19 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   }
 
   Widget _buildSelectableStudentCard({
-    required int index,
+    required String id,
     required String name,
+    String? avatarUrl,
   }) {
-    bool isSelected = _selectedIndices.contains(index);
+    bool isSelected = _selectedStudentIds.contains(id);
 
     return GestureDetector(
       onTap: () {
         setState(() {
           if (isSelected) {
-            _selectedIndices.remove(index);
+            _selectedStudentIds.remove(id);
           } else {
-            _selectedIndices.add(index);
+            _selectedStudentIds.add(id);
           }
         });
       },
@@ -191,12 +287,21 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             Container(
               width: 44,
               height: 44,
-              decoration: const BoxDecoration(shape: BoxShape.circle),
+              decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFF3F4F6)),
               clipBehavior: Clip.hardEdge,
-              child: Image.asset(
-                'assets/images/classes/student_image.png',
-                fit: BoxFit.cover,
-              ),
+              child: avatarUrl != null && avatarUrl.isNotEmpty
+                  ? Image.network(
+                      avatarUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Image.asset(
+                        'assets/images/classes/student_image.png',
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : Image.asset(
+                      'assets/images/classes/student_image.png',
+                      fit: BoxFit.cover,
+                    ),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -240,3 +345,4 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     );
   }
 }
+
