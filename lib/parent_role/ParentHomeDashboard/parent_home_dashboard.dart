@@ -1,4 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/providers/auth_provider.dart';
+import 'package:opalmer_education/core/models/user_model.dart';
+import 'package:opalmer_education/core/services/secure_storage_service.dart';
+import 'package:opalmer_education/core/constants/api_constants.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/core/widgets/pressable_card.dart';
 import 'package:opalmer_education/core/widgets/learning_tip_card.dart';
@@ -11,16 +17,43 @@ import 'package:opalmer_education/parent_role/ChildsProfilesScreen/childs_profil
 import 'package:opalmer_education/parent_role/ChildsProfilesScreen/models/child_profile.dart';
 import 'package:opalmer_education/parent_role/SubjectsScreen/subjects_screen.dart';
 
-class ParentHomeDashboard extends StatefulWidget {
+class ParentHomeDashboard extends ConsumerStatefulWidget {
   const ParentHomeDashboard({super.key});
 
   @override
-  State<ParentHomeDashboard> createState() => _ParentHomeDashboardState();
+  ConsumerState<ParentHomeDashboard> createState() => _ParentHomeDashboardState();
 }
 
-class _ParentHomeDashboardState extends State<ParentHomeDashboard> {
+class _ParentHomeDashboardState extends ConsumerState<ParentHomeDashboard> {
+  bool _isLoading = true;
+  final SecureStorageService _storage = SecureStorageService();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserFromStorageIfEmpty();
+  }
+
+  Future<void> _loadUserFromStorageIfEmpty() async {
+    // If the global state is null, try to load it from storage
+    if (ref.read(authStateProvider) == null) {
+      try {
+        final userDataStr = await _storage.getUserData();
+        if (userDataStr != null) {
+          final map = jsonDecode(userDataStr);
+          ref.read(authStateProvider.notifier).state = UserModel.fromJson(map);
+        }
+      } catch (_) {}
+    }
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(authStateProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -44,16 +77,27 @@ class _ParentHomeDashboardState extends State<ParentHomeDashboard> {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                "Hi, Olivia Carter 👋",
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  letterSpacing: -0.5,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
+                              _isLoading
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation(
+                                          Colors.white,
+                                        ),
+                                      ),
+                                    )
+                                      : Text(
+                                          "Hi, ${user?.username ?? 'User'} 👋",
+                                          style: const TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            letterSpacing: -0.5,
+                                          ),
+                                        ),
+                                  const SizedBox(height: 4),
                               Text(
                                 "Check your Children's activities",
                                 style: TextStyle(

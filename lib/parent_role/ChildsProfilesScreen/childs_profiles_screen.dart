@@ -3,6 +3,7 @@ import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/core/widgets/animated_wave_header.dart';
 import 'package:opalmer_education/core/widgets/pressable_card.dart';
 import 'package:opalmer_education/notification/notification.dart';
+import 'package:opalmer_education/parent_role/ChildsProfilesScreen/add_child.dart';
 import 'package:opalmer_education/parent_role/SubjectsScreen/subjects_screen.dart';
 import 'package:opalmer_education/parent_role/ChildsProfilesScreen/models/child_profile.dart';
 
@@ -119,11 +120,14 @@ class ChildsProfilesScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         heroTag: 'child_profiles_fab',
         onPressed: () {
-          // Action for adding a new child profile
+          showDialog(
+            context: context,
+            builder: (context) => const AddChildDialog(),
+          );
         },
         backgroundColor: AppColors.primaryMid,
         elevation: 4,
-        shape: CircleBorder(),
+        shape: const CircleBorder(),
         child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
     );
