@@ -24,4 +24,7 @@ class ApiConstants {
 
   // Attendance Endpoints
   static const String attendance = '/attendances/student';
+
+  // Learning Tips Endpoints
+  static const String learningTipsByParent = '/learning-tips/by-parent/me';
 }

@@ -70,21 +70,51 @@ class LearningTipDetailScreen extends StatelessWidget {
               ),
 
               // Hero Image
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Image.network(
-                    tip.imageUrl,
-                    width: double.infinity,
-                    height: 200,
-                    fit: BoxFit.cover,
+              if (tip.imageUrl.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.network(
+                      tip.imageUrl,
+                      width: double.infinity,
+                      height: 200,
+                      fit: BoxFit.cover,
+                      errorBuilder: (ctx, err, trace) => Container(
+                        width: double.infinity,
+                        height: 200,
+                        color: Colors.grey.shade200,
+                        child: const Icon(
+                          Icons.image,
+                          color: Colors.grey,
+                          size: 48,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+
+              // Legacy fallback: plain description when no sections are present
+              if ((tip.sections == null || tip.sections!.isEmpty) &&
+                  tip.description != null &&
+                  tip.description!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
+                  child: Text(
+                    tip.description!,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      color: Color(0xFF555555),
+                      height: 1.4,
+                    ),
+                  ),
+                ),
 
               // Dynamic contents mapping
               if (tip.sections != null)

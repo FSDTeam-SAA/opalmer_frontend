@@ -12,18 +12,45 @@ class LearningTipSection {
     this.imageUrls,
     this.footerText,
   });
+
+  factory LearningTipSection.fromJson(Map<String, dynamic> json) {
+    return LearningTipSection(
+      title: json['title'] as String? ?? '',
+      description: json['description'] as String?,
+      bulletPoints: (json['bulletPoints'] as List?)?.cast<String>(),
+      imageUrls: (json['imageUrls'] as List?)?.cast<String>(),
+      footerText: json['footerText'] as String?,
+    );
+  }
 }
 
 class LearningTip {
   final String title;
   final String imageUrl;
+  final String? description;
   final List<LearningTipSection>? sections;
 
   const LearningTip({
     required this.title,
     required this.imageUrl,
+    this.description,
     this.sections,
   });
+
+  factory LearningTip.fromJson(Map<String, dynamic> json) {
+    final imgList = (json['img'] as List?)?.cast<String>();
+    final hero = (json['imageUrl'] as String?) ??
+        (imgList != null && imgList.isNotEmpty ? imgList.first : '');
+    final rawSections = json['sections'] as List?;
+    return LearningTip(
+      title: json['title'] as String? ?? '',
+      imageUrl: hero,
+      description: json['description'] as String?,
+      sections: rawSections
+          ?.map((s) => LearningTipSection.fromJson(s as Map<String, dynamic>))
+          .toList(),
+    );
+  }
 }
 
 const List<LearningTip> mockLearningTips = [

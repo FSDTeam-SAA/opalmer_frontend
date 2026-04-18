@@ -11,6 +11,7 @@ import 'package:opalmer_education/core/widgets/pressable_card.dart';
 import 'package:opalmer_education/core/widgets/learning_tip_card.dart';
 import 'package:opalmer_education/core/widgets/animated_wave_header.dart';
 import 'package:opalmer_education/parent_role/LearningTipsScreen/models/learning_tip.dart';
+import 'package:opalmer_education/parent_role/services/learning_tips_service.dart';
 import 'package:opalmer_education/notification/notification.dart';
 import 'package:opalmer_education/parent_role/LearningTipsScreen/learning_tips_screen.dart';
 import 'package:opalmer_education/parent_role/LearningTipsScreen/learning_tip_detail_screen.dart';
@@ -28,7 +29,9 @@ class ParentHomeDashboard extends ConsumerStatefulWidget {
 class _ParentHomeDashboardState extends ConsumerState<ParentHomeDashboard> {
   bool _isLoading = true;
   bool _isLoadingProfiles = true;
+  bool _isLoadingTips = true;
   List<ChildProfile> _profiles = [];
+  List<LearningTip> _tips = [];
   final ApiClient _apiClient = ApiClient();
   final SecureStorageService _storage = SecureStorageService();
 
@@ -37,6 +40,26 @@ class _ParentHomeDashboardState extends ConsumerState<ParentHomeDashboard> {
     super.initState();
     _loadUserFromStorageIfEmpty();
     _loadProfiles();
+    _loadTips();
+  }
+
+  Future<void> _loadTips() async {
+    try {
+      final tips = await LearningTipsService.instance.fetch();
+      if (mounted) {
+        setState(() {
+          _tips = tips;
+        });
+      }
+    } catch (e) {
+      debugPrint('Failed to load dashboard learning tips: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingTips = false;
+        });
+      }
+    }
   }
 
   Future<void> _loadProfiles() async {
@@ -310,32 +333,57 @@ class _ParentHomeDashboardState extends ConsumerState<ParentHomeDashboard> {
                   ),
                   const SizedBox(height: 16),
                   Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.only(bottom: 20),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Column(
-                          children: [
-                            ...mockLearningTips.take(5).map((tip) {
-                              return LearningTipCard(
-                                title: tip.title,
-                                imageUrl: tip.imageUrl,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          LearningTipDetailScreen(tip: tip),
+                    child: _isLoadingTips
+                        ? const Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primaryMid,
+                            ),
+                          )
+                        : _tips.isEmpty
+                            ? const Center(
+                                child: Padding(
+                                  padding:
+                                      EdgeInsets.symmetric(horizontal: 32),
+                                  child: Text(
+                                    'No learning tips available yet.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey,
                                     ),
-                                  );
-                                },
-                              );
-                            }).toList(),
-                            const SizedBox(height: 20),
-                          ],
-                        ),
-                      ),
-                    ),
+                                  ),
+                                ),
+                              )
+                            : SingleChildScrollView(
+                                padding: const EdgeInsets.only(bottom: 20),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      ..._tips.take(5).map((tip) {
+                                        return LearningTipCard(
+                                          title: tip.title,
+                                          imageUrl: tip.imageUrl,
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    LearningTipDetailScreen(
+                                                      tip: tip,
+                                                    ),
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      }),
+                                      const SizedBox(height: 20),
+                                    ],
+                                  ),
+                                ),
+                              ),
                   ),
                 ],
               ),
