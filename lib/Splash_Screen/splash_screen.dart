@@ -1,6 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:opalmer_education/core/services/secure_storage_service.dart';
 import '../onboarding_screen/onboarding_screen.dart';
+import '../parent_role/parent_main_shell.dart';
+import '../student_role/student_main_shell.dart';
+import '../custom_bottom_navigation_bar/main_shell.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -56,11 +61,43 @@ class _SplashScreenState extends State<SplashScreen>
     _fadeController.forward();
     _scaleController.forward();
 
-    // Navigate after 3 seconds
-    Timer(const Duration(seconds: 3), () {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const OnboardingScreen()),
-      );
+    // Navigate after 3 seconds, evaluating persistent login state
+    Timer(const Duration(seconds: 3), () async {
+      final storage = SecureStorageService();
+      final token = await storage.getToken();
+      final userDataStr = await storage.getUserData();
+
+      if (token != null && userDataStr != null && mounted) {
+        try {
+          final userData = jsonDecode(userDataStr);
+          final roleType = userData['type'];
+
+          Widget targetScreen;
+          if (roleType == 'parent') {
+            targetScreen = const ParentMainShell();
+          } else if (roleType == 'student') {
+            targetScreen = const StudentMainShell();
+          } else if (roleType == 'teacher') {
+            targetScreen = const MainShell();
+          } else {
+            targetScreen = const OnboardingScreen();
+          }
+
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => targetScreen),
+          );
+        } catch (_) {
+          if (mounted) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+            );
+          }
+        }
+      } else if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+        );
+      }
     });
   }
 

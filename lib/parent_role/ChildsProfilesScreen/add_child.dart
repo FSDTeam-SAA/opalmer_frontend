@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/core/services/api_client.dart';
 import 'package:opalmer_education/core/services/secure_storage_service.dart';
@@ -36,7 +37,9 @@ class _AddChildDialogState extends State<AddChildDialog> {
             final List students = response.data['data'] ?? [];
             if (mounted) {
               setState(() {
-                _searchResults = students.map((s) => ChildProfile.fromJson(s)).toList();
+                _searchResults = students
+                    .map((s) => ChildProfile.fromJson(s))
+                    .toList();
               });
             }
           }
@@ -69,22 +72,36 @@ class _AddChildDialogState extends State<AddChildDialog> {
       final parentId = userMap['id'] ?? userMap['_id'];
 
       final response = await _apiClient.post(
-          '/parent/child',
-          data: {
-            'parentId': parentId,
-            'childId': profile.studentId,
-          }
+        '/parent/child',
+        data: {'parentId': parentId, 'childId': profile.studentId},
       );
 
       if (response.data['success'] == true) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Child added successfully.")));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Child added successfully.")),
+          );
           Navigator.of(context).pop(true);
         }
       }
+    } on DioException catch (e) {
+      if (mounted) {
+        String errMsg = "Failed to add child.";
+        if (e.response?.statusCode == 409) {
+          errMsg = "This child is already added to your profile.";
+        } else if (e.response?.data != null &&
+            e.response?.data['message'] != null) {
+          errMsg = e.response?.data['message'];
+        }
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(errMsg)));
+      }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed: ${e.toString()}")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Failed: ${e.toString()}")));
       }
     }
   }
@@ -175,7 +192,9 @@ class _AddChildDialogState extends State<AddChildDialog> {
 
               if (_isLoading) ...[
                 const SizedBox(height: 16),
-                const Center(child: CircularProgressIndicator(color: AppColors.primaryMid)),
+                const Center(
+                  child: CircularProgressIndicator(color: AppColors.primaryMid),
+                ),
               ],
 
               // Search results area

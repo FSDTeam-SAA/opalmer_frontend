@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 
 class ChildProfile {
+  final String? relationId;
   final String? studentId;
   final String name;
   final String gradeAge;
@@ -13,6 +14,7 @@ class ChildProfile {
   final String imageUrl;
 
   const ChildProfile({
+    this.relationId,
     this.studentId,
     required this.name,
     required this.gradeAge,
@@ -24,7 +26,7 @@ class ChildProfile {
     required this.imageUrl,
   });
 
-  factory ChildProfile.fromJson(Map<String, dynamic> json) {
+  factory ChildProfile.fromJson(Map<String, dynamic> json, {String? relationId}) {
     // Default dummy values for missing metrics
     double prog = (json['progress'] ?? 0).toDouble();
     String tag = json['tagText'] ?? "Evaluating";
@@ -48,6 +50,7 @@ class ChildProfile {
     }
 
     return ChildProfile(
+      relationId: relationId,
       studentId: json['Id'] ?? json['_id'],
       name: json['username'] ?? 'Unknown',
       gradeAge: 'Grade ${json['gradeLevel'] ?? 'N/A'} - Age ${json['age'] ?? 'N/A'}',
