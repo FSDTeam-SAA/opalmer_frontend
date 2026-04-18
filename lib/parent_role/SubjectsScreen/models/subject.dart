@@ -20,6 +20,68 @@ class Subject {
     required this.date,
     this.weeklyProgress,
   });
+
+  factory Subject.fromJson(Map<String, dynamic> json) {
+    final teacher = json['teacherId'];
+    final teacherMap = teacher is Map ? Map<String, dynamic>.from(teacher) : null;
+    final avatar = teacherMap?['avatar'];
+    final avatarUrl =
+        avatar is Map ? (avatar['url']?.toString() ?? '') : (avatar?.toString() ?? '');
+
+    final attendanceValue = json['attendancePercentage'];
+    final performanceValue = json['performancePercentage'];
+
+    final rawProgress = json['weeklyProgress'] as List?;
+    final progressPoints = rawProgress == null
+        ? null
+        : List<SubjectProgressPoint>.generate(rawProgress.length, (i) {
+            final p = rawProgress[i] as Map<String, dynamic>;
+            final pct = p['percentage'];
+            return SubjectProgressPoint(
+              i.toDouble(),
+              (pct is num) ? pct.toDouble() : 0,
+              (p['dayLabel'] ?? '').toString(),
+            );
+          });
+
+    return Subject(
+      id: (json['_id'] ?? '').toString(),
+      name: (json['subject'] ?? '').toString(),
+      attendance: _formatPercent(attendanceValue),
+      attendanceEmoji: _emojiForPercent(attendanceValue),
+      performance: _formatPercent(performanceValue),
+      teacherName: (teacherMap?['username'] ?? '—').toString(),
+      teacherAvatar: avatarUrl,
+      date: _formatDate(json['lastActivityDate']),
+      weeklyProgress: progressPoints,
+    );
+  }
+
+  static String _formatPercent(dynamic v) {
+    if (v is num) return '${v.round()}%';
+    return '—';
+  }
+
+  static String _emojiForPercent(dynamic v) {
+    if (v is! num) return '😕';
+    if (v >= 90) return '🌟';
+    if (v >= 75) return '😎';
+    if (v >= 50) return '😇';
+    return '😕';
+  }
+
+  static String _formatDate(dynamic iso) {
+    if (iso is! String || iso.isEmpty) return '—';
+    try {
+      final d = DateTime.parse(iso).toLocal();
+      final dd = d.day.toString().padLeft(2, '0');
+      final mm = d.month.toString().padLeft(2, '0');
+      final yy = (d.year % 100).toString().padLeft(2, '0');
+      return '$dd-$mm-$yy';
+    } catch (_) {
+      return '—';
+    }
+  }
 }
 
 class SubjectProgressPoint {
@@ -40,6 +102,21 @@ class ChildProfile {
     required this.name,
     required this.imageUrl,
   });
+
+  factory ChildProfile.fromJson(Map<String, dynamic> json) {
+    final avatar = json['avatar'];
+    String imageUrl = '';
+    if (avatar is Map) {
+      imageUrl = (avatar['url']?.toString() ?? '');
+    } else if (avatar is String) {
+      imageUrl = avatar;
+    }
+    return ChildProfile(
+      id: (json['_id'] ?? json['id'] ?? '').toString(),
+      name: (json['username'] ?? json['name'] ?? '').toString(),
+      imageUrl: imageUrl,
+    );
+  }
 }
 
 const List<ChildProfile> mockChildren = [

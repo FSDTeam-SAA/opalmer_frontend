@@ -246,9 +246,21 @@ class _ChildsProfilesScreenState extends State<ChildsProfilesScreen> {
   }) {
     return PressableCard(
       onTap: () {
+        final childId = profile.mongoId;
+        if (childId == null || childId.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Child id not available yet.')),
+          );
+          return;
+        }
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const SubjectsScreen()),
+          MaterialPageRoute(
+            builder: (context) => SubjectsScreen(
+              initialChildId: childId,
+              initialChildName: profile.name,
+            ),
+          ),
         );
       },
       child: Container(

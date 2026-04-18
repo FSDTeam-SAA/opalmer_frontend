@@ -3,6 +3,7 @@ import 'package:opalmer_education/core/theme/app_colors.dart';
 
 class ChildProfile {
   final String? relationId;
+  final String? mongoId; // Mongo ObjectId for API endpoints that use findById
   final String? studentId;
   final String name;
   final String gradeAge;
@@ -15,6 +16,7 @@ class ChildProfile {
 
   const ChildProfile({
     this.relationId,
+    this.mongoId,
     this.studentId,
     required this.name,
     required this.gradeAge,
@@ -51,6 +53,7 @@ class ChildProfile {
 
     return ChildProfile(
       relationId: relationId,
+      mongoId: json['_id']?.toString(),
       studentId: json['Id'] ?? json['_id'],
       name: json['username'] ?? 'Unknown',
       gradeAge: 'Grade ${json['gradeLevel'] ?? 'N/A'} - Age ${json['age'] ?? 'N/A'}',

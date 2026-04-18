@@ -27,4 +27,19 @@ class ApiConstants {
 
   // Learning Tips Endpoints
   static const String learningTipsByParent = '/learning-tips/by-parent/me';
+
+  // Parent → Children
+  static String childrenByParent(String parentId) =>
+      '/parent/child/parent/$parentId';
+
+  // Classes per student (enriched with teacher avatar, attendance %, performance %, date, weekly progress)
+  static String classesByStudent(String studentId) =>
+      '/classes/student/$studentId';
+
+  // Homework per class — supports ?archived=true|false
+  static String homeworkByClass(String classId) => '/homework/class/$classId';
+
+  // Group homework per class — members are populated with username + avatar
+  static String groupWorkByClass(String classId) =>
+      '/group-work/class/$classId';
 }

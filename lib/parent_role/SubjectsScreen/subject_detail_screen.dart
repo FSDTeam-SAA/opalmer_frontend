@@ -149,8 +149,10 @@ class SubjectDetailScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          HomeworkScreen(subjectName: subject.name),
+                      builder: (context) => HomeworkScreen(
+                        classId: subject.id,
+                        subjectName: subject.name,
+                      ),
                     ),
                   );
                 },
