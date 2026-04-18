@@ -21,7 +21,7 @@ final teacherClassesProvider = FutureProvider<List<TeacherClassModel>>((ref) asy
     // 2. For each class, fetch the student count
     final updatedClasses = await Future.wait(classes.map((cls) async {
       try {
-        final stuResponse = await apiClient.get('/stuAssignToClass/class/${cls.id}');
+        final stuResponse = await apiClient.get('/student-assign-to-class/class/${cls.id}');
         if (stuResponse.statusCode == 200 && stuResponse.data['success'] == true) {
           final List<dynamic> assignments = stuResponse.data['data'];
           return cls.copyWith(studentCount: assignments.length);
@@ -31,6 +31,7 @@ final teacherClassesProvider = FutureProvider<List<TeacherClassModel>>((ref) asy
       }
       return cls;
     }));
+
 
     return updatedClasses;
   }
