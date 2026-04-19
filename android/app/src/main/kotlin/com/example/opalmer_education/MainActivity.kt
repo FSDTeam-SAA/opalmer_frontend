@@ -6,9 +6,8 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
-import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.android.FlutterActivity
-import io.flutter.plugin.common.FlutterStandardTypedData
+import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
 import java.io.FileOutputStream
@@ -28,7 +27,7 @@ class MainActivity : FlutterActivity() {
                 return@setMethodCallHandler
             }
 
-            val bytes = call.argument<FlutterStandardTypedData>("bytes")?.bytes()
+            val bytes = call.argument<ByteArray>("bytes")
             val fileName = call.argument<String>("fileName") ?: "lesson-document"
             val mimeType = call.argument<String>("mimeType") ?: "application/octet-stream"
             val isImage = call.argument<Boolean>("isImage") ?: false

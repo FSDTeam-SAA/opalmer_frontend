@@ -200,8 +200,11 @@ class SubjectDetailScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          BehaviorRecordScreen(subjectName: subject.name),
+                      builder: (context) => BehaviorRecordScreen(
+                        subjectName: subject.name,
+                        childId: studentId,
+                        childName: studentName,
+                      ),
                     ),
                   );
                 },

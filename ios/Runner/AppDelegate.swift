@@ -124,11 +124,7 @@ import UIKit
           return
         }
 
-        PHPhotoLibrary.shared().performChanges {
-          PHAssetChangeRequest.creationRequestForAsset(from: image)
-        } completionHandler: { _, error in
-          completion(error)
-        }
+        self.saveImageToClassPluseAlbum(image, completion: completion)
       }
     } else {
       PHPhotoLibrary.requestAuthorization { status in
@@ -141,12 +137,84 @@ import UIKit
           return
         }
 
-        PHPhotoLibrary.shared().performChanges {
-          PHAssetChangeRequest.creationRequestForAsset(from: image)
-        } completionHandler: { _, error in
-          completion(error)
-        }
+        self.saveImageToClassPluseAlbum(image, completion: completion)
       }
     }
+  }
+
+  private func saveImageToClassPluseAlbum(
+    _ image: UIImage,
+    completion: @escaping (Error?) -> Void
+  ) {
+    ensureClassPluseAlbum { album, error in
+      if let error {
+        completion(error)
+        return
+      }
+
+      guard let album else {
+        completion(NSError(
+          domain: "ClassPluseDownloads",
+          code: 2,
+          userInfo: [NSLocalizedDescriptionKey: "Could not create the ClassPluse album."]
+        ))
+        return
+      }
+
+      PHPhotoLibrary.shared().performChanges {
+        let assetRequest = PHAssetChangeRequest.creationRequestForAsset(from: image)
+        guard let placeholder = assetRequest.placeholderForCreatedAsset,
+              let albumRequest = PHAssetCollectionChangeRequest(for: album)
+        else {
+          return
+        }
+        albumRequest.addAssets([placeholder] as NSArray)
+      } completionHandler: { _, error in
+        completion(error)
+      }
+    }
+  }
+
+  private func ensureClassPluseAlbum(
+    completion: @escaping (PHAssetCollection?, Error?) -> Void
+  ) {
+    if let album = fetchClassPluseAlbum() {
+      completion(album, nil)
+      return
+    }
+
+    var placeholder: PHObjectPlaceholder?
+    PHPhotoLibrary.shared().performChanges {
+      let request = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(
+        withTitle: self.appFolderName
+      )
+      placeholder = request.placeholderForCreatedAssetCollection
+    } completionHandler: { _, error in
+      if let error {
+        completion(nil, error)
+        return
+      }
+
+      if let identifier = placeholder?.localIdentifier {
+        let collection = PHAssetCollection.fetchAssetCollections(
+          withLocalIdentifiers: [identifier],
+          options: nil
+        ).firstObject
+        completion(collection, nil)
+        return
+      }
+
+      completion(self.fetchClassPluseAlbum(), nil)
+    }
+  }
+
+  private func fetchClassPluseAlbum() -> PHAssetCollection? {
+    let options = PHFetchOptions()
+    options.predicate = NSPredicate(format: "title = %@", appFolderName)
+    return PHAssetCollection.fetchAssetCollections(
+      with: .album,
+      subtype: .albumRegular,
+      options: options
+    ).firstObject
   }
 }
