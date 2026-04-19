@@ -34,23 +34,30 @@ class AttendanceRecord {
     Map<String, dynamic> json, {
     String studentNameFallback = '',
   }) {
+    final rawStatus = _readStatus(json);
     return AttendanceRecord(
       id: (json['_id'] ?? '').toString(),
       date: _formatDate(json['date']) ?? '—',
       studentName: studentNameFallback,
-      status: _parseStatus(json['status']),
-      rawStatus: _parseRawStatus(json['status']),
+      status: _parseStatus(rawStatus),
+      rawStatus: rawStatus,
     );
   }
 
-  static String _parseRawStatus(dynamic raw) {
-    if (raw is! String) return '';
-    return raw.trim();
+  static String _readStatus(Map<String, dynamic> json) {
+    const keys = ['status', 'statusText', 'statusLabel', 'customStatus'];
+    for (final key in keys) {
+      final value = json[key];
+      if (value == null) continue;
+      final text = value.toString().trim();
+      if (text.isNotEmpty) return text;
+    }
+    return '';
   }
 
   static AttendanceStatus _parseStatus(dynamic raw) {
     if (raw is! String) return AttendanceStatus.unknown;
-    switch (raw.toLowerCase()) {
+    switch (raw.trim().toLowerCase()) {
       case 'present':
         return AttendanceStatus.present;
       case 'absent':
