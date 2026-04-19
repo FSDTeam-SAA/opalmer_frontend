@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../core/models/teacher_class_model.dart';
 import '../../core/providers/teacher_provider.dart';
 
@@ -21,6 +22,8 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
   Widget build(BuildContext context) {
     final studentsAsync = ref.watch(classStudentsProvider(widget.classData.id));
     final lessonsAsync = ref.watch(classLessonsProvider(widget.classData.id));
+    final attendanceStatsAsync = ref.watch(classAttendanceStatsProvider(widget.classData.id));
+    final String todayDate = DateFormat('dd-MM-yy').format(DateTime.now());
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
@@ -136,7 +139,7 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                         Expanded(
                           child: _buildStatBox(
                             "Date",
-                            "TBD",
+                            todayDate,
                             const Color(0xFFB87841),
                           ),
                         ),
@@ -146,10 +149,22 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: _buildStatBox(
-                            "Attendance",
-                            widget.classData.attendance,
-                            const Color(0xFF4AA678),
+                          child: attendanceStatsAsync.when(
+                            data: (percentage) => _buildStatBox(
+                              "Attendance",
+                              "$percentage%",
+                              const Color(0xFF4AA678),
+                            ),
+                            loading: () => _buildStatBox(
+                              "Attendance",
+                              "...",
+                              const Color(0xFF4AA678),
+                            ),
+                            error: (_, __) => _buildStatBox(
+                              "Attendance",
+                              "Error",
+                              const Color(0xFF4AA678),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -393,7 +408,7 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const StudentAttendanceScreen()),
+          MaterialPageRoute(builder: (_) => StudentAttendanceScreen(classData: widget.classData)),
         );
       },
       child: Container(

@@ -1,16 +1,65 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import '../../core/models/teacher_class_model.dart';
+import '../../core/providers/teacher_provider.dart';
 
-class StudentAttendanceScreen extends StatefulWidget {
-  const StudentAttendanceScreen({Key? key}) : super(key: key);
+class StudentAttendanceScreen extends ConsumerStatefulWidget {
+  final TeacherClassModel classData;
+  const StudentAttendanceScreen({Key? key, required this.classData}) : super(key: key);
 
   @override
-  State<StudentAttendanceScreen> createState() =>
-      _StudentAttendanceScreenState();
+  ConsumerState<StudentAttendanceScreen> createState() => _StudentAttendanceScreenState();
 }
 
-class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
+class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScreen> {
+  final String _todayDate = DateFormat('dd-MM-yy').format(DateTime.now());
+  bool _isCreating = false;
+
+  Future<void> _updateStatus(String attendanceId, String status) async {
+    try {
+      final apiClient = ref.read(apiClientProvider);
+      final response = await apiClient.patch('/attendances/class/$attendanceId', data: {'status': status});
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        ref.invalidate(classAttendanceProvider(widget.classData.id));
+        ref.invalidate(classAttendanceStatsProvider(widget.classData.id));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
+  }
+
+  Future<void> _initTodayAttendance() async {
+    if (_isCreating) return;
+    setState(() => _isCreating = true);
+    try {
+      final apiClient = ref.read(apiClientProvider);
+      // This endpoint creates attendance for missing students for today
+      await apiClient.post('/attendances/class', data: {
+        'classId': widget.classData.id,
+        'date': DateTime.now().toIso8601String(),
+      });
+      ref.invalidate(classAttendanceProvider(widget.classData.id));
+    } catch (e) {
+      // Ignore error if it's just "already exists"
+    } finally {
+      if (mounted) setState(() => _isCreating = false);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => _initTodayAttendance());
+  }
+
   @override
   Widget build(BuildContext context) {
+    final studentsAsync = ref.watch(classStudentsProvider(widget.classData.id));
+    final attendanceAsync = ref.watch(classAttendanceProvider(widget.classData.id));
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -134,76 +183,42 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
 
                       // Table Body
                       Expanded(
-                        child: ListView(
-                          padding: const EdgeInsets.only(top: 8, bottom: 20),
-                          children: [
-                            _buildRow(
-                              "06-03-25",
-                              "Mia Johnson",
-                              _Status.present,
-                            ),
-                            _buildRow(
-                              "06-03-25",
-                              "Mia Johnson",
-                              _Status.absent,
-                            ),
-                            _buildRow("06-03-25", "Mia Johnson", _Status.tardy),
-                            _buildRow(
-                              "06-03-25",
-                              "Mia Johnson",
-                              _Status.present,
-                            ),
-                            _buildRow(
-                              "06-03-25",
-                              "Mia Johnson",
-                              _Status.present,
-                            ),
-                            _buildRow(
-                              "06-03-25",
-                              "Mia Johnson",
-                              _Status.present,
-                            ),
-                            _buildRow(
-                              "06-03-25",
-                              "Mia Johnson",
-                              _Status.present,
-                            ),
-                            _buildRow(
-                              "06-03-25",
-                              "Mia Johnson",
-                              _Status.absent,
-                            ),
-                            _buildRow(
-                              "06-03-25",
-                              "Mia Johnson",
-                              _Status.present,
-                            ),
-                            _buildRow(
-                              "06-03-25",
-                              "Mia Johnson",
-                              _Status.present,
-                            ),
-                            _buildRow(
-                              "06-03-25",
-                              "Mia Johnson",
-                              _Status.present,
-                            ),
-                            _buildRow(
-                              "06-03-25",
-                              "Mia Johnson",
-                              _Status.present,
-                            ),
-                            _buildRow(
-                              "06-03-25",
-                              "Mia Johnson",
-                              _Status.present,
-                            ),
-                            _buildRow(
-                              "06-03-25",
-                              "Mia Johnson",
-                              _Status.present,
-                            ),
-                          ],
+                        child: attendanceAsync.when(
+                          data: (attendanceRecords) {
+                            return studentsAsync.when(
+                              data: (students) {
+                                // Create a map of studentId -> attendanceRecord for quick lookup
+                                final attendanceMap = {
+                                  for (var record in attendanceRecords)
+                                    record['userId']: record
+                                };
+
+                                return ListView.builder(
+                                  padding: const EdgeInsets.only(top: 8, bottom: 20),
+                                  itemCount: students.length,
+                                  itemBuilder: (context, index) {
+                                    final assignment = students[index];
+                                    final student = assignment['studentId'];
+                                    if (student == null) return const SizedBox();
+                                    
+                                    final studentId = student['_id'];
+                                    final record = attendanceMap[studentId];
+                                    
+                                    return _buildRow(
+                                      _todayDate,
+                                      student['username'] ?? student['name'] ?? 'Unknown',
+                                      record?['status'] ?? 'absent',
+                                      record?['_id'],
+                                    );
+                                  },
+                                );
+                              },
+                              loading: () => const Center(child: CircularProgressIndicator()),
+                              error: (err, stack) => Center(child: Text("Error: $err")),
+                            );
+                          },
+                          loading: () => const Center(child: CircularProgressIndicator()),
+                          error: (err, stack) => Center(child: Text("Error: $err")),
                         ),
                       ),
                     ],
@@ -217,7 +232,7 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
     );
   }
 
-  Widget _buildRow(String date, String name, _Status status) {
+  Widget _buildRow(String date, String name, String status, String? attendanceId) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
@@ -237,57 +252,71 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
               ),
             ),
           ),
-          SizedBox(width: 86, child: _buildStatusDropdown(status)),
+          SizedBox(width: 86, child: _buildStatusDropdown(status, attendanceId)),
         ],
       ),
     );
   }
 
-  Widget _buildStatusDropdown(_Status status) {
+  Widget _buildStatusDropdown(String status, String? attendanceId) {
     Color bgColor;
     Color textColor;
     String text;
 
-    switch (status) {
-      case _Status.present:
+    switch (status.toLowerCase()) {
+      case 'present':
         bgColor = const Color(0xFFCBEAD7);
         textColor = const Color(0xFF388D5E);
         text = "Present";
         break;
-      case _Status.absent:
-        bgColor = const Color(0xFFF7CFD1); // Light pink
-        textColor = const Color(0xFFC04345); // Dark red
+      case 'absent':
+        bgColor = const Color(0xFFF7CFD1);
+        textColor = const Color(0xFFC04345);
         text = "Absent";
         break;
-      case _Status.tardy:
-        bgColor = const Color(0xFFCFE1EB); // Light blue
-        textColor = const Color(0xFF4C7B90); // Dark grayish blue
+      case 'tardy':
+        bgColor = const Color(0xFFCFE1EB);
+        textColor = const Color(0xFF4C7B90);
         text = "Tardy";
         break;
+      default:
+        bgColor = const Color(0xFFF7CFD1);
+        textColor = const Color(0xFFC04345);
+        text = "Absent";
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            text,
-            style: TextStyle(
-              color: textColor,
-              fontWeight: FontWeight.w500,
-              fontSize: 12,
+    return PopupMenuButton<String>(
+      onSelected: (newStatus) {
+        if (attendanceId != null) {
+          _updateStatus(attendanceId, newStatus);
+        }
+      },
+      itemBuilder: (context) => [
+        const PopupMenuItem(value: 'present', child: Text('Present')),
+        const PopupMenuItem(value: 'absent', child: Text('Absent')),
+        const PopupMenuItem(value: 'tardy', child: Text('Tardy')),
+      ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              text,
+              style: TextStyle(
+                color: textColor,
+                fontWeight: FontWeight.w500,
+                fontSize: 12,
+              ),
             ),
-          ),
-          Icon(Icons.keyboard_arrow_down, color: textColor, size: 16),
-        ],
+            Icon(Icons.keyboard_arrow_down, color: textColor, size: 16),
+          ],
+        ),
       ),
     );
   }
 }
-
-enum _Status { present, absent, tardy }
