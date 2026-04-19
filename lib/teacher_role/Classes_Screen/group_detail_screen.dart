@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'student_profile.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers/teacher_provider.dart';
 
@@ -168,10 +169,23 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                             // Skip if it's the teacher or student not found in this class
                             if (student == null) return const SizedBox();
 
-                            return _buildMemberCard(
-                              id: userId,
-                              name: student['username'] ?? student['name'] ?? 'Unknown',
-                              avatarUrl: student['avatar'] is Map ? student['avatar']['url'] : student['avatar'],
+                            return GestureDetector(
+                              onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => StudentProfileScreen(
+                                        studentData: student,
+                                        classId: widget.classId,
+                                      ),
+                                    ),
+                                  );
+                              },
+                              child: _buildMemberCard(
+                                id: userId,
+                                name: student['username'] ?? student['name'] ?? 'Unknown',
+                                avatarUrl: student['avatar'] is Map ? student['avatar']['url'] : student['avatar'],
+                              ),
                             );
                           },
                         );

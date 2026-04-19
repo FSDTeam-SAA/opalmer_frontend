@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../core/providers/teacher_provider.dart';
 import '../../core/models/teacher_class_model.dart';
 import '../../notification/notification.dart';
@@ -23,6 +24,7 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
   @override
   Widget build(BuildContext context) {
     final classesAsync = ref.watch(teacherClassesProvider);
+    final String todayDate = DateFormat('dd-MM-yy').format(DateTime.now());
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -111,14 +113,10 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
                     return Column(
                       children: List.generate(classes.length, (index) {
                         final cls = classes[index];
-                        return _buildClassCard(
+                        return ClassCard(
                           cls: cls,
-                          subject: "Grade ${cls.grade} - ${cls.subject}",
-                          date: "TBD", // API doesn't provide a specific next class date yet
-                          students: "${cls.studentCount} Students",
-                          attendance: cls.attendance,
-                          performance: cls.performance,
                           color: _cardColors[index % _cardColors.length],
+                          todayDate: todayDate,
                         );
                       }),
                     );
@@ -173,16 +171,24 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
       ),
     );
   }
+}
 
-  Widget _buildClassCard({
-    required TeacherClassModel cls,
-    required String subject,
-    required String date,
-    required String students,
-    required String attendance,
-    required String performance,
-    required Color color,
-  }) {
+class ClassCard extends ConsumerWidget {
+  final TeacherClassModel cls;
+  final Color color;
+  final String todayDate;
+
+  const ClassCard({
+    Key? key,
+    required this.cls,
+    required this.color,
+    required this.todayDate,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final attendanceStatsAsync = ref.watch(classAttendanceStatsProvider(cls.id));
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -192,7 +198,6 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
           ),
         );
       },
-
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(20),
@@ -229,7 +234,7 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
                 ),
                 const SizedBox(width: 14),
                 Text(
-                  subject,
+                  "Grade ${cls.grade} - ${cls.subject}",
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -249,7 +254,7 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  date,
+                  todayDate,
                   style: const TextStyle(
                     fontSize: 13,
                     color: Colors.white,
@@ -260,7 +265,7 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
                 const Icon(Icons.people_outline, color: Colors.white, size: 18),
                 const SizedBox(width: 6),
                 Text(
-                  students,
+                  "${cls.studentCount} Students",
                   style: const TextStyle(
                     fontSize: 13,
                     color: Colors.white,
@@ -286,12 +291,30 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          attendance,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                        attendanceStatsAsync.when(
+                          data: (percentage) => Text(
+                            "$percentage%",
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          loading: () => const Text(
+                            "...",
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          error: (_, __) => const Text(
+                            "N/A",
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ],
@@ -316,7 +339,7 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          performance,
+                          cls.performance,
                           style: const TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,

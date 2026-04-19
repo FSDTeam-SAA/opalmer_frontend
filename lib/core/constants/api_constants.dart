@@ -38,7 +38,7 @@ class ApiConstants {
   static const String notificationsReadAll = '/notifications/read';
 
   // Socket
-  static const String socketBaseUrl = 'http://127.0.0.1:5000';
+  static const String socketBaseUrl = 'http://localhost:5000';
 
   // Learning Tips Endpoints
   static const String learningTipsByParent = '/learning-tips/by-parent/me';
