@@ -11,7 +11,6 @@ class ApiConstants {
 
   static const String me = '/users/me';
   static const String changePassword = '/users/change-password';
-  
 
   static const String profile = '/users/profile';
   // Academics Endpoints
@@ -29,7 +28,6 @@ class ApiConstants {
   // Attendance Endpoints
   static const String attendance = '/attendances/student';
 
-
   // Behavior
   static const String studentBehaviors = '/behavior/student-behaviors';
 
@@ -43,7 +41,6 @@ class ApiConstants {
   // Learning Tips Endpoints
   static const String learningTipsByParent = '/learning-tips/by-parent/me';
 
-<<<<<<< HEAD
   // Parent → Children
   static String childrenByParent(String parentId) =>
       '/parent/child/parent/$parentId';
@@ -64,6 +61,4 @@ class ApiConstants {
 
   // Attendance list for a single student in a single class (paginated)
   static const String attendanceByStudent = '/attendances/student';
-=======
->>>>>>> 0079bff2177c5ce6759cb7ffdacc979c6cd9e281
 }

@@ -11,7 +11,6 @@ class UserModel {
   final String? studentId; // This is the 'Id' from backend
   final String? gradeLevel;
   final String? avatar;
-  final String? phoneNumber;
   final int? age;
   final String? gender;
 
@@ -26,7 +25,6 @@ class UserModel {
     this.studentId,
     this.gradeLevel,
     this.avatar,
-    this.phoneNumber,
     this.age,
     this.gender,
   });
@@ -59,7 +57,7 @@ class UserModel {
   /// Recursively extracts a Map from a value that could be a String (JSON), List, or Map
   static Map<String, dynamic> recursiveSafeMap(dynamic value) {
     if (value == null) return {};
-    
+
     // 1. If it's a String, try to decode it as JSON first
     if (value is String) {
       try {
@@ -69,16 +67,16 @@ class UserModel {
         return {}; // Not a JSON string
       }
     }
-    
+
     // 2. If it's a Map, return it
     if (value is Map<String, dynamic>) return value;
     if (value is Map) return Map<String, dynamic>.from(value);
-    
+
     // 3. If it's a List, take the first item and try again recursively
     if (value is List && value.isNotEmpty) {
       return recursiveSafeMap(value[0]);
     }
-    
+
     return {};
   }
 
@@ -93,8 +91,9 @@ class UserModel {
       schoolId: json['schoolId']?.toString(),
       studentId: (json['Id'] ?? json['studentId'])?.toString(),
       gradeLevel: json['gradeLevel']?.toString(),
-      avatar: json['avatar'] is Map ? json['avatar']['url']?.toString() : (json['avatar']?.toString() ?? ''),
-      phoneNumber: json['phoneNumber']?.toString(),
+      avatar: json['avatar'] is Map
+          ? json['avatar']['url']?.toString()
+          : (json['avatar']?.toString() ?? ''),
       age: json['age'] is int
           ? json['age'] as int
           : int.tryParse(json['age']?.toString() ?? ''),
@@ -114,36 +113,9 @@ class UserModel {
       'studentId': studentId,
       'gradeLevel': gradeLevel,
       'avatar': avatar,
-      'phoneNumber': phoneNumber,
       'age': age,
       'gender': gender,
     };
-  }
-
-  UserModel copyWith({
-    String? id,
-    String? username,
-    String? email,
-    String? phoneNumber,
-    String? role,
-    String? type,
-    String? schoolId,
-    String? studentId,
-    String? gradeLevel,
-    String? avatar,
-  }) {
-    return UserModel(
-      id: id ?? this.id,
-      username: username ?? this.username,
-      email: email ?? this.email,
-      phoneNumber: phoneNumber ?? this.phoneNumber,
-      role: role ?? this.role,
-      type: type ?? this.type,
-      schoolId: schoolId ?? this.schoolId,
-      studentId: studentId ?? this.studentId,
-      gradeLevel: gradeLevel ?? this.gradeLevel,
-      avatar: avatar ?? this.avatar,
-    );
   }
 }
 
