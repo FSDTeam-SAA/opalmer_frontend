@@ -171,12 +171,15 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
 
                             return GestureDetector(
                               onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => StudentProfileScreen(studentData: student),
-                                  ),
-                                );
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => StudentProfileScreen(
+                                        studentData: student,
+                                        classId: widget.classId,
+                                      ),
+                                    ),
+                                  );
                               },
                               child: _buildMemberCard(
                                 id: userId,

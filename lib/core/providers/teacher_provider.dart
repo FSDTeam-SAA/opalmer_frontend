@@ -103,9 +103,17 @@ final classAttendanceStatsProvider = FutureProvider.family<int, String>((ref, cl
   return 0;
 });
 
-final studentAttendanceStatsProvider = FutureProvider.family<int, String>((ref, studentId) async {
+final studentAttendanceStatsProvider =
+    FutureProvider.family<int, String>((ref, params) async {
   final apiClient = ref.read(apiClientProvider);
-  final response = await apiClient.get('/attendances/student/$studentId/stats');
+  final parts = params.split('|');
+  final studentId = parts[0];
+  final classId = parts.length > 1 && parts[1].isNotEmpty ? parts[1] : null;
+
+  final response = await apiClient.get(
+    '/attendances/student/$studentId/stats',
+    queryParameters: classId != null ? {'classId': classId} : null,
+  );
 
   if (response.statusCode == 200 && response.data['success'] == true) {
     return response.data['data']['percentage'] ?? 0;

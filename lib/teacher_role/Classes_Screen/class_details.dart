@@ -11,7 +11,8 @@ import 'homework_screen.dart';
 
 class ClassDetailsScreen extends ConsumerStatefulWidget {
   final TeacherClassModel classData;
-  const ClassDetailsScreen({Key? key, required this.classData}) : super(key: key);
+  const ClassDetailsScreen({Key? key, required this.classData})
+    : super(key: key);
 
   @override
   ConsumerState<ClassDetailsScreen> createState() => _ClassDetailsScreenState();
@@ -22,7 +23,9 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
   Widget build(BuildContext context) {
     final studentsAsync = ref.watch(classStudentsProvider(widget.classData.id));
     final lessonsAsync = ref.watch(classLessonsProvider(widget.classData.id));
-    final attendanceStatsAsync = ref.watch(classAttendanceStatsProvider(widget.classData.id));
+    final attendanceStatsAsync = ref.watch(
+      classAttendanceStatsProvider(widget.classData.id),
+    );
     final String todayDate = DateFormat('dd-MM-yy').format(DateTime.now());
 
     return Scaffold(
@@ -70,7 +73,8 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => HomeworkScreen(classId: widget.classData.id),
+                            builder: (_) =>
+                                HomeworkScreen(classId: widget.classData.id),
                           ),
                         );
                       },
@@ -79,9 +83,7 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                         width: 36,
                         height: 36,
                         decoration: const BoxDecoration(
-                          color: Color(
-                            0xFF904BBB,
-                          ),
+                          color: Color(0xFF904BBB),
                           shape: BoxShape.circle,
                         ),
                         padding: const EdgeInsets.all(8),
@@ -220,7 +222,9 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                       child: lessonsAsync.when(
                         data: (lessons) {
                           if (lessons.isEmpty) {
-                            return const Center(child: Text("No lessons found."));
+                            return const Center(
+                              child: Text("No lessons found."),
+                            );
                           }
                           return ListView.builder(
                             scrollDirection: Axis.horizontal,
@@ -230,16 +234,19 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                               final lesson = lessons[index];
                               return _buildLessonCard(
                                 title: lesson['name'] ?? 'No Title',
-                                description: lesson['description'] ?? 'No Description',
-                                dueDate: lesson['date'] != null 
-                                  ? "Date: ${lesson['date'].toString().split('T')[0]}" 
-                                  : "Date: TBD",
+                                description:
+                                    lesson['description'] ?? 'No Description',
+                                dueDate: lesson['date'] != null
+                                    ? "Date: ${lesson['date'].toString().split('T')[0]}"
+                                    : "Date: TBD",
                               );
                             },
                           );
                         },
-                        loading: () => const Center(child: CircularProgressIndicator()),
-                        error: (err, stack) => Center(child: Text("Error: $err")),
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
+                        error: (err, stack) =>
+                            Center(child: Text("Error: $err")),
                       ),
                     ),
 
@@ -259,7 +266,9 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                     studentsAsync.when(
                       data: (students) {
                         if (students.isEmpty) {
-                          return const Center(child: Text("No students enrolled."));
+                          return const Center(
+                            child: Text("No students enrolled."),
+                          );
                         }
                         return ListView.builder(
                           shrinkWrap: true,
@@ -269,7 +278,7 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                             final assignment = students[index];
                             final student = assignment['studentId'];
                             if (student == null) return const SizedBox();
-                            
+
                             return StudentCard(
                               studentData: student,
                               classData: widget.classData,
@@ -277,7 +286,8 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                           },
                         );
                       },
-                      loading: () => const Center(child: CircularProgressIndicator()),
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
                       error: (err, stack) => Center(child: Text("Error: $err")),
                     ),
                     const SizedBox(height: 20),
@@ -404,8 +414,10 @@ class StudentCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final studentId = studentData['_id'] ?? '';
-    final attendanceStatsAsync = ref.watch(studentAttendanceStatsProvider(studentId));
-    
+    final attendanceStatsAsync = ref.watch(
+      studentAttendanceStatsProvider('$studentId|${classData.id}'),
+    );
+
     final name = studentData['username'] ?? studentData['name'] ?? 'Unknown';
     final avatar = studentData['avatar'];
     String? avatarUrl;
@@ -415,15 +427,24 @@ class StudentCard extends ConsumerWidget {
       avatarUrl = avatar;
     }
 
-    if (avatarUrl != null && avatarUrl.isNotEmpty && !avatarUrl.startsWith('http')) {
+    if (avatarUrl != null &&
+        avatarUrl.isNotEmpty &&
+        !avatarUrl.startsWith('http')) {
       avatarUrl = 'http://localhost:5000$avatarUrl';
     }
+
+    // Handle PDF or invalid image formats in Cloudinary
+    final bool isInvalidImage =
+        avatarUrl != null && avatarUrl.toLowerCase().endsWith('.pdf');
+    final String effectiveAvatarUrl = isInvalidImage ? '' : (avatarUrl ?? '');
 
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => StudentAttendanceScreen(classData: classData)),
+          MaterialPageRoute(
+            builder: (_) => StudentAttendanceScreen(classData: classData),
+          ),
         );
       },
       child: Container(
@@ -469,9 +490,9 @@ class StudentCard extends ConsumerWidget {
                               color: Color(0xFFF3F4F6),
                             ),
                             clipBehavior: Clip.hardEdge,
-                            child: avatarUrl != null && avatarUrl.isNotEmpty
+                            child: effectiveAvatarUrl.isNotEmpty
                                 ? Image.network(
-                                    avatarUrl,
+                                    effectiveAvatarUrl,
                                     fit: BoxFit.cover,
                                     errorBuilder: (_, __, ___) => Image.asset(
                                       'assets/images/classes/student_image.png',
@@ -513,7 +534,9 @@ class StudentCard extends ConsumerWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF4AA678).withValues(alpha: 0.1),
+                              color: const Color(
+                                0xFF4AA678,
+                              ).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: const Text(

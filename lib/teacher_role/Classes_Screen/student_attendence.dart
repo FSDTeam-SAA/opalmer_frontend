@@ -24,7 +24,9 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
       if (response.statusCode == 200 && response.data['success'] == true) {
         ref.invalidate(classAttendanceProvider(widget.classData.id));
         ref.invalidate(classAttendanceStatsProvider(widget.classData.id));
-        ref.invalidate(studentAttendanceStatsProvider(studentId));
+        ref.invalidate(
+          studentAttendanceStatsProvider('$studentId|${widget.classData.id}'),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -255,7 +257,10 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => StudentProfileScreen(studentData: studentData),
+                      builder: (context) => StudentProfileScreen(
+                        studentData: studentData,
+                        classId: widget.classData.id,
+                      ),
                     ),
                   );
                 },

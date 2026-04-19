@@ -8,11 +8,17 @@ import 'grading_progress.dart';
 
 class StudentProfileScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> studentData;
+  final String? classId;
 
-  const StudentProfileScreen({Key? key, required this.studentData}) : super(key: key);
+  const StudentProfileScreen({
+    Key? key,
+    required this.studentData,
+    this.classId,
+  }) : super(key: key);
 
   @override
-  ConsumerState<StudentProfileScreen> createState() => _StudentProfileScreenState();
+  ConsumerState<StudentProfileScreen> createState() =>
+      _StudentProfileScreenState();
 }
 
 class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
@@ -34,7 +40,10 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
   Widget build(BuildContext context) {
     final student = widget.studentData;
     final studentId = student['_id'] ?? '';
-    final attendanceStatsAsync = ref.watch(studentAttendanceStatsProvider(studentId));
+    final classId = widget.classId ?? '';
+    final attendanceStatsAsync = ref.watch(
+      studentAttendanceStatsProvider('$studentId|$classId'),
+    );
 
     // Debug print to see what data we are getting
     debugPrint('Student Data: $student');
@@ -51,6 +60,11 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
     // Fix relative URL if any (assuming localhost:5000)
     if (avatarUrl != null && avatarUrl.isNotEmpty && !avatarUrl.startsWith('http')) {
       avatarUrl = 'http://localhost:5000$avatarUrl';
+    }
+
+    // Handle PDF or invalid image formats in Cloudinary
+    if (avatarUrl != null && avatarUrl.toLowerCase().endsWith('.pdf')) {
+      avatarUrl = null;
     }
 
     // Fallback image if avatarUrl is empty
