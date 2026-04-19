@@ -39,6 +39,9 @@ class ApiConstants {
   // Homework per class — supports ?archived=true|false
   static String homeworkByClass(String classId) => '/homework/class/$classId';
 
+  // Lessons per class
+  static String lessonsByClass(String classId) => '/lessons/class/$classId';
+
   // Group homework per class — members are populated with username + avatar
   static String groupWorkByClass(String classId) =>
       '/group-work/class/$classId';

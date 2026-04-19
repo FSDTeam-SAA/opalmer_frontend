@@ -186,8 +186,10 @@ class SubjectDetailScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          LessonsScreen(subjectName: subject.name),
+                      builder: (context) => LessonsScreen(
+                        classId: subject.id,
+                        subjectName: subject.name,
+                      ),
                     ),
                   );
                 },
@@ -210,7 +212,8 @@ class SubjectDetailScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => AcademicDocumentsScreen(subjectName: subject.name),
+                      builder: (context) =>
+                          AcademicDocumentsScreen(subjectName: subject.name),
                     ),
                   );
                 },
@@ -221,7 +224,8 @@ class SubjectDetailScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => GradingProgressScreen(subjectName: subject.name),
+                      builder: (context) =>
+                          GradingProgressScreen(subjectName: subject.name),
                     ),
                   );
                 },

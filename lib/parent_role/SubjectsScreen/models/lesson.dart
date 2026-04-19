@@ -1,78 +1,75 @@
 class Lesson {
   final String id;
-  final String title;
-  final String description;
-  final String dueDate;
+  final String objective;
+  final String note;
+  final String documentUrl;
   final bool isArchived;
-  
-  // Detail fields for overview
-  final String fullDate;
-  final String pdfTitle;
-  final String workbookTask;
-  final List<String> thoughtQuestions;
+  final String createdAt;
 
   const Lesson({
     required this.id,
-    required this.title,
-    required this.description,
-    required this.dueDate,
-    this.isArchived = false,
-    required this.fullDate,
-    required this.pdfTitle,
-    required this.workbookTask,
-    required this.thoughtQuestions,
+    required this.objective,
+    required this.note,
+    required this.documentUrl,
+    required this.isArchived,
+    required this.createdAt,
   });
+
+  factory Lesson.fromJson(Map<String, dynamic> json) {
+    return Lesson(
+      id: (json['_id'] ?? '').toString(),
+      objective: (json['objective'] ?? '').toString(),
+      note: (json['note'] ?? '').toString(),
+      documentUrl: _documentUrl(json['document']),
+      isArchived: json['isArchived'] == true,
+      createdAt: _formatDate(json['created_at']) ?? '',
+    );
+  }
+
+  String get documentTitle {
+    if (documentUrl.isEmpty) return 'No document attached';
+
+    final uri = Uri.tryParse(documentUrl);
+    final segments = uri?.pathSegments;
+    if (segments != null && segments.isNotEmpty) {
+      final fileName = Uri.decodeComponent(segments.last);
+      if (fileName.isNotEmpty) return fileName;
+    }
+
+    return 'Lesson document';
+  }
+
+  static String _documentUrl(dynamic document) {
+    if (document is Map) {
+      return (document['url'] ?? '').toString();
+    }
+    if (document is String) {
+      return document;
+    }
+    return '';
+  }
+
+  static String? _formatDate(dynamic iso) {
+    if (iso is! String || iso.isEmpty) return null;
+    try {
+      final d = DateTime.parse(iso).toLocal();
+      const months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
+      return '${months[d.month - 1]} ${d.day}, ${d.year}';
+    } catch (_) {
+      return null;
+    }
+  }
 }
-
-const List<Lesson> mockLessons = [
-  Lesson(
-    id: "l1",
-    title: "Photosynthesis",
-    description: "Solve question 1-10 on page 42 of the textbook.",
-    dueDate: "June 13, 2025",
-    fullDate: "16/06/2025",
-    pdfTitle: "Photosynthesis PDF",
-    workbookTask: "Workbook Task: Complete page 42, Questions 1–5",
-    thoughtQuestions: [
-      "What is the main purpose of photosynthesis?",
-      "Why is sunlight important?",
-      "How do plants store energy?",
-    ],
-  ),
-];
-
-const List<Lesson> mockArchivedLessons = [
-  Lesson(
-    id: "l2",
-    title: "Fractions Practice",
-    description: "Solve question 1-10 on page 42 of the textbook.",
-    dueDate: "June 13, 2025",
-    isArchived: true,
-    fullDate: "10/06/2025",
-    pdfTitle: "Fractions PDF",
-    workbookTask: "Complete exercise 4.2",
-    thoughtQuestions: ["What is a numerator?", "How to simplify fractions?"],
-  ),
-  Lesson(
-    id: "l3",
-    title: "Fractions Practice",
-    description: "Solve question 1-10 on page 42 of the textbook.",
-    dueDate: "June 13, 2025",
-    isArchived: true,
-    fullDate: "05/06/2025",
-    pdfTitle: "Math basics PDF",
-    workbookTask: "Read chapter 1",
-    thoughtQuestions: ["Basic principles of numbers"],
-  ),
-    Lesson(
-    id: "l4",
-    title: "Fractions Practice",
-    description: "Solve question 1-10 on page 42 of the textbook.",
-    dueDate: "June 13, 2025",
-    isArchived: true,
-    fullDate: "01/06/2025",
-    pdfTitle: "Intro PDF",
-    workbookTask: "Pre-reading",
-    thoughtQuestions: ["Welcome to class"],
-  ),
-];

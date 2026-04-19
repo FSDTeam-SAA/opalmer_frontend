@@ -17,9 +17,11 @@ class LessonOverviewScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Header ──
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 child: Row(
                   children: [
                     GestureDetector(
@@ -31,152 +33,132 @@ class LessonOverviewScreen extends StatelessWidget {
                           color: AppColors.primaryMid,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+                        child: const Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
+                          size: 24,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 16),
-                    const Text(
-                      "Lessons Overview",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF222222),
+                    const Expanded(
+                      child: Text(
+                        'Lessons Overview',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF222222),
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-
               const SizedBox(height: 12),
-
-              // ── Topic Section ──
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
+              _buildSection(
+                title: 'Objective',
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "Topic",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF333333),
+                    Expanded(
+                      child: Text(
+                        lesson.objective.isEmpty
+                            ? 'No objective provided.'
+                            : lesson.objective,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w500,
+                          height: 1.4,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          lesson.title,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade600,
-                            fontWeight: FontWeight.w500,
-                          ),
+                    if (lesson.createdAt.isNotEmpty) ...[
+                      const SizedBox(width: 16),
+                      Text(
+                        lesson.createdAt,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
                         ),
-                        Text(
-                          lesson.fullDate,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ],
                 ),
               ),
-
               const SizedBox(height: 24),
-
-              // ── PDF Material Section ──
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "PDF Material",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF333333),
+              _buildSection(
+                title: 'Document',
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.03),
+                        offset: const Offset(0, 2),
+                        blurRadius: 10,
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.03),
-                            offset: const Offset(0, 2),
-                            blurRadius: 10,
-                          ),
-                        ],
+                    ],
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        lesson.documentUrl.isEmpty
+                            ? Icons.insert_drive_file_outlined
+                            : Icons.picture_as_pdf_rounded,
+                        color: AppColors.primaryMid,
+                        size: 24,
                       ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.picture_as_pdf_rounded, color: AppColors.primaryMid, size: 24),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Text(
-                              lesson.pdfTitle,
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              lesson.documentTitle,
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
                                 color: Color(0xFF444444),
                               ),
                             ),
-                          ),
-                          const Icon(Icons.file_download_outlined, color: AppColors.primaryMid, size: 24),
-                        ],
+                            if (lesson.documentUrl.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              SelectableText(
+                                lesson.documentUrl,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey.shade600,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-
               const SizedBox(height: 32),
-
-              // ── Description Section ──
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Description",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF333333),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      lesson.workbookTask,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        color: Color(0xFF444444),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      "Questions to Think About:",
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Color(0xFF444444),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    ...lesson.thoughtQuestions.map((q) => _buildBulletPoint(q)),
-                  ],
+              _buildSection(
+                title: 'Note',
+                child: Text(
+                  lesson.note.isEmpty ? 'No note provided.' : lesson.note,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: Color(0xFF444444),
+                    fontWeight: FontWeight.w500,
+                    height: 1.5,
+                  ),
                 ),
               ),
             ],
@@ -186,24 +168,22 @@ class LessonOverviewScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBulletPoint(String text) {
+  Widget _buildSection({required String title, required Widget child}) {
     return Padding(
-      padding: const EdgeInsets.only(left: 10, top: 6),
-      child: Row(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(" • ", style: TextStyle(fontSize: 18, color: Color(0xFF777777))),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Color(0xFF777777),
-                height: 1.5,
-              ),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF333333),
             ),
           ),
+          const SizedBox(height: 12),
+          child,
         ],
       ),
     );
