@@ -42,4 +42,7 @@ class ApiConstants {
   // Group homework per class — members are populated with username + avatar
   static String groupWorkByClass(String classId) =>
       '/group-work/class/$classId';
+
+  // Attendance list for a single student in a single class (paginated)
+  static const String attendanceByStudent = '/attendances/student';
 }

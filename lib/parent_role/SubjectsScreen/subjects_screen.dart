@@ -113,6 +113,26 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
     _loadSubjects(childId);
   }
 
+  String _selectedChildName() {
+    for (final c in _children) {
+      if (c.id == _selectedChildId) return c.name;
+    }
+    return widget.initialChildName ?? '';
+  }
+
+  void _openSubjectDetail(Subject subject) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SubjectDetailScreen(
+          subject: subject,
+          studentId: _selectedChildId,
+          studentName: _selectedChildName(),
+        ),
+      ),
+    );
+  }
+
   ImageProvider? _avatarProvider(String url) {
     if (url.isEmpty) return null;
     return NetworkImage(url);
@@ -259,12 +279,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
   Widget _buildSubjectCard(Subject subject) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SubjectDetailScreen(subject: subject),
-          ),
-        );
+        _openSubjectDetail(subject);
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 20),
@@ -370,15 +385,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                     ),
                   ),
                   ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              SubjectDetailScreen(subject: subject),
-                        ),
-                      );
-                    },
+                    onPressed: () => _openSubjectDetail(subject),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryMid,
                       foregroundColor: Colors.white,

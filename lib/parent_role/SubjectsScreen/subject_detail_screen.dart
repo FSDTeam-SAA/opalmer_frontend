@@ -11,8 +11,15 @@ import 'package:opalmer_education/parent_role/SubjectsScreen/grading_progress_sc
 
 class SubjectDetailScreen extends StatelessWidget {
   final Subject subject;
+  final String studentId;
+  final String studentName;
 
-  const SubjectDetailScreen({super.key, required this.subject});
+  const SubjectDetailScreen({
+    super.key,
+    required this.subject,
+    required this.studentId,
+    required this.studentName,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -163,8 +170,12 @@ class SubjectDetailScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          AttendanceScreen(subjectName: subject.name),
+                      builder: (context) => AttendanceScreen(
+                        subjectName: subject.name,
+                        classId: subject.id,
+                        studentId: studentId,
+                        studentName: studentName,
+                      ),
                     ),
                   );
                 },
