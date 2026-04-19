@@ -5,12 +5,14 @@ class AttendanceRecord {
   final String date;
   final String studentName;
   final AttendanceStatus status;
+  final String rawStatus;
 
   const AttendanceRecord({
     required this.id,
     required this.date,
     required this.studentName,
     required this.status,
+    required this.rawStatus,
   });
 
   String get statusText {
@@ -24,7 +26,7 @@ class AttendanceRecord {
       case AttendanceStatus.holiday:
         return "Holiday";
       case AttendanceStatus.unknown:
-        return "—";
+        return rawStatus.isEmpty ? "—" : rawStatus;
     }
   }
 
@@ -37,7 +39,13 @@ class AttendanceRecord {
       date: _formatDate(json['date']) ?? '—',
       studentName: studentNameFallback,
       status: _parseStatus(json['status']),
+      rawStatus: _parseRawStatus(json['status']),
     );
+  }
+
+  static String _parseRawStatus(dynamic raw) {
+    if (raw is! String) return '';
+    return raw.trim();
   }
 
   static AttendanceStatus _parseStatus(dynamic raw) {
