@@ -44,6 +44,23 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
     final attendanceStatsAsync = ref.watch(
       studentAttendanceStatsProvider('$studentId|$classId'),
     );
+    final parentsAsync = ref.watch(studentParentsProvider(studentId));
+    final quizResultsAsync = ref.watch(studentQuizResultsProvider(studentId));
+
+    // Calculate progress percentage
+    int progressPercent = 0;
+    quizResultsAsync.whenData((results) {
+      if (results.isNotEmpty) {
+        final completed = results
+            .where((r) => r['progress']?['status'] == 'completed')
+            .toList();
+        if (completed.isNotEmpty) {
+          double total = completed.fold(
+              0.0, (sum, r) => sum + (r['percentage']?.toDouble() ?? 0.0));
+          progressPercent = (total / completed.length).round();
+        }
+      }
+    });
 
     // Debug print to see what data we are getting
     debugPrint('Student Data: $student');
@@ -182,7 +199,8 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                         _buildAction(Icons.phone_outlined),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 28),
+
 
                     // ── Stats Block ──
                     Row(
@@ -210,8 +228,8 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                         Expanded(
                           child: _buildStatBox(
                             "Progress",
-                            "85%",
-                            const Color(0xFFFEBD43), // Yellow
+                            "$progressPercent%",
+                            const Color(0xFFFEBD43),
                           ),
                         ),
                       ],
@@ -228,42 +246,88 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Container(
-                          width: 54,
-                          height: 54,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: const Color(0xFF871DAD),
-                              width: 1.5,
+                    parentsAsync.when(
+                      data: (parents) {
+                        if (parents.isEmpty) {
+                          return const Padding(
+                            padding: EdgeInsets.only(bottom: 28),
+                            child: Text(
+                              "No parent linked",
+                              style: TextStyle(color: Colors.grey),
                             ),
-                            image: const DecorationImage(
-                              image: AssetImage(
-                                'assets/images/classes/student_image.png',
-                              ),
-                              fit: BoxFit.cover,
+                          );
+                        }
+                        // For now, show the first parent
+                        final parentRelation = parents[0];
+                        final parentUser = parentRelation['parentId'];
+                        if (parentUser == null) return const SizedBox();
+
+                        final parentName = parentUser['username'] ?? 'Parent';
+                        final avatarData = parentUser['avatar'];
+                        final String? avatarUrl = (avatarData is Map)
+                            ? avatarData['url']
+                            : (avatarData is String ? avatarData : null);
+
+                        return Column(
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  width: 54,
+                                  height: 54,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: const Color(0xFF871DAD),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  clipBehavior: Clip.hardEdge,
+                                  child: avatarUrl != null &&
+                                          avatarUrl.isNotEmpty
+                                      ? Image.network(
+                                          avatarUrl,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) =>
+                                              Image.asset(
+                                            'assets/images/classes/student_image.png',
+                                            fit: BoxFit.cover,
+                                          ),
+                                        )
+                                      : Image.asset(
+                                          'assets/images/classes/student_image.png',
+                                          fit: BoxFit.cover,
+                                        ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Text(
+                                    parentName,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 18,
+                                      color: Color(0xFF222222),
+                                    ),
+                                  ),
+                                ),
+                                _buildAction(Icons.chat_bubble_outline),
+                                const SizedBox(width: 10),
+                                _buildAction(Icons.phone_outlined),
+                              ],
                             ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        const Expanded(
-                          child: Text(
-                            "Sarah Michelle",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 18,
-                              color: Color(0xFF222222),
-                            ),
-                          ),
-                        ),
-                        _buildAction(Icons.chat_bubble_outline),
-                        const SizedBox(width: 10),
-                        _buildAction(Icons.phone_outlined),
-                      ],
+                            const SizedBox(height: 28),
+                          ],
+                        );
+                      },
+                      loading: () => const Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                      error: (err, stack) => Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Text("Error: $err"),
+                      ),
                     ),
-                    const SizedBox(height: 28),
 
                     // ── Progress Chart ──
                     const Text(
@@ -354,7 +418,10 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const BehaviorRecordScreen(),
+                            builder: (context) => BehaviorRecordScreen(
+                              studentId: studentId,
+                              student: student,
+                            ),
                           ),
                         );
                       },

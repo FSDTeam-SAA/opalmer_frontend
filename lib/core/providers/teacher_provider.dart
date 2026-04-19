@@ -130,4 +130,60 @@ final classAttendanceProvider = FutureProvider.family<List<dynamic>, String>((re
   return [];
 });
 
+final studentParentsProvider = FutureProvider.family<List<dynamic>, String>((ref, studentId) async {
+  final apiClient = ref.read(apiClientProvider);
+  final response = await apiClient.get('/parent/child/child/$studentId');
+  if (response.statusCode == 200 && response.data['success'] == true) {
+    return response.data['data']['parents'] ?? [];
+  }
+  return [];
+});
+
+final parentChildrenProvider = FutureProvider.family<List<dynamic>, String>((ref, parentId) async {
+  final apiClient = ref.read(apiClientProvider);
+  final response = await apiClient.get('/parent/child/parent/$parentId');
+  if (response.statusCode == 200 && response.data['success'] == true) {
+    return response.data['data']['children'] ?? [];
+  }
+  return [];
+});
+
+final studentQuizResultsProvider = FutureProvider.family<List<dynamic>, String>((ref, studentId) async {
+  final apiClient = ref.read(apiClientProvider);
+  final response = await apiClient.get('/test/quizzes/answers/$studentId');
+  if (response.statusCode == 200 && response.data['success'] == true) {
+    return response.data['data'] ?? [];
+  }
+  return [];
+});
+
+final studentBehaviorsProvider = FutureProvider.family<List<dynamic>, String>((ref, studentId) async {
+  final apiClient = ref.read(apiClientProvider);
+  final response = await apiClient.get('/behavior/student/$studentId');
+  if (response.statusCode == 200 && response.data['success'] == true) {
+    return response.data['data'] ?? [];
+  }
+  return [];
+});
+
+final createBehaviorProvider = FutureProvider.family<bool, Map<String, dynamic>>((ref, data) async {
+  final apiClient = ref.read(apiClientProvider);
+  final response = await apiClient.post('/behavior/create', data: data);
+  return response.statusCode == 200 && response.data['success'] == true;
+});
+
+final updateBehaviorProvider = FutureProvider.family<bool, Map<String, dynamic>>((ref, params) async {
+  final apiClient = ref.read(apiClientProvider);
+  final behaviorId = params['behaviorId'];
+  final data = params['data'];
+  final response = await apiClient.put('/behavior/update/$behaviorId', data: data);
+  return response.statusCode == 200 && response.data['success'] == true;
+});
+
+final deleteBehaviorProvider = FutureProvider.family<bool, String>((ref, behaviorId) async {
+  final apiClient = ref.read(apiClientProvider);
+  final response = await apiClient.delete('/behavior/delete/$behaviorId');
+  return response.statusCode == 200 && response.data['success'] == true;
+});
+
 
