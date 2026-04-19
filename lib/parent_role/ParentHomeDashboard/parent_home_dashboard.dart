@@ -5,7 +5,6 @@ import 'package:opalmer_education/core/providers/auth_provider.dart';
 import 'package:opalmer_education/core/models/user_model.dart';
 import 'package:opalmer_education/core/services/secure_storage_service.dart';
 import 'package:opalmer_education/core/services/api_client.dart';
-import 'package:opalmer_education/core/constants/api_constants.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/core/widgets/pressable_card.dart';
 import 'package:opalmer_education/core/widgets/learning_tip_card.dart';
@@ -23,7 +22,8 @@ class ParentHomeDashboard extends ConsumerStatefulWidget {
   const ParentHomeDashboard({super.key});
 
   @override
-  ConsumerState<ParentHomeDashboard> createState() => _ParentHomeDashboardState();
+  ConsumerState<ParentHomeDashboard> createState() =>
+      _ParentHomeDashboardState();
 }
 
 class _ParentHomeDashboardState extends ConsumerState<ParentHomeDashboard> {
@@ -78,7 +78,15 @@ class _ParentHomeDashboardState extends ConsumerState<ParentHomeDashboard> {
           if (mounted) {
             setState(() {
               _profiles = childrenList
-                  .map((c) => ChildProfile.fromJson(c['childId'], relationId: c['_id']))
+                  .map((c) {
+                    final child = c['childId'];
+                    if (child is! Map) return null;
+                    return ChildProfile.fromJson(
+                      Map<String, dynamic>.from(child),
+                      relationId: c['_id']?.toString(),
+                    );
+                  })
+                  .whereType<ChildProfile>()
                   .toList();
             });
           }
@@ -149,16 +157,16 @@ class _ParentHomeDashboardState extends ConsumerState<ParentHomeDashboard> {
                                         ),
                                       ),
                                     )
-                                      : Text(
-                                          "Hi, ${user?.username ?? 'User'} 👋",
-                                          style: const TextStyle(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                            letterSpacing: -0.5,
-                                          ),
-                                        ),
-                                  const SizedBox(height: 4),
+                                  : Text(
+                                      "Hi, ${user?.username ?? 'User'} 👋",
+                                      style: const TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                        letterSpacing: -0.5,
+                                      ),
+                                    ),
+                              const SizedBox(height: 4),
                               Text(
                                 "Check your Children's activities",
                                 style: TextStyle(
@@ -264,33 +272,38 @@ class _ParentHomeDashboardState extends ConsumerState<ParentHomeDashboard> {
                       ? const SizedBox(
                           height: 120,
                           child: Center(
-                            child: CircularProgressIndicator(color: AppColors.primaryMid),
+                            child: CircularProgressIndicator(
+                              color: AppColors.primaryMid,
+                            ),
                           ),
                         )
                       : _profiles.isEmpty
-                          ? const SizedBox(
-                              height: 120,
-                              child: Center(
-                                child: Text(
-                                  "No children added yet.\nTap 'View All' to add.",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(fontSize: 14, color: Colors.grey),
-                                ),
-                              ),
-                            )
-                          : SizedBox(
-                              height: 120,
-                              child: ListView(
-                                scrollDirection: Axis.horizontal,
-                                padding: const EdgeInsets.symmetric(horizontal: 20),
-                                children: _profiles.take(3).map((profile) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(right: 14),
-                                    child: _buildChildCard(profile),
-                                  );
-                                }).toList(),
+                      ? const SizedBox(
+                          height: 120,
+                          child: Center(
+                            child: Text(
+                              "No children added yet.\nTap 'View All' to add.",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
                               ),
                             ),
+                          ),
+                        )
+                      : SizedBox(
+                          height: 120,
+                          child: ListView(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            children: _profiles.take(3).map((profile) {
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 14),
+                                child: _buildChildCard(profile),
+                              );
+                            }).toList(),
+                          ),
+                        ),
 
                   const SizedBox(height: 32),
 
@@ -340,50 +353,49 @@ class _ParentHomeDashboardState extends ConsumerState<ParentHomeDashboard> {
                             ),
                           )
                         : _tips.isEmpty
-                            ? const Center(
-                                child: Padding(
-                                  padding:
-                                      EdgeInsets.symmetric(horizontal: 32),
-                                  child: Text(
-                                    'No learning tips available yet.',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                ),
-                              )
-                            : SingleChildScrollView(
-                                padding: const EdgeInsets.only(bottom: 20),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      ..._tips.take(5).map((tip) {
-                                        return LearningTipCard(
-                                          title: tip.title,
-                                          imageUrl: tip.imageUrl,
-                                          onTap: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    LearningTipDetailScreen(
-                                                      tip: tip,
-                                                    ),
-                                              ),
-                                            );
-                                          },
-                                        );
-                                      }),
-                                      const SizedBox(height: 20),
-                                    ],
-                                  ),
+                        ? const Center(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 32),
+                              child: Text(
+                                'No learning tips available yet.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
                                 ),
                               ),
+                            ),
+                          )
+                        : SingleChildScrollView(
+                            padding: const EdgeInsets.only(bottom: 20),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                              ),
+                              child: Column(
+                                children: [
+                                  ..._tips.take(5).map((tip) {
+                                    return LearningTipCard(
+                                      title: tip.title,
+                                      imageUrl: tip.imageUrl,
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                LearningTipDetailScreen(
+                                                  tip: tip,
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  }),
+                                  const SizedBox(height: 20),
+                                ],
+                              ),
+                            ),
+                          ),
                   ),
                 ],
               ),

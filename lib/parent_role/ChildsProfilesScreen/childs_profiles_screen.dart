@@ -45,7 +45,15 @@ class _ChildsProfilesScreenState extends State<ChildsProfilesScreen> {
           if (mounted) {
             setState(() {
               _profiles = childrenList
-                  .map((c) => ChildProfile.fromJson(c['childId'], relationId: c['_id']))
+                  .map((c) {
+                    final child = c['childId'];
+                    if (child is! Map) return null;
+                    return ChildProfile.fromJson(
+                      Map<String, dynamic>.from(child),
+                      relationId: c['_id']?.toString(),
+                    );
+                  })
+                  .whereType<ChildProfile>()
                   .toList();
             });
           }
@@ -67,7 +75,9 @@ class _ChildsProfilesScreenState extends State<ChildsProfilesScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Remove Child'),
-        content: const Text('Are you sure you want to remove this child from your dashboard?'),
+        content: const Text(
+          'Are you sure you want to remove this child from your dashboard?',
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         actions: [
           TextButton(
@@ -84,20 +94,28 @@ class _ChildsProfilesScreenState extends State<ChildsProfilesScreen> {
 
     if (confirm != true) return;
 
-    setState(() { _isLoading = true; });
+    setState(() {
+      _isLoading = true;
+    });
 
     try {
       final response = await _apiClient.delete('/parent/child/$relationId');
       if (response.data['success'] == true) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Child relation removed.')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Child relation removed.')),
+          );
         }
         _loadProfiles();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to remove child: $e')));
-        setState(() { _isLoading = false; });
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to remove child: $e')));
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
@@ -191,31 +209,33 @@ class _ChildsProfilesScreenState extends State<ChildsProfilesScreen> {
               Expanded(
                 child: _isLoading
                     ? const Center(
-                        child: CircularProgressIndicator(color: AppColors.primaryMid),
+                        child: CircularProgressIndicator(
+                          color: AppColors.primaryMid,
+                        ),
                       )
                     : _profiles.isEmpty
-                        ? const Center(
-                            child: Text(
-                              "No children added yet.\nPress + to add a child.",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 16, color: Colors.grey),
+                    ? const Center(
+                        child: Text(
+                          "No children added yet.\nPress + to add a child.",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      )
+                    : ListView(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 20,
+                        ),
+                        children: _profiles.map((profile) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: _buildProfileCard(
+                              context: context,
+                              profile: profile,
                             ),
-                          )
-                        : ListView(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 20,
-                            ),
-                            children: _profiles.map((profile) {
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 16),
-                                child: _buildProfileCard(
-                                  context: context,
-                                  profile: profile,
-                                ),
-                              );
-                            }).toList(),
-                          ),
+                          );
+                        }).toList(),
+                      ),
               ),
             ],
           ),
