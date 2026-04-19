@@ -1,19 +1,63 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/providers/teacher_provider.dart';
 import 'behavior_record.dart';
 import 'academic_documents.dart';
 import 'grading_progress.dart';
 
-class StudentProfileScreen extends StatefulWidget {
-  const StudentProfileScreen({Key? key}) : super(key: key);
+class StudentProfileScreen extends ConsumerStatefulWidget {
+  final Map<String, dynamic> studentData;
+
+  const StudentProfileScreen({Key? key, required this.studentData}) : super(key: key);
 
   @override
-  State<StudentProfileScreen> createState() => _StudentProfileScreenState();
+  ConsumerState<StudentProfileScreen> createState() => _StudentProfileScreenState();
 }
 
-class _StudentProfileScreenState extends State<StudentProfileScreen> {
+class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
+  Color _getAttendanceColor(int percentage) {
+    if (percentage >= 90) return const Color(0xFF4AA678); // Green
+    if (percentage >= 80) return const Color(0xFF3F99B4); // Blue
+    if (percentage >= 70) return const Color(0xFFFEBD43); // Yellow
+    return const Color(0xFFC04345); // Red
+  }
+
+  String _getAttendanceEmoji(int percentage) {
+    if (percentage >= 90) return "😋";
+    if (percentage >= 80) return "😐";
+    if (percentage >= 70) return "😋"; // Using same for now, or 🤑
+    return "😡";
+  }
+
   @override
   Widget build(BuildContext context) {
+    final student = widget.studentData;
+    final studentId = student['_id'] ?? '';
+    final attendanceStatsAsync = ref.watch(studentAttendanceStatsProvider(studentId));
+
+    // Debug print to see what data we are getting
+    debugPrint('Student Data: $student');
+
+    // Handle avatar
+    final avatar = student['avatar'];
+    String? avatarUrl;
+    if (avatar is Map) {
+      avatarUrl = avatar['url'];
+    } else if (avatar is String) {
+      avatarUrl = avatar;
+    }
+
+    // Fix relative URL if any (assuming localhost:5000)
+    if (avatarUrl != null && avatarUrl.isNotEmpty && !avatarUrl.startsWith('http')) {
+      avatarUrl = 'http://localhost:5000$avatarUrl';
+    }
+
+    // Fallback image if avatarUrl is empty
+    if (avatarUrl == null || avatarUrl.isEmpty) {
+      avatarUrl = null; 
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
       body: SafeArea(
@@ -65,23 +109,36 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                     // ── Student Info Block ──
                     Row(
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.asset(
-                            'assets/images/classes/student_image.png',
-                            width: 86,
-                            height: 86,
-                            fit: BoxFit.cover,
+                        Container(
+                          width: 86,
+                          height: 86,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: const Color(0xFFF3F4F6),
                           ),
+                          clipBehavior: Clip.hardEdge,
+                          child: avatarUrl != null
+                              ? Image.network(
+                                  avatarUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Image.asset(
+                                    'assets/images/classes/student_image.png',
+                                    fit: BoxFit.cover,
+                                  ),
+                                )
+                              : Image.asset(
+                                  'assets/images/classes/student_image.png',
+                                  fit: BoxFit.cover,
+                                ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                "Mia johnson",
-                                style: TextStyle(
+                              Text(
+                                student['username'] ?? student['name'] ?? 'Unknown Student',
+                                style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 18,
                                   color: Color(0xFF222222),
@@ -89,7 +146,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                "Grade 6 - Age 12",
+                                "Grade ${student['gradeLevel'] ?? student['grade'] ?? student['grade_level'] ?? 'N/A'} - Age ${student['age'] ?? 'N/A'}",
                                 style: TextStyle(
                                   color: Colors.grey.shade500,
                                   fontSize: 14,
@@ -97,7 +154,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                "+1 301 381 7702",
+                                student['phoneNumber'] ?? student['phone'] ?? '01700000000',
                                 style: TextStyle(
                                   color: Colors.grey.shade500,
                                   fontSize: 14,
@@ -117,10 +174,22 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: _buildStatBox(
-                            "Attendance",
-                            "92%😋",
-                            const Color(0xFF4AA678), // Green
+                          child: attendanceStatsAsync.when(
+                            data: (percentage) => _buildStatBox(
+                              "Attendance",
+                              "$percentage%${_getAttendanceEmoji(percentage)}",
+                              _getAttendanceColor(percentage),
+                            ),
+                            loading: () => _buildStatBox(
+                              "Attendance",
+                              "...%",
+                              const Color(0xFF4AA678),
+                            ),
+                            error: (_, __) => _buildStatBox(
+                              "Attendance",
+                              "N/A",
+                              const Color(0xFFC04345),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 12),

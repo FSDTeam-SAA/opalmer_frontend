@@ -103,6 +103,16 @@ final classAttendanceStatsProvider = FutureProvider.family<int, String>((ref, cl
   return 0;
 });
 
+final studentAttendanceStatsProvider = FutureProvider.family<int, String>((ref, studentId) async {
+  final apiClient = ref.read(apiClientProvider);
+  final response = await apiClient.get('/attendances/student/$studentId/stats');
+
+  if (response.statusCode == 200 && response.data['success'] == true) {
+    return response.data['data']['percentage'] ?? 0;
+  }
+  return 0;
+});
+
 final classAttendanceProvider = FutureProvider.family<List<dynamic>, String>((ref, classId) async {
   final apiClient = ref.read(apiClientProvider);
   final response = await apiClient.get('/attendances/class', queryParameters: {'classId': classId});

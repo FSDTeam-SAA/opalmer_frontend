@@ -270,14 +270,9 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                             final student = assignment['studentId'];
                             if (student == null) return const SizedBox();
                             
-                            return _buildStudentCard(
-                              name: student['username'] ?? student['name'] ?? 'Unknown',
-                              subtext: "Grade ${student['gradeLevel'] ?? widget.classData.grade}",
-                              status: "Active", // Backend doesn't have a status field per student
-                              statusColor: const Color(0xFF4AA678),
-                              attendance: "N/A",
-                              progress: "N/A",
-                              avatarUrl: student['avatar'] is Map ? student['avatar']['url'] : student['avatar'],
+                            return StudentCard(
+                              studentData: student,
+                              classData: widget.classData,
                             );
                           },
                         );
@@ -394,21 +389,41 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
       ),
     );
   }
+}
 
-  Widget _buildStudentCard({
-    required String name,
-    required String subtext,
-    required String status,
-    required Color statusColor,
-    required String attendance,
-    required String progress,
-    String? avatarUrl,
-  }) {
+class StudentCard extends ConsumerWidget {
+  final Map<String, dynamic> studentData;
+  final TeacherClassModel classData;
+
+  const StudentCard({
+    Key? key,
+    required this.studentData,
+    required this.classData,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final studentId = studentData['_id'] ?? '';
+    final attendanceStatsAsync = ref.watch(studentAttendanceStatsProvider(studentId));
+    
+    final name = studentData['username'] ?? studentData['name'] ?? 'Unknown';
+    final avatar = studentData['avatar'];
+    String? avatarUrl;
+    if (avatar is Map) {
+      avatarUrl = avatar['url'];
+    } else if (avatar is String) {
+      avatarUrl = avatar;
+    }
+
+    if (avatarUrl != null && avatarUrl.isNotEmpty && !avatarUrl.startsWith('http')) {
+      avatarUrl = 'http://localhost:5000$avatarUrl';
+    }
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => StudentAttendanceScreen(classData: widget.classData)),
+          MaterialPageRoute(builder: (_) => StudentAttendanceScreen(classData: classData)),
         );
       },
       child: Container(
@@ -430,9 +445,9 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
             children: [
               Container(
                 width: 8,
-                decoration: BoxDecoration(
-                  color: statusColor,
-                  borderRadius: const BorderRadius.only(
+                decoration: const BoxDecoration(
+                  color: Color(0xFF4AA678),
+                  borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(12),
                     bottomLeft: Radius.circular(12),
                   ),
@@ -446,84 +461,68 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const StudentProfileScreen(),
-                                ),
-                              );
-                            },
-                            child: Container(
-                              width: 50,
-                              height: 50,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Color(0xFFF3F4F6),
-                              ),
-                              clipBehavior: Clip.hardEdge,
-                              child: avatarUrl != null && avatarUrl.isNotEmpty
-                                  ? Image.network(
-                                      avatarUrl,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => Image.asset(
-                                        'assets/images/classes/student_image.png',
-                                        fit: BoxFit.cover,
-                                      ),
-                                    )
-                                  : Image.asset(
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(0xFFF3F4F6),
+                            ),
+                            clipBehavior: Clip.hardEdge,
+                            child: avatarUrl != null && avatarUrl.isNotEmpty
+                                ? Image.network(
+                                    avatarUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Image.asset(
                                       'assets/images/classes/student_image.png',
                                       fit: BoxFit.cover,
                                     ),
-                            ),
+                                  )
+                                : Image.asset(
+                                    'assets/images/classes/student_image.png',
+                                    fit: BoxFit.cover,
+                                  ),
                           ),
-                          const SizedBox(width: 14),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      name,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                        color: Color(0xFF222222),
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF4AA678),
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: Text(
-                                        status,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
                                 Text(
-                                  subtext,
+                                  name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF222222),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  "Grade ${studentData['gradeLevel'] ?? classData.grade}",
                                   style: TextStyle(
                                     color: Colors.grey.shade500,
-                                    fontSize: 13,
+                                    fontSize: 12,
                                   ),
                                 ),
                               ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF4AA678).withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Text(
+                              "Active",
+                              style: TextStyle(
+                                color: Color(0xFF4AA678),
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ],
@@ -545,7 +544,11 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    attendance,
+                                    attendanceStatsAsync.when(
+                                      data: (stats) => "$stats%",
+                                      loading: () => "...%",
+                                      error: (_, __) => "N/A",
+                                    ),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
@@ -574,9 +577,9 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                                       ),
                                     ),
                                     const SizedBox(height: 4),
-                                    Text(
-                                      progress,
-                                      style: const TextStyle(
+                                    const Text(
+                                      "85%",
+                                      style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 16,
                                         color: Color(0xFF222222),

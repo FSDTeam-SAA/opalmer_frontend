@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'student_profile.dart';
 import '../../core/models/teacher_class_model.dart';
 import '../../core/providers/teacher_provider.dart';
 
@@ -16,13 +17,14 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
   final String _todayDate = DateFormat('dd-MM-yy').format(DateTime.now());
   bool _isCreating = false;
 
-  Future<void> _updateStatus(String attendanceId, String status) async {
+  Future<void> _updateStatus(String studentId, String attendanceId, String status) async {
     try {
       final apiClient = ref.read(apiClientProvider);
       final response = await apiClient.patch('/attendances/class/$attendanceId', data: {'status': status});
       if (response.statusCode == 200 && response.data['success'] == true) {
         ref.invalidate(classAttendanceProvider(widget.classData.id));
         ref.invalidate(classAttendanceStatsProvider(widget.classData.id));
+        ref.invalidate(studentAttendanceStatsProvider(studentId));
       }
     } catch (e) {
       if (mounted) {
@@ -208,7 +210,9 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
                                       _todayDate,
                                       student['username'] ?? student['name'] ?? 'Unknown',
                                       record?['status'] ?? 'absent',
+                                      studentId,
                                       record?['_id'],
+                                      student,
                                     );
                                   },
                                 );
@@ -232,7 +236,7 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
     );
   }
 
-  Widget _buildRow(String date, String name, String status, String? attendanceId) {
+  Widget _buildRow(String date, String name, String status, String studentId, String? attendanceId, Map<String, dynamic> studentData) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
@@ -246,19 +250,33 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
           ),
           Expanded(
             child: Center(
-              child: Text(
-                name,
-                style: const TextStyle(color: Color(0xFF444444), fontSize: 14),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => StudentProfileScreen(studentData: studentData),
+                    ),
+                  );
+                },
+                child: Text(
+                  name,
+                  style: const TextStyle(
+                    color: Color(0xFF444444),
+                    fontSize: 14,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
               ),
             ),
           ),
-          SizedBox(width: 86, child: _buildStatusDropdown(status, attendanceId)),
+          SizedBox(width: 86, child: _buildStatusDropdown(status, studentId, attendanceId)),
         ],
       ),
     );
   }
 
-  Widget _buildStatusDropdown(String status, String? attendanceId) {
+  Widget _buildStatusDropdown(String status, String studentId, String? attendanceId) {
     Color bgColor;
     Color textColor;
     String text;
@@ -288,7 +306,7 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
     return PopupMenuButton<String>(
       onSelected: (newStatus) {
         if (attendanceId != null) {
-          _updateStatus(attendanceId, newStatus);
+          _updateStatus(studentId, attendanceId, newStatus);
         }
       },
       itemBuilder: (context) => [
