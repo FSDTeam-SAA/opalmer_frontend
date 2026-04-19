@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/authentication_screen/two_factor_auth_screen.dart';
+import 'package:opalmer_education/core/providers/auth_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/core/widgets/animated_wave_header.dart';
 import 'package:opalmer_education/notification/notification.dart';
@@ -12,11 +14,18 @@ import 'package:opalmer_education/parent_role/ProfileScreen/language_selection_s
 import 'package:opalmer_education/parent_role/ProfileScreen/about_us_screen.dart';
 import 'package:opalmer_education/user_role_screen/user_role_screen.dart';
 
-class ParentProfileScreen extends StatelessWidget {
+class ParentProfileScreen extends ConsumerStatefulWidget {
   const ParentProfileScreen({super.key});
 
   @override
+  ConsumerState<ParentProfileScreen> createState() =>
+      _ParentProfileScreenState();
+}
+
+class _ParentProfileScreenState extends ConsumerState<ParentProfileScreen> {
+  @override
   Widget build(BuildContext context) {
+    final user = ref.watch(authStateProvider);
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
       body: Column(
@@ -85,11 +94,14 @@ class ParentProfileScreen extends StatelessWidget {
                     color: Colors.white,
                     shape: BoxShape.circle,
                   ),
-                  child: const CircleAvatar(
+                  child: CircleAvatar(
                     radius: 65,
-                    backgroundImage: NetworkImage(
-                      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80",
-                    ),
+                    backgroundImage:
+                        user?.avatar != null && user!.avatar!.isNotEmpty
+                            ? NetworkImage(user.avatar!)
+                            : const AssetImage(
+                                'assets/images/profile/parent.png',
+                              ),
                   ),
                 ),
               ),
@@ -98,8 +110,8 @@ class ParentProfileScreen extends StatelessWidget {
 
           const SizedBox(height: 80), // Space for overlapping avatar
           // ── Name & Email ──
-          const Text(
-            "Sarah Michelle",
+          Text(
+            user?.username ?? 'User',
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
@@ -107,8 +119,8 @@ class ParentProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            "sarahmichelle@gmail.com",
+          Text(
+            user?.email ?? '',
             style: TextStyle(fontSize: 14, color: Colors.grey),
           ),
 

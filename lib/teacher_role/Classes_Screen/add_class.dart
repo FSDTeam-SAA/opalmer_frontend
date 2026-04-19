@@ -1,14 +1,68 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/providers/teacher_provider.dart';
+import '../../core/providers/auth_provider.dart';
 
-class AddClassScreen extends StatefulWidget {
+class AddClassScreen extends ConsumerStatefulWidget {
   const AddClassScreen({Key? key}) : super(key: key);
 
   @override
-  State<AddClassScreen> createState() => _AddClassScreenState();
+  ConsumerState<AddClassScreen> createState() => _AddClassScreenState();
 }
 
-class _AddClassScreenState extends State<AddClassScreen> {
+class _AddClassScreenState extends ConsumerState<AddClassScreen> {
   String _selectedSubject = 'Math';
+  int? _selectedGrade;
+  bool _isLoading = false;
+
+  final List<int> _grades = List.generate(12, (index) => index + 1);
+
+  Future<void> _addClass() async {
+    if (_selectedGrade == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a grade')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final user = ref.read(authStateProvider);
+      final apiClient = ref.read(apiClientProvider);
+
+      if (user == null) throw Exception('User not logged in');
+
+      final response = await apiClient.post('/classes', data: {
+        'teacherId': user.id,
+        'grade': _selectedGrade,
+        'subject': _selectedSubject,
+      });
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Class added successfully!')),
+          );
+          // Refresh the classes list
+          ref.invalidate(teacherClassesProvider);
+          Navigator.pop(context);
+        }
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to add class');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,32 +117,42 @@ class _AddClassScreenState extends State<AddClassScreen> {
               ),
               const SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   border: Border.all(color: Colors.grey.shade300),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<int>(
+                    value: _selectedGrade,
+                    hint: Text(
                       "Select grade",
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.grey.shade600,
                       ),
                     ),
-                    Icon(
+                    isExpanded: true,
+                    icon: Icon(
                       Icons.keyboard_arrow_down,
                       color: Colors.grey.shade600,
                     ),
-                  ],
+                    items: _grades.map((int grade) {
+                      return DropdownMenuItem<int>(
+                        value: grade,
+                        child: Text("Grade $grade"),
+                      );
+                    }).toList(),
+                    onChanged: (int? newValue) {
+                      setState(() {
+                        _selectedGrade = newValue;
+                      });
+                    },
+                  ),
                 ),
               ),
-              
               const SizedBox(height: 28),
-              
               const Text(
                 "Subjects",
                 style: TextStyle(
@@ -98,7 +162,6 @@ class _AddClassScreenState extends State<AddClassScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              
               Wrap(
                 spacing: 12,
                 runSpacing: 12,
@@ -110,15 +173,11 @@ class _AddClassScreenState extends State<AddClassScreen> {
                   _buildSubjectChip("Social Studies"),
                 ],
               ),
-              
               const Spacer(),
-              
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Add class action
-                  },
+                  onPressed: _isLoading ? null : _addClass,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF871DAD),
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -127,14 +186,23 @@ class _AddClassScreenState extends State<AddClassScreen> {
                     ),
                     elevation: 0,
                   ),
-                  child: const Text(
-                    "ADD",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          "ADD",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -171,3 +239,4 @@ class _AddClassScreenState extends State<AddClassScreen> {
     );
   }
 }
+

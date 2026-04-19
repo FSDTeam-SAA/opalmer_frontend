@@ -1,9 +1,17 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/providers/auth_provider.dart';
+import 'package:opalmer_education/core/models/user_model.dart';
+import 'package:opalmer_education/core/services/secure_storage_service.dart';
+import 'package:opalmer_education/core/services/api_client.dart';
+import 'package:opalmer_education/core/constants/api_constants.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/core/widgets/pressable_card.dart';
 import 'package:opalmer_education/core/widgets/learning_tip_card.dart';
 import 'package:opalmer_education/core/widgets/animated_wave_header.dart';
 import 'package:opalmer_education/parent_role/LearningTipsScreen/models/learning_tip.dart';
+import 'package:opalmer_education/parent_role/services/learning_tips_service.dart';
 import 'package:opalmer_education/notification/notification.dart';
 import 'package:opalmer_education/parent_role/LearningTipsScreen/learning_tips_screen.dart';
 import 'package:opalmer_education/parent_role/LearningTipsScreen/learning_tip_detail_screen.dart';
@@ -11,16 +19,102 @@ import 'package:opalmer_education/parent_role/ChildsProfilesScreen/childs_profil
 import 'package:opalmer_education/parent_role/ChildsProfilesScreen/models/child_profile.dart';
 import 'package:opalmer_education/parent_role/SubjectsScreen/subjects_screen.dart';
 
-class ParentHomeDashboard extends StatefulWidget {
+class ParentHomeDashboard extends ConsumerStatefulWidget {
   const ParentHomeDashboard({super.key});
 
   @override
-  State<ParentHomeDashboard> createState() => _ParentHomeDashboardState();
+  ConsumerState<ParentHomeDashboard> createState() => _ParentHomeDashboardState();
 }
 
-class _ParentHomeDashboardState extends State<ParentHomeDashboard> {
+class _ParentHomeDashboardState extends ConsumerState<ParentHomeDashboard> {
+  bool _isLoading = true;
+  bool _isLoadingProfiles = true;
+  bool _isLoadingTips = true;
+  List<ChildProfile> _profiles = [];
+  List<LearningTip> _tips = [];
+  final ApiClient _apiClient = ApiClient();
+  final SecureStorageService _storage = SecureStorageService();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserFromStorageIfEmpty();
+    _loadProfiles();
+    _loadTips();
+  }
+
+  Future<void> _loadTips() async {
+    try {
+      final tips = await LearningTipsService.instance.fetch();
+      if (mounted) {
+        setState(() {
+          _tips = tips;
+        });
+      }
+    } catch (e) {
+      debugPrint('Failed to load dashboard learning tips: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingTips = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadProfiles() async {
+    setState(() {
+      _isLoadingProfiles = true;
+    });
+    try {
+      String? userData = await _storage.getUserData();
+      if (userData != null) {
+        final userMap = jsonDecode(userData);
+        final parentId = userMap['id'] ?? userMap['_id'];
+
+        final response = await _apiClient.get('/parent/child/parent/$parentId');
+        if (response.data['success'] == true) {
+          final List childrenList = response.data['data']['children'] ?? [];
+          if (mounted) {
+            setState(() {
+              _profiles = childrenList
+                  .map((c) => ChildProfile.fromJson(c['childId'], relationId: c['_id']))
+                  .toList();
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Failed to load dashboard profiles: $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingProfiles = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadUserFromStorageIfEmpty() async {
+    // If the global state is null, try to load it from storage
+    if (ref.read(authStateProvider) == null) {
+      try {
+        final userDataStr = await _storage.getUserData();
+        if (userDataStr != null) {
+          final map = jsonDecode(userDataStr);
+          ref.read(authStateProvider.notifier).state = UserModel.fromJson(map);
+        }
+      } catch (_) {}
+    }
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(authStateProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -44,16 +138,27 @@ class _ParentHomeDashboardState extends State<ParentHomeDashboard> {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                "Hi, Olivia Carter 👋",
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  letterSpacing: -0.5,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
+                              _isLoading
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation(
+                                          Colors.white,
+                                        ),
+                                      ),
+                                    )
+                                      : Text(
+                                          "Hi, ${user?.username ?? 'User'} 👋",
+                                          style: const TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            letterSpacing: -0.5,
+                                          ),
+                                        ),
+                                  const SizedBox(height: 4),
                               Text(
                                 "Check your Children's activities",
                                 style: TextStyle(
@@ -139,7 +244,7 @@ class _ParentHomeDashboardState extends State<ParentHomeDashboard> {
                                 builder: (context) =>
                                     const ChildsProfilesScreen(),
                               ),
-                            );
+                            ).then((_) => _loadProfiles());
                           },
                           child: Text(
                             "View All",
@@ -155,19 +260,37 @@ class _ParentHomeDashboardState extends State<ParentHomeDashboard> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  SizedBox(
-                    height: 120,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      children: mockChildProfiles.take(3).map((profile) {
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 14),
-                          child: _buildChildCard(profile),
-                        );
-                      }).toList(),
-                    ),
-                  ),
+                  _isLoadingProfiles
+                      ? const SizedBox(
+                          height: 120,
+                          child: Center(
+                            child: CircularProgressIndicator(color: AppColors.primaryMid),
+                          ),
+                        )
+                      : _profiles.isEmpty
+                          ? const SizedBox(
+                              height: 120,
+                              child: Center(
+                                child: Text(
+                                  "No children added yet.\nTap 'View All' to add.",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                                ),
+                              ),
+                            )
+                          : SizedBox(
+                              height: 120,
+                              child: ListView(
+                                scrollDirection: Axis.horizontal,
+                                padding: const EdgeInsets.symmetric(horizontal: 20),
+                                children: _profiles.take(3).map((profile) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(right: 14),
+                                    child: _buildChildCard(profile),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
 
                   const SizedBox(height: 32),
 
@@ -210,32 +333,57 @@ class _ParentHomeDashboardState extends State<ParentHomeDashboard> {
                   ),
                   const SizedBox(height: 16),
                   Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.only(bottom: 20),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Column(
-                          children: [
-                            ...mockLearningTips.take(5).map((tip) {
-                              return LearningTipCard(
-                                title: tip.title,
-                                imageUrl: tip.imageUrl,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          LearningTipDetailScreen(tip: tip),
+                    child: _isLoadingTips
+                        ? const Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primaryMid,
+                            ),
+                          )
+                        : _tips.isEmpty
+                            ? const Center(
+                                child: Padding(
+                                  padding:
+                                      EdgeInsets.symmetric(horizontal: 32),
+                                  child: Text(
+                                    'No learning tips available yet.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey,
                                     ),
-                                  );
-                                },
-                              );
-                            }).toList(),
-                            const SizedBox(height: 20),
-                          ],
-                        ),
-                      ),
-                    ),
+                                  ),
+                                ),
+                              )
+                            : SingleChildScrollView(
+                                padding: const EdgeInsets.only(bottom: 20),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      ..._tips.take(5).map((tip) {
+                                        return LearningTipCard(
+                                          title: tip.title,
+                                          imageUrl: tip.imageUrl,
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    LearningTipDetailScreen(
+                                                      tip: tip,
+                                                    ),
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      }),
+                                      const SizedBox(height: 20),
+                                    ],
+                                  ),
+                                ),
+                              ),
                   ),
                 ],
               ),

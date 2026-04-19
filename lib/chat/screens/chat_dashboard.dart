@@ -66,6 +66,7 @@ class _ChatDashboardState extends ConsumerState<ChatDashboard> {
                   );
                 },
                 backgroundColor: const Color(0xFF871DAD),
+                shape: CircleBorder(),
                 child: const Icon(Icons.add, color: Colors.white, size: 32),
               ),
             ),

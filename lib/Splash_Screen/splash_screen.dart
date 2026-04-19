@@ -1,15 +1,23 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/services/secure_storage_service.dart';
+import 'package:opalmer_education/core/providers/auth_provider.dart';
+import 'package:opalmer_education/core/models/user_model.dart';
 import '../onboarding_screen/onboarding_screen.dart';
+import '../parent_role/parent_main_shell.dart';
+import '../student_role/student_main_shell.dart';
+import '../custom_bottom_navigation_bar/main_shell.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
+class _SplashScreenState extends ConsumerState<SplashScreen>
     with TickerProviderStateMixin {
   late AnimationController _scaleController;
   late AnimationController _fadeController;
@@ -56,11 +64,48 @@ class _SplashScreenState extends State<SplashScreen>
     _fadeController.forward();
     _scaleController.forward();
 
-    // Navigate after 3 seconds
-    Timer(const Duration(seconds: 3), () {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const OnboardingScreen()),
-      );
+    // Navigate after 3 seconds, evaluating persistent login state
+    Timer(const Duration(seconds: 3), () async {
+      final storage = SecureStorageService();
+      final token = await storage.getToken();
+      final userDataStr = await storage.getUserData();
+
+      if (token != null && userDataStr != null && mounted) {
+        try {
+          final userData = jsonDecode(userDataStr);
+          
+          // Populate the authStateProvider so other screens know the user is logged in
+          final user = UserModel.fromJson(userData);
+          ref.read(authStateProvider.notifier).state = user;
+          
+          final roleType = userData['type'];
+
+          Widget targetScreen;
+          if (roleType == 'parent') {
+            targetScreen = const ParentMainShell();
+          } else if (roleType == 'student') {
+            targetScreen = const StudentMainShell();
+          } else if (roleType == 'teacher') {
+            targetScreen = const MainShell();
+          } else {
+            targetScreen = const OnboardingScreen();
+          }
+
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => targetScreen),
+          );
+        } catch (_) {
+          if (mounted) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+            );
+          }
+        }
+      } else if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+        );
+      }
     });
   }
 
@@ -102,3 +147,4 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 }
+
