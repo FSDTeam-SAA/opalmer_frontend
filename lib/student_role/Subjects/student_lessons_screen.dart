@@ -15,64 +15,148 @@ class StudentLessonsScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
-      body: lessonsAsync.when(
-        data: (lessons) {
-          if (lessons.isEmpty) {
-            return const Center(child: Text("No lessons found"));
-          }
+      body: RefreshIndicator(
+        color: AppColors.primaryMid,
+        onRefresh: () async {
+          ref.invalidate(studentLessonsProvider);
+          await ref.read(studentLessonsProvider.future);
+        },
+        child: lessonsAsync.when(
+          data: (lessons) => _buildContent(context, lessons),
+          loading: () =>
+              const Center(child: CircularProgressIndicator()),
+          error: (err, _) => _buildError(context, ref),
+        ),
+      ),
+    );
+  }
 
-          final todayLessons = lessons.where((l) => !l.isArchived).toList();
-          final archivedLessons = lessons.where((l) => l.isArchived).toList();
+  Widget _buildContent(BuildContext context, List lessons) {
+    if (lessons.isEmpty) return _buildEmpty(context);
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (todayLessons.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  const Text(
-                    "Today's Lesson",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
+    final todayLessons = lessons.where((l) => !l.isArchived).toList();
+    final archivedLessons = lessons.where((l) => l.isArchived).toList();
+
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (todayLessons.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            const Text(
+              "Today's Lesson",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ...todayLessons
+                .map((l) => _buildLessonCard(context, lesson: l)),
+          ],
+          if (archivedLessons.isNotEmpty) ...[
+            const SizedBox(height: 32),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: const [
+                Text(
+                  "Archived Lessons",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
                   ),
-                  const SizedBox(height: 16),
-                  ...todayLessons.map((l) => _buildLessonCard(context, lesson: l)),
-                ],
-                if (archivedLessons.isNotEmpty) ...[
-                  const SizedBox(height: 32),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Text(
-                        "Archived Lessons",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      Icon(
-                        Icons.calendar_month_outlined,
-                        color: AppColors.primaryMid,
-                        size: 24,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  ...archivedLessons.map((l) => _buildLessonCard(context, lesson: l)),
-                ],
-                const SizedBox(height: 100), // Bottom padding for FAB or Nav bar
+                ),
+                Icon(
+                  Icons.calendar_month_outlined,
+                  color: AppColors.primaryMid,
+                  size: 24,
+                ),
               ],
             ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+            const SizedBox(height: 16),
+            ...archivedLessons
+                .map((l) => _buildLessonCard(context, lesson: l)),
+          ],
+          const SizedBox(height: 100),
+        ],
       ),
+    );
+  }
+
+  Widget _buildEmpty(BuildContext context) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        SizedBox(height: MediaQuery.of(context).size.height * 0.18),
+        const Icon(
+          Icons.menu_book_outlined,
+          size: 72,
+          color: AppColors.primaryMid,
+        ),
+        const SizedBox(height: 16),
+        const Center(
+          child: Text(
+            'No lessons yet',
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Text(
+              'Your teacher hasn\'t posted any lessons yet. Pull down to refresh.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey.shade600,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildError(BuildContext context, WidgetRef ref) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        SizedBox(height: MediaQuery.of(context).size.height * 0.18),
+        const Icon(Icons.error_outline,
+            size: 56, color: Colors.redAccent),
+        const SizedBox(height: 12),
+        const Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 32),
+            child: Text(
+              'Could not load lessons right now.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Color(0xFF666666)),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Center(
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryMid,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => ref.invalidate(studentLessonsProvider),
+            child: const Text('Retry'),
+          ),
+        ),
+      ],
     );
   }
 
