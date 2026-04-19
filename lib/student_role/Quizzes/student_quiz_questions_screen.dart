@@ -73,7 +73,7 @@ class _StudentQuizQuestionsScreenState
       body: quizQAAsync.when(
         data: (quizQA) {
           if (quizQA == null || quizQA.questions.isEmpty) {
-            return const Center(child: Text("No questions found for this quiz."));
+            return _buildEmptyState();
           }
           final questions = quizQA.questions;
           return Column(
@@ -101,7 +101,86 @@ class _StudentQuizQuestionsScreenState
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+        error: (err, stack) => _buildErrorState(err),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.quiz_outlined,
+              size: 72,
+              color: AppColors.primaryMid,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'No questions yet',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Your teacher hasn\'t added questions to this quiz yet. Check back later.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey.shade600, height: 1.4),
+            ),
+            const SizedBox(height: 20),
+            OutlinedButton(
+              onPressed: () =>
+                  ref.invalidate(quizQAProvider(widget.quiz.id)),
+              child: const Text('Refresh'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(Object error) {
+    final isNetwork = error.toString().toLowerCase().contains('connection') ||
+        error.toString().toLowerCase().contains('socketexception');
+    final message = isNetwork
+        ? 'Could not reach the server. Please check your connection.'
+        : 'Something went wrong while loading questions.';
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline,
+                size: 64, color: Colors.redAccent),
+            const SizedBox(height: 12),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.grey.shade700,
+                fontSize: 15,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryMid,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () =>
+                  ref.invalidate(quizQAProvider(widget.quiz.id)),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -61,4 +61,79 @@ class AuthService {
     }
     return null;
   }
+
+  /// Fetches the authenticated user from GET /users/me and updates the
+  /// cached user data. Returns null on failure so callers can fall back to
+  /// their existing (possibly stale) state.
+  Future<UserModel?> fetchCurrentUser() async {
+    try {
+      final response = await _apiClient.get(ApiConstants.me);
+      final dataMap = UserModel.recursiveSafeMap(response.data);
+      if (response.statusCode == 200 && dataMap['success'] == true) {
+        final userJson = UserModel.recursiveSafeMap(dataMap['data']);
+        final user = UserModel.fromJson(userJson);
+        await _storage.saveUserData(jsonEncode(user.toJson()));
+        return user;
+      }
+      return null;
+    } catch (e) {
+      debugPrint('AuthService: fetchCurrentUser failed: $e');
+      return null;
+    }
+  }
+
+  Future<UserModel> updateProfile({
+    required String userId,
+    required Map<String, dynamic> updates,
+  }) async {
+    try {
+      final response = await _apiClient.put(
+        '/users/$userId',
+        data: updates,
+      );
+
+      final dataMap = UserModel.recursiveSafeMap(response.data);
+      if (response.statusCode == 200 && dataMap['success'] == true) {
+        final userJson = UserModel.recursiveSafeMap(dataMap['data']);
+        final updated = UserModel.fromJson(userJson);
+        await _storage.saveUserData(jsonEncode(updated.toJson()));
+        return updated;
+      }
+
+      final message = dataMap['message']?.toString() ?? 'Failed to update profile';
+      throw Exception(message);
+    } on DioException catch (e) {
+      debugPrint('AuthService: DioException during updateProfile: ${e.message}');
+      final errorData = UserModel.recursiveSafeMap(e.response?.data);
+      final message = errorData['message']?.toString() ?? 'Failed to update profile';
+      throw Exception(message);
+    }
+  }
+
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final response = await _apiClient.post(
+        ApiConstants.changePassword,
+        data: {
+          'oldPassword': oldPassword,
+          'newPassword': newPassword,
+        },
+      );
+      final dataMap = UserModel.recursiveSafeMap(response.data);
+      if (response.statusCode == 200 && dataMap['success'] == true) {
+        return;
+      }
+      throw Exception(
+        dataMap['message']?.toString() ?? 'Failed to change password',
+      );
+    } on DioException catch (e) {
+      final errorData = UserModel.recursiveSafeMap(e.response?.data);
+      throw Exception(
+        errorData['message']?.toString() ?? 'Failed to change password',
+      );
+    }
+  }
 }

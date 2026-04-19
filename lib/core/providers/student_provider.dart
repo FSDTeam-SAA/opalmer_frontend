@@ -54,3 +54,10 @@ final studentQuizResultsProvider = FutureProvider<List<QuizResultModel>>((ref) a
   if (user == null) return [];
   return await ref.watch(studentServiceProvider).getQuizResults(user.id);
 });
+
+final studentBehaviorsProvider =
+    FutureProvider<List<BehaviorRecord>>((ref) async {
+  final user = ref.watch(authStateProvider);
+  if (user == null) return [];
+  return await ref.watch(studentServiceProvider).getStudentBehaviors();
+});

@@ -84,6 +84,8 @@ class QuizModel {
   final String? teacherId;
   final DateTime? createdAt;
   final String? teacherName;
+  final int questionCount;
+  final int durationMinutes;
 
   QuizModel({
     required this.id,
@@ -93,9 +95,17 @@ class QuizModel {
     this.teacherId,
     this.createdAt,
     this.teacherName,
+    this.questionCount = 0,
+    this.durationMinutes = 0,
   });
 
   factory QuizModel.fromJson(Map<String, dynamic> json) {
+    int parseInt(dynamic v) {
+      if (v is int) return v;
+      if (v is num) return v.toInt();
+      return int.tryParse(v?.toString() ?? '') ?? 0;
+    }
+
     return QuizModel(
       id: json['_id'] ?? '',
       title: json['title'] ?? '',
@@ -104,7 +114,21 @@ class QuizModel {
       teacherId: json['teacherId'] is Map ? json['teacherId']['_id'] : json['teacherId'],
       teacherName: json['teacherId'] is Map ? json['teacherId']['username'] : null,
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
+      questionCount: parseInt(json['questionCount']),
+      durationMinutes: parseInt(json['time']),
     );
+  }
+
+  /// Human-friendly subtitle used on quiz cards. Falls back to the description
+  /// when the backend hasn't populated counts yet.
+  String get metaLine {
+    final parts = <String>[];
+    if (questionCount > 0) {
+      parts.add('$questionCount ${questionCount == 1 ? 'Question' : 'Questions'}');
+    }
+    if (durationMinutes > 0) parts.add('$durationMinutes min');
+    if (parts.isEmpty) return (description ?? '').trim();
+    return parts.join(' · ');
   }
 }
 
@@ -166,10 +190,40 @@ class AttendanceRecord {
     return AttendanceRecord(
       id: json['_id'] ?? '',
       date: json['date'] != null ? DateTime.parse(json['date']) : DateTime.now(),
-      status: json['status'] ?? 'Absent',
+      status: (json['status'] ?? json['present'] ?? 'Absent').toString(),
       note: json['note'],
     );
   }
+
+  bool get isPresent => status.toLowerCase() == 'present';
+  bool get isHoliday => status.toLowerCase() == 'holiday';
+}
+
+class BehaviorRecord {
+  final String id;
+  final String message;
+  final String state; // "positive" | "negative"
+  final DateTime? createdAt;
+
+  const BehaviorRecord({
+    required this.id,
+    required this.message,
+    required this.state,
+    this.createdAt,
+  });
+
+  factory BehaviorRecord.fromJson(Map<String, dynamic> json) {
+    return BehaviorRecord(
+      id: (json['_id'] ?? json['id'] ?? '').toString(),
+      message: (json['message'] ?? '').toString(),
+      state: (json['state'] ?? 'positive').toString(),
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'].toString())
+          : null,
+    );
+  }
+
+  bool get isPositive => state.toLowerCase() == 'positive';
 }
 
 class QuizResultModel {

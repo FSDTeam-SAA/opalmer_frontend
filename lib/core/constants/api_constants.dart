@@ -8,8 +8,12 @@ class ApiConstants {
   // Auth Endpoints
   static const String login = '/users/login';
   static const String register = '/users/register';
-  static const String profile = '/users/profile';
 
+  static const String me = '/users/me';
+  static const String changePassword = '/users/change-password';
+  
+
+  static const String profile = '/users/profile';
   // Academics Endpoints
   static const String lessons = '/lessons';
   static const String homework = '/homework';
@@ -25,6 +29,18 @@ class ApiConstants {
   // Attendance Endpoints
   static const String attendance = '/attendances/student';
 
+
+  // Behavior
+  static const String studentBehaviors = '/behavior/student-behaviors';
+
+  // Notifications
+  static const String notifications = '/notifications';
+  static const String notificationsReadAll = '/notifications/read';
+
+  // Socket
+  static const String socketBaseUrl = 'http://127.0.0.1:5000';
+
   // Learning Tips Endpoints
   static const String learningTipsByParent = '/learning-tips/by-parent/me';
+
 }

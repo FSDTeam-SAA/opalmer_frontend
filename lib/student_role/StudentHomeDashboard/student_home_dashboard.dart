@@ -265,15 +265,21 @@ class StudentHomeDashboard extends ConsumerWidget {
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "10 Questions · 5 min",
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey.shade600,
+                    if (quiz.metaLine.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        quiz.metaLine,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
