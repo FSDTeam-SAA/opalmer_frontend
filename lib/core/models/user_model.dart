@@ -10,6 +10,9 @@ class UserModel {
   final String? studentId; // This is the 'Id' from backend
   final String? gradeLevel;
   final String? avatar;
+  final String? phoneNumber;
+  final int? age;
+  final String? gender;
 
   UserModel({
     required this.id,
@@ -21,7 +24,35 @@ class UserModel {
     this.studentId,
     this.gradeLevel,
     this.avatar,
+    this.phoneNumber,
+    this.age,
+    this.gender,
   });
+
+  UserModel copyWith({
+    String? username,
+    String? email,
+    String? avatar,
+    String? phoneNumber,
+    int? age,
+    String? gender,
+    String? gradeLevel,
+  }) {
+    return UserModel(
+      id: id,
+      username: username ?? this.username,
+      email: email ?? this.email,
+      role: role,
+      type: type,
+      schoolId: schoolId,
+      studentId: studentId,
+      gradeLevel: gradeLevel ?? this.gradeLevel,
+      avatar: avatar ?? this.avatar,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      age: age ?? this.age,
+      gender: gender ?? this.gender,
+    );
+  }
 
   /// Recursively extracts a Map from a value that could be a String (JSON), List, or Map
   static Map<String, dynamic> recursiveSafeMap(dynamic value) {
@@ -56,9 +87,15 @@ class UserModel {
       email: json['email']?.toString(),
       role: (json['role'] ?? json['type'] ?? '').toString(),
       type: json['type']?.toString(),
+      schoolId: json['schoolId']?.toString(),
       studentId: (json['Id'] ?? json['studentId'])?.toString(),
       gradeLevel: json['gradeLevel']?.toString(),
       avatar: json['avatar'] is Map ? json['avatar']['url']?.toString() : (json['avatar']?.toString() ?? ''),
+      phoneNumber: json['phoneNumber']?.toString(),
+      age: json['age'] is int
+          ? json['age'] as int
+          : int.tryParse(json['age']?.toString() ?? ''),
+      gender: json['gender']?.toString(),
     );
   }
 
@@ -73,6 +110,9 @@ class UserModel {
       'studentId': studentId,
       'gradeLevel': gradeLevel,
       'avatar': avatar,
+      'phoneNumber': phoneNumber,
+      'age': age,
+      'gender': gender,
     };
   }
 }

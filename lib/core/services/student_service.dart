@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:opalmer_education/core/constants/api_constants.dart';
 import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/services/api_client.dart';
@@ -86,11 +87,14 @@ class StudentService {
   Future<QuizQA?> getQuizQA(String quizId) async {
     try {
       final response = await _apiClient.get('${ApiConstants.quizQA}/$quizId');
-      if (response.data['data'] != null) {
+      if (response.data is Map && response.data['data'] != null) {
         return QuizQA.fromJson(response.data['data']);
       }
       return null;
-    } catch (e) {
+    } on DioException catch (e) {
+      // 404 means the teacher hasn't generated questions for this quiz yet;
+      // surface that to the UI as an empty state rather than a crash.
+      if (e.response?.statusCode == 404) return null;
       rethrow;
     }
   }
@@ -119,6 +123,20 @@ class StudentService {
       );
       return response.data['data'];
     } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<BehaviorRecord>> getStudentBehaviors() async {
+    try {
+      final response = await _apiClient.get(ApiConstants.studentBehaviors);
+      final List<dynamic> data = response.data['data'] ?? [];
+      return data
+          .whereType<Map>()
+          .map((e) => BehaviorRecord.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return const [];
       rethrow;
     }
   }

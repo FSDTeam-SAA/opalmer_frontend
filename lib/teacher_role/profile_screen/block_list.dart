@@ -1,23 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:opalmer_education/core/theme/app_colors.dart';
 
 class BlockListScreen extends StatelessWidget {
-  const BlockListScreen({Key? key}) : super(key: key);
+  const BlockListScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, String>> blockedUsers = [
-      {
-        "name": "Maximillian Jacobson",
-        "date": "11/19/19",
-        "image": "https://i.pravatar.cc/150?u=max",
-      },
-      {
-        "name": "Martha Carig",
-        "date": "11/19/19",
-        "image": "https://i.pravatar.cc/150?u=martha",
-      },
-    ];
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -33,7 +21,7 @@ class BlockListScreen extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: const BoxDecoration(
-                  color: Color(0xFF871DAD),
+                  color: AppColors.primaryMid,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -54,70 +42,47 @@ class BlockListScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        itemCount: blockedUsers.length,
-        itemBuilder: (context, index) {
-          final user = blockedUsers[index];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 20),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundImage: NetworkImage(user["image"]!),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 88,
+                height: 88,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryMid.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        user["name"]!,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF222222),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        user["date"]!,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade400,
-                        ),
-                      ),
-                    ],
-                  ),
+                child: const Icon(
+                  Icons.block_outlined,
+                  size: 40,
+                  color: AppColors.primaryMid,
                 ),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(0, 36),
-                    backgroundColor: const Color(0xFF871DAD),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                  ),
-                  child: const Text(
-                    "Unblock",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'No blocked users',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF222222),
                 ),
-              ],
-            ),
-          );
-        },
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Users you block will appear here. This feature is coming soon.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade600,
+                  height: 1.45,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

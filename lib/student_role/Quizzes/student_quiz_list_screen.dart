@@ -30,9 +30,12 @@ class StudentQuizListScreen extends ConsumerWidget {
                 const Color(0xFFFEBD43),
                 const Color(0xFF4A90E2),
               ];
+              final subtitle = quiz.metaLine.isNotEmpty
+                  ? quiz.metaLine
+                  : (quiz.description ?? '');
               return _buildQuizCard(
                 context,
-                quiz.description ?? "No description available",
+                subtitle,
                 0.0, // progress
                 colors[index % colors.length],
                 quiz,

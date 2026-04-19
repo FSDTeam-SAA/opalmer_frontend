@@ -4,6 +4,8 @@ import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/providers/student_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:opalmer_education/core/providers/notification_provider.dart';
+import 'package:opalmer_education/notification/notification.dart';
 import 'package:opalmer_education/student_role/Quizzes/student_quiz_list_screen.dart';
 import 'package:opalmer_education/student_role/Quizzes/student_quiz_questions_screen.dart';
 
@@ -68,16 +70,9 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
               color: Colors.white,
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.notifications_none_rounded,
-              color: Colors.white,
-              size: 24,
+          _NotificationBell(
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const NotificationScreen()),
             ),
           ),
         ],
@@ -206,14 +201,18 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "5 Questions · 5 min",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade500,
+                    if (quiz.metaLine.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        quiz.metaLine,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
@@ -302,16 +301,24 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
           const SizedBox(height: 16),
           quizResultsAsync.when(
             data: (results) {
-              int completed = results.length;
-              double correctAvg = 0;
-              if (completed > 0) {
-                correctAvg = results.fold<double>(0, (sum, res) => sum + res.percentage) / completed;
-              }
+              final int completed = results.length;
+              final bool hasResults = completed > 0;
+
+              final double correctAvg = hasResults
+                  ? results.fold<double>(0, (sum, res) => sum + res.percentage) /
+                      completed
+                  : 0;
+              final int correctPct = (correctAvg * 100).round();
+              final int wrongPct = hasResults ? (100 - correctPct) : 0;
+
               String bestSubject = "N/A";
-              if (results.isNotEmpty) {
-                 // Sort by percentage and take the title of the highest
-                 bestSubject = results.reduce((a, b) => a.percentage > b.percentage ? a : b).quizTitle;
-                 if (bestSubject.length > 10) bestSubject = bestSubject.substring(0, 10) + "...";
+              if (hasResults) {
+                bestSubject = results
+                    .reduce((a, b) => a.percentage > b.percentage ? a : b)
+                    .quizTitle;
+                if (bestSubject.length > 10) {
+                  bestSubject = '${bestSubject.substring(0, 10)}...';
+                }
               }
 
               return GridView.count(
@@ -327,10 +334,14 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
                     completed.toString(),
                     const Color(0xFFFEBD43),
                   ),
-                  _buildStatTile("Correct Answers", "${(correctAvg * 100).toInt()}%", const Color(0xFF4AA678)),
+                  _buildStatTile(
+                    "Correct Answers",
+                    hasResults ? "$correctPct%" : "N/A",
+                    const Color(0xFF4AA678),
+                  ),
                   _buildStatTile(
                     "Wrong Answers",
-                    "${(100 - (correctAvg * 100)).toInt()}%",
+                    hasResults ? "$wrongPct%" : "N/A",
                     const Color(0xFF4AA678).withValues(alpha: 0.85),
                   ),
                   _buildStatTile(
@@ -553,6 +564,60 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
               error: (err, stack) => Center(child: Text("Error: $err")),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NotificationBell extends ConsumerWidget {
+  final VoidCallback onTap;
+  const _NotificationBell({required this.onTap});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final unread = ref.watch(unreadNotificationCountProvider);
+    return GestureDetector(
+      onTap: onTap,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.notifications_none_rounded,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+          if (unread > 0)
+            Positioned(
+              top: -2,
+              right: -2,
+              child: Container(
+                constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF4D4F),
+                  borderRadius: BorderRadius.circular(9),
+                  border: Border.all(color: Colors.white, width: 1.5),
+                ),
+                child: Text(
+                  unread > 99 ? '99+' : unread.toString(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

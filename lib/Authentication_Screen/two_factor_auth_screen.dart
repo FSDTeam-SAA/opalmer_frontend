@@ -1,15 +1,8 @@
 import 'package:flutter/material.dart';
-import 'otp_screen.dart';
+import 'package:opalmer_education/core/theme/app_colors.dart';
 
-class TwoFactorAuthScreen extends StatefulWidget {
+class TwoFactorAuthScreen extends StatelessWidget {
   const TwoFactorAuthScreen({super.key});
-
-  @override
-  State<TwoFactorAuthScreen> createState() => _TwoFactorScreenState();
-}
-
-class _TwoFactorScreenState extends State<TwoFactorAuthScreen> {
-  bool _isToggled = false;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +21,7 @@ class _TwoFactorScreenState extends State<TwoFactorAuthScreen> {
                 width: 40,
                 height: 40,
                 decoration: const BoxDecoration(
-                  color: Color(0xFF871DAD),
+                  color: AppColors.primaryMid,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -50,7 +43,7 @@ class _TwoFactorScreenState extends State<TwoFactorAuthScreen> {
         ),
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,33 +51,62 @@ class _TwoFactorScreenState extends State<TwoFactorAuthScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    "Two-Factor Authentication",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF444444),
+                  const Expanded(
+                    child: Text(
+                      "Two-Factor Authentication",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF444444),
+                      ),
                     ),
                   ),
                   Switch(
-                    value: _isToggled,
-                    onChanged: (val) {
-                      setState(() => _isToggled = val);
-                      if (val) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const OtpScreen(),
+                    value: false,
+                    onChanged: (_) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Two-factor authentication is coming soon.',
                           ),
-                        );
-                      }
+                        ),
+                      );
                     },
                     activeThumbColor: Colors.white,
-                    activeTrackColor: const Color(0xFF871DAD),
+                    activeTrackColor: AppColors.primaryMid,
                   ),
                 ],
               ),
               const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F5F7),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.info_outline,
+                      size: 18,
+                      color: Color(0xFF666666),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Not available yet. We\'re rolling out 2FA soon — you\'ll be notified once it\'s enabled for your account.',
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontSize: 13,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
               Divider(color: Colors.grey.shade200),
               const SizedBox(height: 24),
               const Text(

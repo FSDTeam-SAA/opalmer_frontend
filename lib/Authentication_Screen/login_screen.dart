@@ -218,10 +218,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
         // Update global state
         ref.read(authStateProvider.notifier).state = loginResponse.user;
-        
+
+        // Refresh with the full profile from GET /users/me so cached
+        // state matches what the edit form will read/write.
+        final fullUser =
+            await ref.read(authServiceProvider).fetchCurrentUser();
+        if (fullUser != null) {
+          ref.read(authStateProvider.notifier).state = fullUser;
+        }
+
         // Update user role from backend
         ref.read(roleProvider.notifier).setRole(backendRole);
-        
+
         _routeToDashboard(backendRole);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
