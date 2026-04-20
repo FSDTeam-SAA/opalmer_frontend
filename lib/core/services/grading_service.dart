@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:opalmer_education/core/services/api_client.dart';
 
 class GradingService {
@@ -54,13 +53,19 @@ class GradingService {
   }
 
   Future<List<dynamic>> getSessionQuestions(String sessionId) async {
-    final response = await _apiClient.get('/grading/sessions/$sessionId/questions');
+    final response = await _apiClient.get(
+      '/grading/sessions/$sessionId/questions',
+    );
     // The controller returns questions wrapped in a data object
     return response.data['data']['questions'] as List<dynamic>;
   }
 
-  Future<Map<String, dynamic>> getSessionResults(String sessionId) async {
-    final response = await _apiClient.get('/grading/sessions/$sessionId/results');
+  Future<Map<String, dynamic>> getAttendedSubmittedStudents(
+    String sessionId,
+  ) async {
+    final response = await _apiClient.get(
+      '/grading/sessions/$sessionId/results',
+    );
     return response.data['data'] as Map<String, dynamic>;
   }
 
@@ -76,4 +81,3 @@ class GradingService {
     return response.data['data'] as List<dynamic>;
   }
 }
-

@@ -199,7 +199,7 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const LessonsScreen(),
+                                builder: (_) => LessonsScreen(classId: widget.classData.id),
                               ),
                             );
                           },

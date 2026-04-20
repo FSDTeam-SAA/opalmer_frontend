@@ -7,9 +7,16 @@ class AttendedStudentsScreen extends ConsumerWidget {
   final String sessionId;
   const AttendedStudentsScreen({super.key, required this.sessionId});
 
+  num _toNum(dynamic value) {
+    if (value is num) return value;
+    return num.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final resultsAsync = ref.watch(sessionResultsProvider(sessionId));
+    final resultsAsync = ref.watch(
+      attendedSubmittedStudentsProvider(sessionId),
+    );
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -51,23 +58,29 @@ class AttendedStudentsScreen extends ConsumerWidget {
         data: (data) {
           final List<dynamic> attended = data['results'] ?? [];
           final List<dynamic> notAttended = data['notAttendedStudents'] ?? [];
-          
+
           // Merge both lists into a single normalized list
           final List<Map<String, dynamic>> allStudents = [
-            ...attended.map((r) => {
-              'student': r['studentId'],
-              'progress': ((r['score'] ?? 0) / (r['totalQuestions'] ?? 1)).toDouble(),
-              'isAttended': true,
-            }),
-            ...notAttended.map((s) => {
-              'student': s,
-              'progress': 0.0,
-              'isAttended': false,
-            }),
+            ...attended.map(
+              (r) => {
+                'student': r['studentId'],
+                'progress': _toNum(r['totalQuestions']) > 0
+                    ? (_toNum(r['score']) / _toNum(r['totalQuestions']))
+                          .clamp(0, 1)
+                          .toDouble()
+                    : 0.0,
+                'isAttended': true,
+              },
+            ),
+            ...notAttended.map(
+              (s) => {'student': s, 'progress': 0.0, 'isAttended': false},
+            ),
           ];
-          
+
           if (allStudents.isEmpty) {
-            return const Center(child: Text("No students found for this class"));
+            return const Center(
+              child: Text("No students found for this class"),
+            );
           }
 
           return ListView.builder(
@@ -76,15 +89,21 @@ class AttendedStudentsScreen extends ConsumerWidget {
             itemBuilder: (context, index) {
               final item = allStudents[index];
               final student = item['student'];
-              final name = student != null ? student['username'] ?? 'Unknown' : 'Unknown';
-              final grade = student != null ? student['gradeLevel'] ?? 'N/A' : 'N/A';
+              final name = student != null
+                  ? student['username'] ?? 'Unknown'
+                  : 'Unknown';
+              final grade = student != null
+                  ? student['gradeLevel'] ?? student['grade'] ?? 'N/A'
+                  : 'N/A';
               final progress = item['progress'] as double;
-              
+
               // Use backend avatar URL if available, else fallback to asset
               String imageUrl = 'assets/images/classes/student_image.png';
               final avatar = student?['avatar'];
               if (avatar != null) {
-                if (avatar is Map && avatar['url'] != null && avatar['url'].toString().isNotEmpty) {
+                if (avatar is Map &&
+                    avatar['url'] != null &&
+                    avatar['url'].toString().isNotEmpty) {
                   imageUrl = avatar['url'].toString();
                 } else if (avatar is String && avatar.isNotEmpty) {
                   imageUrl = avatar;
@@ -246,6 +265,3 @@ class AttendedStudentsScreen extends ConsumerWidget {
     );
   }
 }
-
-
-

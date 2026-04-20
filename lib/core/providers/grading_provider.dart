@@ -3,31 +3,40 @@ import 'package:opalmer_education/core/services/grading_service.dart';
 
 final gradingServiceProvider = Provider((ref) => GradingService());
 
-final teacherSessionsProvider = FutureProvider.family<List<dynamic>, String?>((ref, classId) async {
+final teacherSessionsProvider = FutureProvider.family<List<dynamic>, String?>((
+  ref,
+  classId,
+) async {
   final service = ref.watch(gradingServiceProvider);
   return service.getTeacherSessions(classId: classId);
 });
 
-final sessionDetailsProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, sessionId) async {
-  final service = ref.watch(gradingServiceProvider);
-  return service.getSessionDetails(sessionId);
-});
+final sessionDetailsProvider =
+    FutureProvider.family<Map<String, dynamic>, String>((ref, sessionId) async {
+      final service = ref.watch(gradingServiceProvider);
+      return service.getSessionDetails(sessionId);
+    });
 
-final sessionQuestionsProvider = FutureProvider.family<List<dynamic>, String>((ref, sessionId) async {
+final sessionQuestionsProvider = FutureProvider.family<List<dynamic>, String>((
+  ref,
+  sessionId,
+) async {
   final service = ref.watch(gradingServiceProvider);
   return service.getSessionQuestions(sessionId);
 });
 
-final sessionResultsProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, sessionId) async {
-  final service = ref.watch(gradingServiceProvider);
-  return service.getSessionResults(sessionId);
-});
+final attendedSubmittedStudentsProvider =
+    FutureProvider.family<Map<String, dynamic>, String>((ref, sessionId) async {
+      final service = ref.watch(gradingServiceProvider);
+      return service.getAttendedSubmittedStudents(sessionId);
+    });
 
 class GradingNotifier extends StateNotifier<AsyncValue<void>> {
   final GradingService _service;
   final Ref _ref;
 
-  GradingNotifier(this._service, this._ref) : super(const AsyncValue.data(null));
+  GradingNotifier(this._service, this._ref)
+    : super(const AsyncValue.data(null));
 
   Future<Map<String, dynamic>?> createAndSaveSession({
     required String classId,
@@ -44,7 +53,7 @@ class GradingNotifier extends StateNotifier<AsyncValue<void>> {
         title: title,
         time: time,
       );
-      
+
       final sessionId = session['_id'];
 
       // 2. Save questions
@@ -59,10 +68,10 @@ class GradingNotifier extends StateNotifier<AsyncValue<void>> {
       }
 
       state = const AsyncValue.data(null);
-      
+
       // Refresh the sessions list
       _ref.invalidate(teacherSessionsProvider);
-      
+
       return session;
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
@@ -81,6 +90,7 @@ class GradingNotifier extends StateNotifier<AsyncValue<void>> {
   }
 }
 
-final gradingActionProvider = StateNotifierProvider<GradingNotifier, AsyncValue<void>>((ref) {
-  return GradingNotifier(ref.watch(gradingServiceProvider), ref);
-});
+final gradingActionProvider =
+    StateNotifierProvider<GradingNotifier, AsyncValue<void>>((ref) {
+      return GradingNotifier(ref.watch(gradingServiceProvider), ref);
+    });

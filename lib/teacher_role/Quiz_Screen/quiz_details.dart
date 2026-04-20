@@ -8,10 +8,47 @@ class QuizDetailScreen extends ConsumerWidget {
   final String sessionId;
   const QuizDetailScreen({super.key, required this.sessionId});
 
+  int _toInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  int _extractAttendedCount(Map<String, dynamic> payload) {
+    final summary = payload['summary'];
+    if (summary is Map<String, dynamic>) {
+      final fromSummary = summary['attendedStudents'];
+      if (fromSummary != null) {
+        return _toInt(fromSummary);
+      }
+    }
+
+    final results = payload['results'];
+    if (results is List) {
+      return results.where((result) {
+        if (result is! Map) return false;
+        final status = result['status']?.toString().toLowerCase();
+        return status == 'completed';
+      }).length;
+    }
+
+    return 0;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sessionAsync = ref.watch(sessionDetailsProvider(sessionId));
     final questionsAsync = ref.watch(sessionQuestionsProvider(sessionId));
+    final attendedStudentsAsync = ref.watch(
+      attendedSubmittedStudentsProvider(sessionId),
+    );
+
+    final attendedLabel = attendedStudentsAsync.when(
+      data: (payload) =>
+          '(${_extractAttendedCount(payload)}) STUDENTS ATTENDED',
+      loading: () => '(0) STUDENTS ATTENDED',
+      error: (_, stackTrace) => '(0) STUDENTS ATTENDED',
+    );
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -85,13 +122,19 @@ class QuizDetailScreen extends ConsumerWidget {
           final questionCount = session['questionCount'] ?? 0;
           final time = session['time'] ?? 0;
           final status = session['status'] ?? 'Draft';
-          
+
           final classInfo = session['classId'];
-          final grade = (classInfo is Map) ? classInfo['grade'] ?? 'N/A' : 'N/A';
-          final subject = (classInfo is Map) ? classInfo['subject'] ?? 'N/A' : 'N/A';
-          
-          String imageUrl = "https://img.freepik.com/free-photo/view-planet-earth-from-space_23-2148705432.jpg";
-          if (session['image'] != null && session['image'].toString().isNotEmpty) {
+          final grade = (classInfo is Map)
+              ? classInfo['grade'] ?? 'N/A'
+              : 'N/A';
+          final subject = (classInfo is Map)
+              ? classInfo['subject'] ?? 'N/A'
+              : 'N/A';
+
+          String imageUrl =
+              "https://img.freepik.com/free-photo/view-planet-earth-from-space_23-2148705432.jpg";
+          if (session['image'] != null &&
+              session['image'].toString().isNotEmpty) {
             imageUrl = session['image'].toString();
           }
 
@@ -101,7 +144,13 @@ class QuizDetailScreen extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
                 children: [
                   // Summary Green Card
-                  _buildSummaryCard(title, questionCount, time, status, imageUrl),
+                  _buildSummaryCard(
+                    title,
+                    questionCount,
+                    time,
+                    status,
+                    imageUrl,
+                  ),
 
                   const SizedBox(height: 24),
                   _buildInfoRow("Grade :", grade.toString()),
@@ -135,7 +184,8 @@ class QuizDetailScreen extends ConsumerWidget {
                         );
                       },
                     ),
-                    loading: () => const Center(child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     error: (err, stack) {
                       // Check if it's a 404 (No questions found)
                       return Container(
@@ -146,15 +196,24 @@ class QuizDetailScreen extends ConsumerWidget {
                         ),
                         child: Column(
                           children: [
-                            Icon(Icons.quiz_outlined, size: 48, color: Colors.grey.shade300),
+                            Icon(
+                              Icons.quiz_outlined,
+                              size: 48,
+                              color: Colors.grey.shade300,
+                            ),
                             const SizedBox(height: 12),
                             Text(
                               "No questions found for this session.",
-                              style: TextStyle(color: Colors.grey.shade600, fontSize: 15),
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 15,
+                              ),
                             ),
                             const SizedBox(height: 16),
                             TextButton.icon(
-                              onPressed: () => ref.refresh(sessionQuestionsProvider(sessionId)),
+                              onPressed: () => ref.refresh(
+                                sessionQuestionsProvider(sessionId),
+                              ),
                               icon: const Icon(Icons.refresh),
                               label: const Text("Retry"),
                             ),
@@ -176,7 +235,8 @@ class QuizDetailScreen extends ConsumerWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => AttendedStudentsScreen(sessionId: sessionId),
+                        builder: (context) =>
+                            AttendedStudentsScreen(sessionId: sessionId),
                       ),
                     );
                   },
@@ -195,7 +255,7 @@ class QuizDetailScreen extends ConsumerWidget {
                     ),
                     alignment: Alignment.center,
                     child: Text(
-                      "(20) STUDENTS ATTENDED", // TODO: Get count from session meta
+                      attendedLabel,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -215,7 +275,13 @@ class QuizDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSummaryCard(String title, int questions, int time, String status, String imageUrl) {
+  Widget _buildSummaryCard(
+    String title,
+    int questions,
+    int time,
+    String status,
+    String imageUrl,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -395,4 +461,3 @@ class QuizDetailScreen extends ConsumerWidget {
     );
   }
 }
-
