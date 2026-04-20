@@ -134,10 +134,11 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                             return Column(
                               children: lessons.map((lesson) {
                                 return _buildLessonCard(
-                                  title: lesson['name'] ?? 'No Title',
-                                  description: lesson['description'] ?? 'No Description',
-                                  dueDate: lesson['date'] != null
-                                      ? "Date: ${lesson['date'].toString().split('T')[0]}"
+                                  lesson: lesson,
+                                  title: lesson['title'] ?? lesson['objective'] ?? 'No Title',
+                                  description: lesson['note'] ?? 'No Description',
+                                  dueDate: lesson['created_at'] != null
+                                      ? "Date: ${lesson['created_at'].toString().split('T')[0]}"
                                       : "Date: TBD",
                                   showOptions: true,
                                 );
@@ -163,6 +164,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
   }
 
   Widget _buildLessonCard({
+    required Map<String, dynamic> lesson,
     required String title,
     required String description,
     required String dueDate,
@@ -219,7 +221,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const LessonOverviewScreen(),
+                          builder: (_) => LessonOverviewScreen(lesson: lesson),
                         ),
                       );
                     },

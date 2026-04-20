@@ -66,9 +66,17 @@ final classStudentsProvider = FutureProvider.family<List<dynamic>, String>((ref,
 
 final classLessonsProvider = FutureProvider.family<List<dynamic>, String>((ref, classId) async {
   final apiClient = ref.read(apiClientProvider);
-  final response = await apiClient.get('/lessons/class/$classId');
+  final response = await apiClient.get('/lessons/teacher-lessons');
   if (response.statusCode == 200 && response.data['success'] == true) {
-    return response.data['data'];
+    final List<dynamic> allLessons = response.data['data'];
+    // Filter by classId since this screen is for a specific class
+    return allLessons.where((lesson) {
+      final cId = lesson['classId'];
+      if (cId is Map) {
+        return cId['_id'] == classId;
+      }
+      return cId == classId;
+    }).toList();
   }
   return [];
 });

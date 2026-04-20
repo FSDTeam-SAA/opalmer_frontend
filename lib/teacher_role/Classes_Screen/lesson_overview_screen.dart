@@ -1,10 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LessonOverviewScreen extends StatelessWidget {
-  const LessonOverviewScreen({super.key});
+  final Map<String, dynamic> lesson;
+  const LessonOverviewScreen({super.key, required this.lesson});
 
   @override
   Widget build(BuildContext context) {
+    final String title = lesson['title'] ?? lesson['objective'] ?? 'No Title';
+    final String note = lesson['note'] ?? 'No Description';
+    final String objective = lesson['objective'] ?? 'No Objective';
+    final String date = lesson['created_at'] != null
+        ? lesson['created_at'].toString().split('T')[0]
+        : "TBD";
+    final Map<String, dynamic>? document = lesson['document'];
+    final String? docUrl = document != null && document['url'].toString().isNotEmpty
+        ? document['url']
+        : null;
+
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
       body: SafeArea(
@@ -49,9 +62,9 @@ class LessonOverviewScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Topic
+                    // Title
                     const Text(
-                      "Topic",
+                      "Lesson Title",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -62,15 +75,17 @@ class LessonOverviewScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          "Photosynthesis",
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade600,
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade600,
+                            ),
                           ),
                         ),
                         Text(
-                          "16/06/2025",
+                          date,
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey.shade500,
@@ -80,62 +95,91 @@ class LessonOverviewScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
 
-                    // PDF Material Section
+                    // Objective
                     const Text(
-                      "PDF Material",
+                      "Objective",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF333333),
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.picture_as_pdf_outlined,
-                            color: Color(0xFF871DAD),
-                            size: 24,
-                          ),
-                          const SizedBox(width: 12),
-                          const Expanded(
-                            child: Text(
-                              "Photosynthesis PDF",
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Color(0xFF333333),
-                              ),
-                            ),
-                          ),
-                          Icon(
-                            Icons.download_outlined,
-                            color: const Color(0xFF871DAD),
-                            size: 24,
-                          ),
-                        ],
+                    const SizedBox(height: 8),
+                    Text(
+                      objective,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey.shade600,
                       ),
                     ),
                     const SizedBox(height: 24),
 
+                    // PDF Material Section
+                    if (docUrl != null) ...[
+                      const Text(
+                        "Document Material",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF333333),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      GestureDetector(
+                        onTap: () async {
+                          final Uri url = Uri.parse(docUrl);
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(url);
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.04),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.picture_as_pdf_outlined,
+                                color: Color(0xFF871DAD),
+                                size: 24,
+                              ),
+                              const SizedBox(width: 12),
+                              const Expanded(
+                                child: Text(
+                                  "View Material",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Color(0xFF333333),
+                                  ),
+                                ),
+                              ),
+                              Icon(
+                                Icons.open_in_new,
+                                color: const Color(0xFF871DAD),
+                                size: 24,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+
                     // Description Section
                     const Text(
-                      "Description",
+                      "Note / Description",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -143,37 +187,12 @@ class LessonOverviewScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    RichText(
-                      text: TextSpan(
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Color(0xFF333333),
-                          height: 1.5,
-                        ),
-                        children: [
-                          const TextSpan(
-                            text: "Workbook Task: ",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          TextSpan(
-                            text: "Complete page 42, Questions 1-5\n",
-                            style: TextStyle(color: Colors.grey.shade600),
-                          ),
-                          const TextSpan(
-                            text: "Questions to Think About:\n",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          TextSpan(
-                            text:
-                                "  • What is the main purpose of photosynthesis?\n"
-                                "  • Why is sunlight important?\n"
-                                "  • How do plants store energy?",
-                            style: TextStyle(
-                              color: Colors.grey.shade600,
-                              height: 1.8,
-                            ),
-                          ),
-                        ],
+                    Text(
+                      note,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey.shade600,
+                        height: 1.5,
                       ),
                     ),
                   ],
