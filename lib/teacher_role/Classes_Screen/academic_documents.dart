@@ -1,17 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../core/providers/teacher_provider.dart';
 import 'add_document.dart';
 
-class AcademicDocumentsScreen extends StatefulWidget {
-  const AcademicDocumentsScreen({Key? key}) : super(key: key);
+class AcademicDocumentsScreen extends ConsumerStatefulWidget {
+  final String studentId;
+  const AcademicDocumentsScreen({Key? key, required this.studentId})
+      : super(key: key);
 
   @override
-  State<AcademicDocumentsScreen> createState() =>
+  ConsumerState<AcademicDocumentsScreen> createState() =>
       _AcademicDocumentsScreenState();
 }
 
-class _AcademicDocumentsScreenState extends State<AcademicDocumentsScreen> {
+class _AcademicDocumentsScreenState
+    extends ConsumerState<AcademicDocumentsScreen> {
   @override
   Widget build(BuildContext context) {
+    final documentsAsync =
+        ref.watch(studentAcademicDocumentsProvider(widget.studentId));
+
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
       appBar: AppBar(
@@ -50,14 +59,22 @@ class _AcademicDocumentsScreenState extends State<AcademicDocumentsScreen> {
           child: Column(
             children: [
               Expanded(
-                child: ListView(
-                  children: [
-                    _buildDocumentCard(),
-                    _buildDocumentCard(),
-                    _buildDocumentCard(),
-                    _buildDocumentCard(),
-                    _buildDocumentCard(),
-                  ],
+                child: documentsAsync.when(
+                  data: (docs) {
+                    if (docs.isEmpty) {
+                      return const Center(child: Text("No documents found."));
+                    }
+                    return ListView.builder(
+                      itemCount: docs.length,
+                      itemBuilder: (context, index) {
+                        final doc = docs[index];
+                        return _buildDocumentCard(doc);
+                      },
+                    );
+                  },
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (err, stack) => Center(child: Text("Error: $err")),
                 ),
               ),
               const SizedBox(height: 16),
@@ -68,7 +85,9 @@ class _AcademicDocumentsScreenState extends State<AcademicDocumentsScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const AddDocumentScreen(),
+                        builder: (_) => AddDocumentScreen(
+                          studentId: widget.studentId,
+                        ),
                       ),
                     );
                   },
@@ -97,7 +116,20 @@ class _AcademicDocumentsScreenState extends State<AcademicDocumentsScreen> {
     );
   }
 
-  Widget _buildDocumentCard() {
+  Widget _buildDocumentCard(dynamic doc) {
+    String docUrl = "";
+    if (doc['document'] != null && doc['document']['url'] != null) {
+      docUrl = doc['document']['url'];
+    }
+    // Extract file name from URL if possible, or just default
+    String fileName = "Academic Notes PDF";
+    if (docUrl.isNotEmpty) {
+      final parts = docUrl.split('/');
+      if (parts.isNotEmpty) {
+        fileName = parts.last;
+      }
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -128,37 +160,105 @@ class _AcademicDocumentsScreenState extends State<AcademicDocumentsScreen> {
             ),
           ),
           const SizedBox(width: 14),
-          const Expanded(
+          Expanded(
             child: Text(
-              "Academic Notes PDF",
-              style: TextStyle(fontSize: 15, color: Color(0xFF333333)),
+              fileName,
+              style: const TextStyle(fontSize: 15, color: Color(0xFF333333)),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          Container(
-            width: 34,
-            height: 34,
-            decoration: const BoxDecoration(
-              color: Color(0xFF871DAD),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.file_download_outlined,
-              color: Colors.white,
-              size: 18,
+          GestureDetector(
+            onTap: () async {
+              if (docUrl.isNotEmpty) {
+                final uri = Uri.parse(docUrl);
+                try {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Could not open file")),
+                    );
+                  }
+                }
+              }
+            },
+            child: Container(
+              width: 34,
+              height: 34,
+              decoration: const BoxDecoration(
+                color: Color(0xFF871DAD),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.file_download_outlined,
+                color: Colors.white,
+                size: 18,
+              ),
             ),
           ),
           const SizedBox(width: 10),
-          Container(
-            width: 34,
-            height: 34,
-            decoration: const BoxDecoration(
-              color: Color(0xFFEF4444),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.delete_outline,
-              color: Colors.white,
-              size: 18,
+          GestureDetector(
+            onTap: () async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text("Delete Document"),
+                  content:
+                      const Text("Are you sure you want to delete this document?"),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text("Cancel"),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text("Delete"),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirm == true) {
+                final success = await ref.read(
+                  deleteAcademicDocumentProvider(doc['_id']).future,
+                );
+                if (success) {
+                  ref.invalidate(
+                    studentAcademicDocumentsProvider(widget.studentId),
+                  );
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Document deleted successfully"),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                } else {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Failed to delete document"),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              }
+            },
+            child: Container(
+              width: 34,
+              height: 34,
+              decoration: const BoxDecoration(
+                color: Color(0xFFEF4444),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.delete_outline,
+                color: Colors.white,
+                size: 18,
+              ),
             ),
           ),
         ],
