@@ -33,6 +33,9 @@ class ApiConstants {
   // Behavior
   static const String studentBehaviors = '/behavior/student-behaviors';
 
+  // Grading
+  static const String childGradingProgress = '/grading/child-progress';
+
   // Notifications
   static const String notifications = '/notifications';
   static const String notificationsReadAll = '/notifications/read';

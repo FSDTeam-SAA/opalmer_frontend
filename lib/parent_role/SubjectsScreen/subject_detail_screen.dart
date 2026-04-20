@@ -230,8 +230,11 @@ class SubjectDetailScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          GradingProgressScreen(subjectName: subject.name),
+                      builder: (context) => GradingProgressScreen(
+                        subjectName: subject.name,
+                        childId: studentId,
+                        classId: subject.id,
+                      ),
                     ),
                   );
                 },
