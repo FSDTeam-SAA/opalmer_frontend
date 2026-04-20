@@ -1,15 +1,76 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/providers/grading_provider.dart';
+import 'package:opalmer_education/core/providers/teacher_provider.dart';
 
-class CreateQuizScreen extends StatefulWidget {
+class CreateQuizScreen extends ConsumerStatefulWidget {
   const CreateQuizScreen({Key? key}) : super(key: key);
 
   @override
-  State<CreateQuizScreen> createState() => _CreateQuizScreenState();
+  ConsumerState<CreateQuizScreen> createState() => _CreateQuizScreenState();
 }
 
-class _CreateQuizScreenState extends State<CreateQuizScreen> {
+class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
+  final TextEditingController _timeController = TextEditingController();
+  final TextEditingController _promptController = TextEditingController();
+  final TextEditingController _titleController = TextEditingController();
+  List<dynamic> _generatedQuestions = [];
+  bool _isGenerating = false;
+  String? _selectedClassId;
+
+  Future<void> _generateQuestions() async {
+    if (_promptController.text.isEmpty) return;
+
+    setState(() => _isGenerating = true);
+    final questions = await ref.read(gradingActionProvider.notifier).generateAIQuestions(_promptController.text);
+    setState(() {
+      if (questions != null) {
+        _generatedQuestions = questions;
+      }
+      _isGenerating = false;
+    });
+  }
+
+  Future<void> _handleSave({bool publish = false}) async {
+    if (_selectedClassId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please select a class")));
+      return;
+    }
+    if (_titleController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please enter a quiz title")));
+      return;
+    }
+    if (_generatedQuestions.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("No questions generated")));
+      return;
+    }
+
+    final questionsPayload = _generatedQuestions.map((q) => {
+      'question': q['question'],
+      'options': List<String>.from(q['options']),
+      'answer': q['answer'],
+    }).toList();
+
+    final success = await ref.read(gradingActionProvider.notifier).createAndSaveSession(
+      classId: _selectedClassId!,
+      title: _titleController.text,
+      questions: questionsPayload,
+      time: int.tryParse(_timeController.text),
+      publish: publish,
+    );
+
+    if (success != null && mounted) {
+      Navigator.pop(context);
+    } else if (mounted) {
+       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Failed to save quiz")));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final classesAsync = ref.watch(teacherClassesProvider);
+    final gradingState = ref.watch(gradingActionProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -51,20 +112,55 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
           ListView(
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 100),
             children: [
-              _buildInputLabel("Quiz Time"),
+              _buildInputLabel("Select Class"),
               const SizedBox(height: 8),
-              _buildTextField(hint: "00 mint"),
+              classesAsync.when(
+                data: (classes) => Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade200, width: 1.5),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _selectedClassId,
+                      hint: const Text("Select Class"),
+                      isExpanded: true,
+                      onChanged: (value) => setState(() => _selectedClassId = value),
+                      items: classes.map((cls) => DropdownMenuItem(
+                        value: cls.id,
+                        child: Text("${cls.subject} - ${cls.grade}"),
+                      )).toList(),
+                    ),
+                  ),
+                ),
+                loading: () => const Center(child: LinearProgressIndicator()),
+                error: (_, __) => const Text("Error loading classes"),
+              ),
+
+              const SizedBox(height: 16),
+              _buildInputLabel("Quiz Title"),
+              const SizedBox(height: 8),
+              _buildTextField(hint: "Enter Title", controller: _titleController),
+
+              const SizedBox(height: 16),
+              _buildInputLabel("Quiz Time (minutes)"),
+              const SizedBox(height: 8),
+              _buildTextField(hint: "00 mint", controller: _timeController, keyboardType: TextInputType.number),
 
               const SizedBox(height: 24),
               _buildInputLabel("Ai Prompt"),
               const SizedBox(height: 8),
               _buildTextField(
-                hint: "Write",
-                suffixIcon: const Icon(
-                  Icons.auto_awesome,
-                  color: Color(0xFF871DAD),
-                  size: 20,
-                ),
+                hint: "Write a prompt to generate questions",
+                controller: _promptController,
+                suffixIcon: _isGenerating 
+                  ? const SizedBox(width: 20, height: 20, child: Padding(padding: EdgeInsets.all(10), child: CircularProgressIndicator(strokeWidth: 2)))
+                  : IconButton(
+                    icon: const Icon(Icons.auto_awesome, color: Color(0xFF871DAD), size: 20),
+                    onPressed: _generateQuestions,
+                  ),
               ),
 
               const SizedBox(height: 32),
@@ -78,31 +174,23 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
               ),
               const SizedBox(height: 16),
 
-              _buildQuestionTile(
-                number: 1,
-                question: "What is 1/2 as a decimal?",
-              ),
-              _buildQuestionTile(
-                number: 2,
-                question: "What is 0.75 as a fraction?",
-                initiallyExpanded: true,
-                options: ["3/4", "1/2", "2/5", "5/8"],
-                answer: "3/4",
-              ),
-              _buildQuestionTile(
-                number: 3,
-                question: "What is 7/10 as a decimal?",
-              ),
-              _buildQuestionTile(
-                number: 4,
-                question: "Convert 0.2 into a fraction.",
-              ),
-              _buildQuestionTile(
-                number: 5,
-                question: "Which decimal is equal to 3/4?",
-              ),
+              if (_generatedQuestions.isEmpty)
+                Center(child: Padding(padding: const EdgeInsets.all(20), child: Text("Enter a prompt and click the AI icon to generate questions", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey.shade500)))),
+
+              ...List.generate(_generatedQuestions.length, (index) {
+                final q = _generatedQuestions[index];
+                return _buildQuestionTile(
+                  number: index + 1,
+                  question: q['question'] ?? '',
+                  options: List<String>.from(q['options'] ?? []),
+                  answer: q['answer'] ?? '',
+                );
+              }),
             ],
           ),
+
+          if (gradingState.isLoading)
+             Container(color: Colors.black26, child: const Center(child: CircularProgressIndicator())),
 
           // Bottom Buttons
           Positioned(
@@ -113,7 +201,7 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => _handleSave(publish: false),
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(
                         color: Color(0xFF871DAD),
@@ -137,7 +225,7 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => _handleSave(publish: true),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF871DAD),
                       elevation: 0,
@@ -175,7 +263,7 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
     );
   }
 
-  Widget _buildTextField({required String hint, Widget? suffixIcon}) {
+  Widget _buildTextField({required String hint, TextEditingController? controller, TextInputType? keyboardType, Widget? suffixIcon}) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -183,6 +271,8 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
         border: Border.all(color: Colors.grey.shade200, width: 1.5),
       ),
       child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 15),
@@ -280,3 +370,4 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
     );
   }
 }
+
