@@ -1,14 +1,125 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:dio/dio.dart';
 import 'dart:ui' as ui;
 
-class AddDocumentScreen extends StatefulWidget {
-  const AddDocumentScreen({Key? key}) : super(key: key);
+import '../../core/providers/teacher_provider.dart';
+
+class AddDocumentScreen extends ConsumerStatefulWidget {
+  final String studentId;
+  const AddDocumentScreen({Key? key, required this.studentId}) : super(key: key);
 
   @override
-  State<AddDocumentScreen> createState() => _AddDocumentScreenState();
+  ConsumerState<AddDocumentScreen> createState() => _AddDocumentScreenState();
 }
 
-class _AddDocumentScreenState extends State<AddDocumentScreen> {
+class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
+  PlatformFile? _selectedFile;
+  bool _isLoading = false;
+
+  Future<void> _pickFile() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.any,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        setState(() {
+          _selectedFile = result.files.first;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error picking file: $e"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _uploadFile() async {
+    if (_selectedFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please select a file to upload."),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final apiClient = ref.read(apiClientProvider);
+      
+      final formData = FormData.fromMap({
+        "studentId": widget.studentId,
+        "title": _selectedFile!.name,
+        "document": await MultipartFile.fromFile(
+          _selectedFile!.path!,
+          filename: _selectedFile!.name,
+        ),
+      });
+
+      final response = await apiClient.post(
+        '/academicDocument/create',
+        data: formData,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        ref.invalidate(studentAcademicDocumentsProvider(widget.studentId));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Document uploaded successfully"),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context);
+        }
+      } else {
+        throw Exception(response.data?['message'] ?? 'Failed to upload document');
+      }
+    } catch (e) {
+      String errorMessage = "Failed to upload document";
+      if (e is DioException) {
+        if (e.response != null && e.response!.data != null) {
+          if (e.response!.data is Map) {
+            errorMessage = e.response!.data['message'] ?? errorMessage;
+          } else {
+            errorMessage = e.response!.data.toString();
+          }
+        } else {
+          errorMessage = e.message ?? errorMessage;
+        }
+      } else {
+        errorMessage = e.toString();
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error: $errorMessage"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,67 +167,69 @@ class _AddDocumentScreenState extends State<AddDocumentScreen> {
               const SizedBox(height: 24),
 
               // Dashed Upload Area
-              CustomPaint(
-                painter: DashedBorderPainter(
-                  color: const Color(0xFF871DAD),
-                  strokeWidth: 1.5,
-                  gap: 6.0,
-                ),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 40),
-                  child: Column(
-                    children: [
-                      const Icon(
-                        Icons.cloud_upload_outlined,
-                        size: 56,
-                        color: Color(0xFF871DAD),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        "Drag and drop to upload",
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade600,
+              GestureDetector(
+                onTap: _pickFile,
+                child: CustomPaint(
+                  painter: DashedBorderPainter(
+                    color: const Color(0xFF871DAD),
+                    strokeWidth: 1.5,
+                    gap: 6.0,
+                  ),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 40),
+                    child: Column(
+                      children: [
+                        const Icon(
+                          Icons.cloud_upload_outlined,
+                          size: 56,
+                          color: Color(0xFF871DAD),
                         ),
-                      ),
-                      const SizedBox(height: 20),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFF871DAD)),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Text(
-                          "UPLOAD PDF",
+                        const SizedBox(height: 16),
+                        Text(
+                          "Drag and drop to upload",
                           style: TextStyle(
-                            color: Color(0xFF871DAD),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                            fontSize: 13,
+                            color: Colors.grey.shade600,
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 20),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: const Color(0xFF871DAD)),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Text(
+                            "UPLOAD PDF",
+                            style: TextStyle(
+                              color: Color(0xFF871DAD),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
               const SizedBox(height: 32),
 
               // Uploaded files list
-              _buildUploadedFile("Academic Notes PDF"),
-              _buildUploadedFile("Academic Notes PDF"),
+              if (_selectedFile != null) ...[
+                _buildUploadedFile(_selectedFile!.name),
+              ],
 
               const Spacer(),
 
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Add Action
-                  },
+                  onPressed: _isLoading ? null : _uploadFile,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF871DAD),
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -125,14 +238,23 @@ class _AddDocumentScreenState extends State<AddDocumentScreen> {
                     ),
                     elevation: 0,
                   ),
-                  child: const Text(
-                    "ADD",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          "ADD",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                 ),
               ),
             ],
@@ -148,7 +270,7 @@ class _AddDocumentScreenState extends State<AddDocumentScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -160,24 +282,37 @@ class _AddDocumentScreenState extends State<AddDocumentScreen> {
       child: Row(
         children: [
           const Icon(
-            Icons.picture_as_pdf_outlined,
+            Icons.picture_as_pdf,
             color: Color(0xFF871DAD),
-            size: 20,
+            size: 24,
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
           Expanded(
             child: Text(
               fileName,
               style: const TextStyle(fontSize: 15, color: Color(0xFF333333)),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade200,
-              shape: BoxShape.circle,
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedFile = null;
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.close,
+                color: Colors.grey.shade600,
+                size: 16,
+              ),
             ),
-            child: const Icon(Icons.close, size: 14, color: Colors.black87),
           ),
         ],
       ),
@@ -192,46 +327,37 @@ class DashedBorderPainter extends CustomPainter {
 
   DashedBorderPainter({
     required this.color,
-    this.strokeWidth = 1.0,
-    this.gap = 5.0,
+    required this.strokeWidth,
+    required this.gap,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final Paint paint = Paint()
+    var paint = Paint()
       ..color = color
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke;
 
-    final path = Path()
-      ..addRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(0, 0, size.width, size.height),
-          const Radius.circular(8),
-        ),
-      );
+    var path = Path();
+    var rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    var rrect = RRect.fromRectAndRadius(rect, const Radius.circular(16));
+    path.addRRect(rrect);
 
-    Path dashPath = Path();
-    for (ui.PathMetric metric in path.computeMetrics()) {
+    ui.PathMetrics pathMetrics = path.computeMetrics();
+    for (ui.PathMetric pathMetric in pathMetrics) {
       double distance = 0.0;
-      bool draw = true;
-      while (distance < metric.length) {
-        double len = gap;
-        if (distance + len > metric.length) len = metric.length - distance;
-        if (draw) {
-          dashPath.addPath(
-            metric.extractPath(distance, distance + len),
-            Offset.zero,
-          );
-        }
-        distance += len;
-        draw = !draw;
+      while (distance < pathMetric.length) {
+        canvas.drawPath(
+          pathMetric.extractPath(distance, distance + gap),
+          paint,
+        );
+        distance += gap * 2;
       }
     }
-
-    canvas.drawPath(dashPath, paint);
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
+  }
 }

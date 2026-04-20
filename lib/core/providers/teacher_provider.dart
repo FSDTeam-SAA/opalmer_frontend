@@ -186,4 +186,27 @@ final deleteBehaviorProvider = FutureProvider.family<bool, String>((ref, behavio
   return response.statusCode == 200 && response.data['success'] == true;
 });
 
+final studentAcademicDocumentsProvider = FutureProvider.family<List<dynamic>, String>((ref, studentId) async {
+  final apiClient = ref.read(apiClientProvider);
+  final response = await apiClient.get('/academicDocument/teacher-documents');
+  if (response.statusCode == 200 && response.data['success'] == true) {
+    final List<dynamic> allDocs = response.data['data'] ?? [];
+    return allDocs.where((doc) {
+      final sId = doc['studentId'];
+      if (sId is Map) {
+        return sId['_id'] == studentId;
+      }
+      return sId == studentId;
+    }).toList();
+  }
+  return [];
+});
+
+final deleteAcademicDocumentProvider = FutureProvider.family<bool, String>((ref, docId) async {
+  final apiClient = ref.read(apiClientProvider);
+  final response = await apiClient.delete('/academicDocument/delete/$docId');
+  return response.statusCode == 200 && response.data['success'] == true;
+});
+
+
 

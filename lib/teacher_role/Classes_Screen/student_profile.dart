@@ -433,7 +433,7 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                const AcademicDocumentsScreen(),
+                                AcademicDocumentsScreen(studentId: studentId),
                           ),
                         );
                       },
