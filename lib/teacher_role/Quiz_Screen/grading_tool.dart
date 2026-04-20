@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/providers/grading_provider.dart';
 import 'package:opalmer_education/teacher_role/Quiz_Screen/quiz_details.dart';
 import 'package:opalmer_education/teacher_role/Quiz_Screen/create_quiz.dart';
 import 'package:opalmer_education/teacher_role/Classes_Screen/scan_document.dart';
 
-class GradingToolScreen extends StatefulWidget {
+class GradingToolScreen extends ConsumerStatefulWidget {
   const GradingToolScreen({super.key});
 
   @override
-  State<GradingToolScreen> createState() => _GradingToolScreenState();
+  ConsumerState<GradingToolScreen> createState() => _GradingToolScreenState();
 }
 
-class _GradingToolScreenState extends State<GradingToolScreen> {
+class _GradingToolScreenState extends ConsumerState<GradingToolScreen> {
   bool _isDraftTab = true;
 
   @override
   Widget build(BuildContext context) {
+    final sessionsAsync = ref.watch(teacherSessionsProvider(null));
+
     return Scaffold(
       backgroundColor: Colors.white,
       floatingActionButton: FloatingActionButton(
@@ -39,33 +43,69 @@ class _GradingToolScreenState extends State<GradingToolScreen> {
 
           // Grading List
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              itemCount: 10, // Mock data count
-              itemBuilder: (context, index) {
-                final isEven = index % 2 == 0;
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const QuizDetailScreen(),
-                      ),
-                    );
-                  },
-                  child: _buildGradingItem(
-                    title: isEven
-                        ? "Fractions and Decimals"
-                        : "Mean and Median",
-                    questions: "10 Questions",
-                    time: "5 min",
-                    status: _isDraftTab ? "Draft" : "Published",
-                    imageUrl: isEven
-                        ? "https://img.freepik.com/free-photo/view-planet-earth-from-space_23-2148705432.jpg"
-                        : "https://img.freepik.com/free-photo/businessman-working-laptop-office_23-2148817045.jpg",
+            child: sessionsAsync.when(
+              data: (sessions) {
+                final filteredSessions = sessions.where((s) {
+                  final status = s['status']?.toString().toLowerCase();
+                  return _isDraftTab
+                      ? status == 'draft'
+                      : status == 'published';
+                }).toList();
+
+                if (filteredSessions.isEmpty) {
+                  return Center(
+                    child: Text(
+                      _isDraftTab
+                          ? "No draft sessions found"
+                          : "No published sessions found",
+                      style: TextStyle(color: Colors.grey.shade500),
+                    ),
+                  );
+                }
+
+                return RefreshIndicator(
+                  onRefresh: () =>
+                      ref.refresh(teacherSessionsProvider(null).future),
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
+                    itemCount: filteredSessions.length,
+                    itemBuilder: (context, index) {
+                      final session = filteredSessions[index];
+                      String imageUrl =
+                          "https://img.freepik.com/free-photo/view-planet-earth-from-space_23-2148705432.jpg";
+                      if (session['image'] != null &&
+                          session['image'].toString().isNotEmpty) {
+                        imageUrl = session['image'].toString();
+                      }
+
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  QuizDetailScreen(sessionId: session['_id']),
+                            ),
+                          );
+                        },
+                        child: _buildGradingItem(
+                          title: session['title'] ?? 'Untitled',
+                          questions:
+                              "${session['questionCount'] ?? 0} Questions",
+                          time: "${session['time'] ?? 0} min",
+                          status: _isDraftTab ? "Draft" : "Published",
+                          imageUrl: imageUrl,
+                        ),
+                      );
+                    },
                   ),
                 );
               },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, stack) => Center(child: Text("Error: $err")),
             ),
           ),
         ],

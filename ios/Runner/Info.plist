@@ -2,86 +2,203 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>CFBundleDevelopmentRegion</key>
-	<string>$(DEVELOPMENT_LANGUAGE)</string>
-	<key>CFBundleDisplayName</key>
-	<string>Opalmer Education</string>
-	<key>CFBundleExecutable</key>
-	<string>$(EXECUTABLE_NAME)</string>
-	<key>CFBundleIdentifier</key>
-	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-	<key>CFBundleName</key>
-	<string>opalmer_education</string>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
-	<key>CFBundleShortVersionString</key>
-	<string>$(FLUTTER_BUILD_NAME)</string>
-	<key>CFBundleSignature</key>
-	<string>????</string>
-	<key>CFBundleVersion</key>
-	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>NSCameraUsageDescription</key>
-	<string>This app requires camera access to scan physical academic documents and take a profile picture.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app needs access to your photo library so you can choose a profile picture.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>This app saves downloaded lesson images to your photo library.</string>
-	<key>UIFileSharingEnabled</key>
-	<true/>
-	<key>LSSupportsOpeningDocumentsInPlace</key>
-	<true/>
-	<key>UIApplicationSceneManifest</key>
-	<dict>
-		<key>UIApplicationSupportsMultipleScenes</key>
-		<false/>
-		<key>UISceneConfigurations</key>
-		<dict>
-			<key>UIWindowSceneSessionRoleApplication</key>
-			<array>
-				<dict>
-					<key>UISceneClassName</key>
-					<string>UIWindowScene</string>
-					<key>UISceneConfigurationName</key>
-					<string>flutter</string>
-					<key>UISceneDelegateClassName</key>
-					<string>FlutterSceneDelegate</string>
-					<key>UISceneStoryboardFile</key>
-					<string>Main</string>
-				</dict>
-			</array>
-		</dict>
-	</dict>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
-	<key>UIMainStoryboardFile</key>
-	<string>Main</string>
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-		<key>NSAllowsLocalNetworking</key>
-		<true/>
-	</dict>
+
+    <!-- ── Performance ── -->
+    <key>CADisableMinimumFrameDurationOnPhone</key>
+    <true/>
+
+    <!-- ── Bundle Info ── -->
+    <key>CFBundleDevelopmentRegion</key>
+    <string>$(DEVELOPMENT_LANGUAGE)</string>
+    <key>CFBundleDisplayName</key>
+    <string>Opalmer Education</string>
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+    <key>CFBundleIdentifier</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>opalmer_education</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>$(FLUTTER_BUILD_NAME)</string>
+    <key>CFBundleSignature</key>
+    <string>????</string>
+    <key>CFBundleVersion</key>
+    <string>$(FLUTTER_BUILD_NUMBER)</string>
+    <key>LSRequiresIPhoneOS</key>
+    <true/>
+
+    <!-- ── Privacy Permissions ── -->
+
+    <!-- Camera -->
+    <key>NSCameraUsageDescription</key>
+    <string>This app uses the camera to scan documents and capture images for lessons.</string>
+
+    <!-- Photo Library — read -->
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>This app needs access to your photo library so you can select images and documents for lessons.</string>
+
+    <!-- Photo Library — write/save -->
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>This app saves lesson images and downloaded files to your photo library.</string>
+
+    <!-- Microphone (needed if you ever record audio) -->
+    <key>NSMicrophoneUsageDescription</key>
+    <string>This app may use the microphone to record audio for lessons.</string>
+
+    <!-- Documents / Files app access -->
+    <key>NSDocumentsFolderUsageDescription</key>
+    <string>This app needs access to your documents folder so you can upload PDF and other files for lessons.</string>
+
+    <!-- iCloud Drive / Downloads folder access -->
+    <key>NSDownloadsFolderUsageDescription</key>
+    <string>This app needs access to your Downloads folder to let you upload files for lessons.</string>
+
+    <!-- Desktop folder (macOS Catalyst, harmless on iOS) -->
+    <key>NSDesktopFolderUsageDescription</key>
+    <string>This app needs access to your Desktop folder to let you upload files for lessons.</string>
+
+    <!-- Network -->
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+        <key>NSAllowsLocalNetworking</key>
+        <true/>
+    </dict>
+
+    <!-- ── File Sharing & Document Support ── -->
+    <!-- Allows users to see app files in the Files app -->
+    <key>UIFileSharingEnabled</key>
+    <true/>
+    <!-- Allows opening files in-place from the Files app -->
+    <key>LSSupportsOpeningDocumentsInPlace</key>
+    <true/>
+
+    <!-- Declare supported file types this app can open -->
+    <key>CFBundleDocumentTypes</key>
+    <array>
+        <!-- PDF -->
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>PDF Document</string>
+            <key>CFBundleTypeRole</key>
+            <string>Viewer</string>
+            <key>LSHandlerRank</key>
+            <string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>com.adobe.pdf</string>
+            </array>
+        </dict>
+        <!-- Images -->
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Image</string>
+            <key>CFBundleTypeRole</key>
+            <string>Viewer</string>
+            <key>LSHandlerRank</key>
+            <string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>public.image</string>
+                <string>public.jpeg</string>
+                <string>public.png</string>
+                <string>public.heic</string>
+            </array>
+        </dict>
+        <!-- Audio -->
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Audio File</string>
+            <key>CFBundleTypeRole</key>
+            <string>Viewer</string>
+            <key>LSHandlerRank</key>
+            <string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>public.audio</string>
+                <string>public.mp3</string>
+                <string>com.apple.m4a-audio</string>
+            </array>
+        </dict>
+        <!-- Video -->
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Video File</string>
+            <key>CFBundleTypeRole</key>
+            <string>Viewer</string>
+            <key>LSHandlerRank</key>
+            <string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>public.movie</string>
+                <string>public.mpeg-4</string>
+                <string>com.apple.quicktime-movie</string>
+            </array>
+        </dict>
+        <!-- Generic / Any -->
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>All Files</string>
+            <key>CFBundleTypeRole</key>
+            <string>Viewer</string>
+            <key>LSHandlerRank</key>
+            <string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>public.data</string>
+                <string>public.content</string>
+            </array>
+        </dict>
+    </array>
+
+    <!-- ── Scenes & Orientation ── -->
+    <key>UIApplicationSceneManifest</key>
+    <dict>
+        <key>UIApplicationSupportsMultipleScenes</key>
+        <false/>
+        <key>UISceneConfigurations</key>
+        <dict>
+            <key>UIWindowSceneSessionRoleApplication</key>
+            <array>
+                <dict>
+                    <key>UISceneClassName</key>
+                    <string>UIWindowScene</string>
+                    <key>UISceneConfigurationName</key>
+                    <string>flutter</string>
+                    <key>UISceneDelegateClassName</key>
+                    <string>FlutterSceneDelegate</string>
+                    <key>UISceneStoryboardFile</key>
+                    <string>Main</string>
+                </dict>
+            </array>
+        </dict>
+    </dict>
+
+    <key>UIApplicationSupportsIndirectInputEvents</key>
+    <true/>
+    <key>UILaunchStoryboardName</key>
+    <string>LaunchScreen</string>
+    <key>UIMainStoryboardFile</key>
+    <string>Main</string>
+
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+    <key>UISupportedInterfaceOrientations~ipad</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationPortraitUpsideDown</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+
 </dict>
 </plist>

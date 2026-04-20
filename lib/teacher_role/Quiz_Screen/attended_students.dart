@@ -1,11 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/providers/grading_provider.dart';
 import 'package:opalmer_education/teacher_role/Quiz_Screen/student_detail.dart';
 
-class AttendedStudentsScreen extends StatelessWidget {
-  const AttendedStudentsScreen({super.key});
+class AttendedStudentsScreen extends ConsumerWidget {
+  final String sessionId;
+  const AttendedStudentsScreen({super.key, required this.sessionId});
+
+  num _toNum(dynamic value) {
+    if (value is num) return value;
+    return num.tryParse(value?.toString() ?? '') ?? 0;
+  }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final resultsAsync = ref.watch(
+      attendedSubmittedStudentsProvider(sessionId),
+    );
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -42,36 +54,92 @@ class AttendedStudentsScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        itemCount: 10, // Mock student count
-        itemBuilder: (context, index) {
-          // Cycle through colors: Green, Orange, Blue
-          final colors = [
-            const Color(0xFF4DB68D),
-            const Color(0xFFFFCC33),
-            const Color(0xFF4FA0F3),
-          ];
-          final sideColor = colors[index % colors.length];
+      body: resultsAsync.when(
+        data: (data) {
+          final List<dynamic> attended = data['results'] ?? [];
+          final List<dynamic> notAttended = data['notAttendedStudents'] ?? [];
 
-          return GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const StudentDetailScreen(),
+          // Merge both lists into a single normalized list
+          final List<Map<String, dynamic>> allStudents = [
+            ...attended.map(
+              (r) => {
+                'student': r['studentId'],
+                'progress': _toNum(r['totalQuestions']) > 0
+                    ? (_toNum(r['score']) / _toNum(r['totalQuestions']))
+                          .clamp(0, 1)
+                          .toDouble()
+                    : 0.0,
+                'isAttended': true,
+              },
+            ),
+            ...notAttended.map(
+              (s) => {'student': s, 'progress': 0.0, 'isAttended': false},
+            ),
+          ];
+
+          if (allStudents.isEmpty) {
+            return const Center(
+              child: Text("No students found for this class"),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            itemCount: allStudents.length,
+            itemBuilder: (context, index) {
+              final item = allStudents[index];
+              final student = item['student'];
+              final name = student != null
+                  ? student['username'] ?? 'Unknown'
+                  : 'Unknown';
+              final grade = student != null
+                  ? student['gradeLevel'] ?? student['grade'] ?? 'N/A'
+                  : 'N/A';
+              final progress = item['progress'] as double;
+
+              // Use backend avatar URL if available, else fallback to asset
+              String imageUrl = 'assets/images/classes/student_image.png';
+              final avatar = student?['avatar'];
+              if (avatar != null) {
+                if (avatar is Map &&
+                    avatar['url'] != null &&
+                    avatar['url'].toString().isNotEmpty) {
+                  imageUrl = avatar['url'].toString();
+                } else if (avatar is String && avatar.isNotEmpty) {
+                  imageUrl = avatar;
+                }
+              }
+
+              // Cycle through colors: Green, Orange, Blue
+              final colors = [
+                const Color(0xFF4DB68D),
+                const Color(0xFFFFCC33),
+                const Color(0xFF4FA0F3),
+              ];
+              final sideColor = colors[index % colors.length];
+
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const StudentDetailScreen(),
+                    ),
+                  );
+                },
+                child: _buildStudentCard(
+                  name: name,
+                  details: "Grade $grade",
+                  progress: progress,
+                  sideColor: sideColor,
+                  imageUrl: imageUrl,
                 ),
               );
             },
-            child: _buildStudentCard(
-              name: "Mia Johnson",
-              details: "Grade 6 - Age 12",
-              progress: 0.93,
-              sideColor: sideColor,
-              imageUrl: "https://i.pravatar.cc/150?u=student_${index}",
-            ),
           );
         },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text("Error: $err")),
       ),
     );
   }
@@ -120,7 +188,9 @@ class AttendedStudentsScreen extends StatelessWidget {
                       children: [
                         CircleAvatar(
                           radius: 28,
-                          backgroundImage: NetworkImage(imageUrl),
+                          backgroundImage: imageUrl.startsWith('http')
+                              ? NetworkImage(imageUrl) as ImageProvider
+                              : AssetImage(imageUrl),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
