@@ -153,6 +153,23 @@ class ChatNotifier extends StateNotifier<ChatState> {
     }
   }
 
+  Future<ChatSessionModel?> getOrCreateDirectRoom(String otherUserId) async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final room = await _apiService.createRoom([otherUserId]);
+      if (room != null) {
+        addRoom(room);
+        state = state.copyWith(isLoading: false);
+        return room;
+      }
+      state = state.copyWith(isLoading: false);
+      return null;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return null;
+    }
+  }
+
   @override
   void dispose() {
     _messageSubscription?.cancel();

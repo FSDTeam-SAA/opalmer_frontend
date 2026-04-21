@@ -70,7 +70,7 @@ class ApiConstants {
   // Chat Endpoints
   static const String rooms = '/rooms';
   static const String messages = '/message';
-  static String roomMessages(String roomId) => '/message/room/$roomId';
+  static String roomMessages(String roomId) => '/message/$roomId';
   static String get myRooms => '/rooms/my-rooms';
 
   // Call Logs

@@ -10,6 +10,9 @@ import 'package:opalmer_education/student_role/Subjects/student_academic_notes_s
 import 'package:opalmer_education/student_role/Subjects/student_grading_progress_screen.dart';
 import 'package:opalmer_education/core/providers/student_provider.dart';
 import 'package:opalmer_education/chat/providers/chat_provider.dart';
+import 'package:opalmer_education/chat/screens/chat_screen.dart';
+import 'package:opalmer_education/chat/models/chat_role.dart';
+import 'package:opalmer_education/chat/screens/call.dart';
 
 class SubjectDetailScreen extends ConsumerStatefulWidget {
   final String subjectName;
@@ -241,20 +244,42 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
           ),
           Row(
             children: [
-              _buildCircleActionIcon(Icons.chat_bubble_rounded, () {
-                if (teacherName != null) {
+              _buildCircleActionIcon(Icons.chat_bubble_rounded, () async {
+                final teacherId = widget.studentClass?.teacherId ?? widget.lesson?.teacherId;
+                if (teacherId != null) {
+                  final room = await ref.read(chatNotifierProvider.notifier).getOrCreateDirectRoom(teacherId);
+                  if (room != null && mounted) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChatScreen(
+                          session: room,
+                          role: ChatRole.student,
+                        ),
+                      ),
+                    );
+                  } else if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Failed to initialize chat session")),
+                    );
+                  }
+                } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Chat integration coming soon..."),
-                    ),
+                    const SnackBar(content: Text("Teacher information unavailable")),
                   );
                 }
               }),
-              const SizedBox(width: 8),
-              _buildCircleActionIcon(Icons.call_rounded, () {
+              const SizedBox(width: 12),
+              _buildCircleActionIcon(Icons.phone_outlined, () {
                 if (teacherName != null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Calling teacher...")),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CallScreen(
+                        name: teacherName,
+                        imageUrl: teacherAvatar ?? "",
+                      ),
+                    ),
                   );
                 }
               }),

@@ -66,6 +66,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget build(BuildContext context) {
     final messages = ref.watch(chatMessagesProvider(widget.session.id));
     final currentUser = ref.watch(authStateProvider);
+    final chatState = ref.watch(chatNotifierProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -165,21 +166,37 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       body: Column(
         children: [
           Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              itemCount: messages.length,
-              itemBuilder: (context, index) {
-                final message = messages[index];
-                final isMe = message.senderId == currentUser?.id;
-                return _buildMessage(
-                  text: message.text,
-                  time: "${message.timestamp.hour}:${message.timestamp.minute.toString().padLeft(2, '0')}",
-                  isMe: isMe,
-                  status: message.deliveryStatus,
-                );
-              },
-            ),
+            child: chatState.isLoading && messages.isEmpty
+                ? const Center(child: CircularProgressIndicator())
+                : chatState.error != null && messages.isEmpty
+                    ? Center(child: Text('Error: ${chatState.error}', style: const TextStyle(color: Colors.red)))
+                    : messages.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey.shade300),
+                                const SizedBox(height: 16),
+                                Text('No messages yet', style: TextStyle(color: Colors.grey.shade400)),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            controller: _scrollController,
+                            reverse: true,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                            itemCount: messages.length,
+                            itemBuilder: (context, index) {
+                              final message = messages[messages.length - 1 - index];
+                              final isMe = message.senderId == currentUser?.id;
+                              return _buildMessage(
+                                text: message.text,
+                                time: "${message.timestamp.hour}:${message.timestamp.minute.toString().padLeft(2, '0')}",
+                                isMe: isMe,
+                                status: message.deliveryStatus,
+                              );
+                            },
+                          ),
           ),
           // Input Bar
           _buildInputBar(),

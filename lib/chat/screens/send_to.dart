@@ -188,25 +188,19 @@ class _SendToScreenState extends ConsumerState<SendToScreen> {
           children: [
             Stack(
               children: [
-                if (avatarUrl != null && avatarUrl.isNotEmpty)
+                if (avatarUrl != null &&
+                    avatarUrl.isNotEmpty &&
+                    !avatarUrl.toLowerCase().endsWith('.pdf'))
                   CircleAvatar(
                     radius: 28,
+                    backgroundColor: Colors.grey.shade200,
                     backgroundImage: NetworkImage(avatarUrl),
+                    onBackgroundImageError: (_, __) {
+                      // Fallback handled by the "else" block or stacked Icon
+                    },
                   )
                 else
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF871DAD).withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.person,
-                      color: Color(0xFF871DAD),
-                      size: 28,
-                    ),
-                  ),
+                  _buildPlaceholderAvatar(),
                 if (isSelected)
                   Positioned(
                     right: 0,
@@ -238,21 +232,37 @@ class _SendToScreenState extends ConsumerState<SendToScreen> {
                       color: Color(0xFF222222),
                     ),
                   ),
-                  if (contact['role'] != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      contact['role'].toString().toUpperCase(),
-                      style: TextStyle(
-                        color: Colors.grey.shade500,
-                        fontSize: 12,
-                      ),
+                  const SizedBox(height: 4),
+                  Text(
+                    (contact['type'] ?? contact['role'] ?? 'USER')
+                        .toString()
+                        .toUpperCase(),
+                    style: TextStyle(
+                      color: Colors.grey.shade500,
+                      fontSize: 12,
                     ),
-                  ],
+                  ),
                 ],
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholderAvatar() {
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        color: const Color(0xFF871DAD).withValues(alpha: 0.1),
+        shape: BoxShape.circle,
+      ),
+      child: const Icon(
+        Icons.person,
+        color: Color(0xFF871DAD),
+        size: 28,
       ),
     );
   }
