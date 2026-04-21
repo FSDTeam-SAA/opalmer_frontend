@@ -24,7 +24,8 @@ class SubjectDetailScreen extends ConsumerStatefulWidget {
   }) : super(key: key);
 
   @override
-  ConsumerState<SubjectDetailScreen> createState() => _SubjectDetailScreenState();
+  ConsumerState<SubjectDetailScreen> createState() =>
+      _SubjectDetailScreenState();
 }
 
 class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
@@ -74,7 +75,6 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
     );
   }
 
-
   Widget _buildStatCards(
     AsyncValue<List<AttendanceRecord>> attendanceAsync,
     AsyncValue<List<QuizResultModel>> quizResultsAsync,
@@ -88,14 +88,18 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
 
     attendanceAsync.whenData((records) {
       if (records.isNotEmpty) {
-        final presentCount = records.where((r) => r.status.toLowerCase() == "present").length;
+        final presentCount = records
+            .where((r) => r.status.toLowerCase() == "present")
+            .length;
         attendanceVal = "${((presentCount / records.length) * 100).toInt()}%";
       }
     });
 
     quizResultsAsync.whenData((results) {
       if (results.isNotEmpty) {
-        final avg = results.fold<double>(0, (sum, res) => sum + res.percentage) / results.length;
+        final avg =
+            results.fold<double>(0, (sum, res) => sum + res.percentage) /
+            results.length;
         progressVal = "${(avg * 100).toInt()}%";
       }
     });
@@ -178,8 +182,10 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
   }
 
   Widget _buildTeacherProfile() {
-    final teacherName = widget.studentClass?.teacherName ?? widget.lesson?.teacher?.username;
-    final teacherAvatar = widget.studentClass?.teacherAvatar ?? widget.lesson?.teacher?.avatar;
+    final teacherName =
+        widget.studentClass?.teacherName ?? widget.lesson?.teacher?.username;
+    final teacherAvatar =
+        widget.studentClass?.teacherAvatar ?? widget.lesson?.teacher?.avatar;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -193,7 +199,10 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
           Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.primaryMid.withValues(alpha: 0.2), width: 2),
+              border: Border.all(
+                color: AppColors.primaryMid.withValues(alpha: 0.2),
+                width: 2,
+              ),
             ),
             child: CircleAvatar(
               radius: 26,
@@ -206,32 +215,6 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
                   : null,
             ),
           ),
-<<<<<<< HEAD
-        ),
-        GestureDetector(
-          onTap: () async {
-            if (teacherName != null) {
-              // Usually we'd fetch or create a room here. 
-              // For now, let's use a dummy session or better, navigate to ChatDashboard 
-              // or implement a "start chat with user" logic.
-              final chatApi = ref.read(chatNotifierProvider.notifier);
-              // Simplified: just show message for now or implement direct navigation if session known
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Opening chat with teacher...")),
-              );
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("No teacher assigned to this class")),
-              );
-            }
-          },
-          child: _buildCircleActionIcon(Icons.chat_bubble_outline_rounded),
-        ),
-        const SizedBox(width: 12),
-        GestureDetector(
-          onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Calling ${teacherName ?? 'Teacher'}...")),
-=======
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -255,25 +238,26 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
                 ),
               ],
             ),
->>>>>>> fbbab4edb15c625e884ac34b98a65a4bb1773062
           ),
           Row(
             children: [
               _buildCircleActionIcon(Icons.chat_bubble_rounded, () {
                 if (teacherName != null) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ChatScreen(
-                        name: teacherName,
-                        imageUrl: teacherAvatar ?? '',
-                      ),
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Chat integration coming soon..."),
                     ),
                   );
                 }
               }),
               const SizedBox(width: 8),
-              _buildCircleActionIcon(Icons.call_rounded, () {}),
+              _buildCircleActionIcon(Icons.call_rounded, () {
+                if (teacherName != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Calling teacher...")),
+                  );
+                }
+              }),
             ],
           ),
         ],
@@ -302,7 +286,9 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
     );
   }
 
-  Widget _buildProgressSection(AsyncValue<List<QuizResultModel>> quizResultsAsync) {
+  Widget _buildProgressSection(
+    AsyncValue<List<QuizResultModel>> quizResultsAsync,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -320,11 +306,16 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
             GestureDetector(
               onTap: () {
                 setState(() {
-                  _filterPeriod = _filterPeriod == "Weekly" ? "Monthly" : "Weekly";
+                  _filterPeriod = _filterPeriod == "Weekly"
+                      ? "Monthly"
+                      : "Weekly";
                 });
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: AppColors.primaryMid),
@@ -372,7 +363,9 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
               final now = DateTime.now();
 
               // Check if we should use individual results or pre-calculated weekly progress
-              if (results.isEmpty && widget.studentClass?.weeklyProgress != null && widget.studentClass!.weeklyProgress.isNotEmpty) {
+              if (results.isEmpty &&
+                  widget.studentClass?.weeklyProgress != null &&
+                  widget.studentClass!.weeklyProgress.isNotEmpty) {
                 maxX = 6;
                 final wp = widget.studentClass!.weeklyProgress;
                 const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -380,9 +373,12 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
                   final label = days[i];
                   final progress = wp.firstWhere(
                     (p) => p.dayLabel.startsWith(label),
-                    orElse: () => WeeklyProgress(dayLabel: label, percentage: 0),
+                    orElse: () =>
+                        WeeklyProgress(dayLabel: label, percentage: 0),
                   );
-                  spots.add(FlSpot(i.toDouble(), (progress.percentage ?? 0).toDouble()));
+                  spots.add(
+                    FlSpot(i.toDouble(), (progress.percentage ?? 0).toDouble()),
+                  );
                 }
               } else if (_filterPeriod == "Weekly") {
                 maxX = 6;
@@ -392,14 +388,16 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
                     final diff = now.difference(res.createdAt!).inDays;
                     if (diff <= 7) {
                       int weekday = res.createdAt!.weekday % 7; // Sun=0
-                      dayScores.putIfAbsent(weekday, () => []).add(res.percentage * 100);
+                      dayScores
+                          .putIfAbsent(weekday, () => [])
+                          .add(res.percentage * 100);
                     }
                   }
                 }
                 for (int i = 0; i <= 6; i++) {
                   final scores = dayScores[i];
-                  double val = scores == null || scores.isEmpty 
-                      ? 0 
+                  double val = scores == null || scores.isEmpty
+                      ? 0
                       : scores.reduce((a, b) => a + b) / scores.length;
                   spots.add(FlSpot(i.toDouble(), val));
                 }
@@ -413,14 +411,16 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
                     if (diff <= 30) {
                       int weekIndex = (diff / 7).floor();
                       if (weekIndex > 4) weekIndex = 4;
-                      weekScores.putIfAbsent(4 - weekIndex, () => []).add(res.percentage * 100);
+                      weekScores
+                          .putIfAbsent(4 - weekIndex, () => [])
+                          .add(res.percentage * 100);
                     }
                   }
                 }
                 for (int i = 0; i <= 4; i++) {
                   final scores = weekScores[i];
-                  double val = scores == null || scores.isEmpty 
-                      ? 0 
+                  double val = scores == null || scores.isEmpty
+                      ? 0
                       : scores.reduce((a, b) => a + b) / scores.length;
                   spots.add(FlSpot(i.toDouble(), val));
                 }
@@ -438,21 +438,36 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
                     ),
                   ),
                   titlesData: FlTitlesData(
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
                         reservedSize: 30,
                         getTitlesWidget: (value, meta) {
                           if (_filterPeriod == "Weekly") {
-                            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                            const days = [
+                              'Sun',
+                              'Mon',
+                              'Tue',
+                              'Wed',
+                              'Thu',
+                              'Fri',
+                              'Sat',
+                            ];
                             if (value >= 0 && value < days.length) {
                               return Padding(
                                 padding: const EdgeInsets.only(top: 8.0),
                                 child: Text(
                                   days[value.toInt()],
-                                  style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
+                                  style: TextStyle(
+                                    color: Colors.grey.shade500,
+                                    fontSize: 11,
+                                  ),
                                 ),
                               );
                             }
@@ -463,7 +478,10 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
                                 padding: const EdgeInsets.only(top: 8.0),
                                 child: Text(
                                   weeks[value.toInt()],
-                                  style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
+                                  style: TextStyle(
+                                    color: Colors.grey.shade500,
+                                    fontSize: 11,
+                                  ),
                                 ),
                               );
                             }
@@ -480,7 +498,10 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
                           if (value % 20 == 0) {
                             return Text(
                               value.toInt().toString(),
-                              style: TextStyle(color: Colors.grey.shade400, fontSize: 11),
+                              style: TextStyle(
+                                color: Colors.grey.shade400,
+                                fontSize: 11,
+                              ),
                             );
                           }
                           return const SizedBox.shrink();
@@ -561,26 +582,53 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
 
   Widget _buildOptionsList(BuildContext context) {
     final options = [
-      {"title": "Home Work", "icon": Icons.home_work_rounded, "color": const Color(0xFF6C5CE7)},
-      {"title": "Attendance", "icon": Icons.calendar_month_rounded, "color": const Color(0xFF00B894)},
-      {"title": "Lessons", "icon": Icons.auto_stories_rounded, "color": const Color(0xFF0984E3)},
-      {"title": "Academic Notes", "icon": Icons.description_rounded, "color": const Color(0xFFE17055)},
-      {"title": "Grading Progress", "icon": Icons.analytics_rounded, "color": const Color(0xFFD63031)},
+      {
+        "title": "Home Work",
+        "icon": Icons.home_work_rounded,
+        "color": const Color(0xFF6C5CE7),
+      },
+      {
+        "title": "Attendance",
+        "icon": Icons.calendar_month_rounded,
+        "color": const Color(0xFF00B894),
+      },
+      {
+        "title": "Lessons",
+        "icon": Icons.auto_stories_rounded,
+        "color": const Color(0xFF0984E3),
+      },
+      {
+        "title": "Academic Notes",
+        "icon": Icons.description_rounded,
+        "color": const Color(0xFFE17055),
+      },
+      {
+        "title": "Grading Progress",
+        "icon": Icons.analytics_rounded,
+        "color": const Color(0xFFD63031),
+      },
     ];
 
     return Column(
       children: options
-          .map((opt) => _buildOptionTile(
-                context,
-                opt["title"] as String,
-                opt["icon"] as IconData,
-                opt["color"] as Color,
-              ))
+          .map(
+            (opt) => _buildOptionTile(
+              context,
+              opt["title"] as String,
+              opt["icon"] as IconData,
+              opt["color"] as Color,
+            ),
+          )
           .toList(),
     );
   }
 
-  Widget _buildOptionTile(BuildContext context, String title, IconData icon, Color color) {
+  Widget _buildOptionTile(
+    BuildContext context,
+    String title,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -620,15 +668,40 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
         ),
         onTap: () {
           if (title == "Home Work") {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentHomeworkScreen()));
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const StudentHomeworkScreen(),
+              ),
+            );
           } else if (title == "Attendance") {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentAttendanceScreen()));
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const StudentAttendanceScreen(),
+              ),
+            );
           } else if (title == "Lessons") {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentLessonsScreen()));
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const StudentLessonsScreen(),
+              ),
+            );
           } else if (title == "Academic Notes") {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentAcademicNotesScreen()));
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const StudentAcademicNotesScreen(),
+              ),
+            );
           } else if (title == "Grading Progress") {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentGradingProgressScreen()));
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const StudentGradingProgressScreen(),
+              ),
+            );
           }
         },
       ),
