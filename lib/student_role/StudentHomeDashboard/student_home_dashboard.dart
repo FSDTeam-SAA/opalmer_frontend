@@ -26,9 +26,9 @@ class StudentHomeDashboard extends ConsumerWidget {
           children: [
             _buildHeader(context, studentName),
             const SizedBox(height: 10),
-            _buildSectionHeader(context, ref, "Subjects"),
+            _buildSectionHeader(context, ref, "Classes"),
             const SizedBox(height: 16),
-            _buildSubjectsList(ref),
+            _buildClassesList(ref),
             const SizedBox(height: 32),
             _buildSectionHeader(context, ref, "Quizzes"),
             const SizedBox(height: 16),
@@ -114,7 +114,11 @@ class StudentHomeDashboard extends ConsumerWidget {
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, WidgetRef ref, String title) {
+  Widget _buildSectionHeader(
+    BuildContext context,
+    WidgetRef ref,
+    String title,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Row(
@@ -130,7 +134,7 @@ class StudentHomeDashboard extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () {
-              if (title == "Subjects") {
+              if (title == "Classes") {
                 ref.read(studentTabIndexProvider.notifier).state = 1;
               } else if (title == "Quizzes") {
                 ref.read(studentTabIndexProvider.notifier).state = 3;
@@ -150,26 +154,27 @@ class StudentHomeDashboard extends ConsumerWidget {
     );
   }
 
-  Widget _buildSubjectsList(WidgetRef ref) {
-    final lessonsAsync = ref.watch(studentLessonsProvider);
+  Widget _buildClassesList(WidgetRef ref) {
+    final classesAsync = ref.watch(studentClassesProvider);
 
     return SizedBox(
-      height: 180, // Increased from 150 to accommodate multiline text
-      child: lessonsAsync.when(
-        data: (lessons) {
-          if (lessons.isEmpty) {
-            return const Center(child: Text("No subjects found"));
+      height: 180,
+      child: classesAsync.when(
+        data: (classes) {
+          if (classes.isEmpty) {
+            return const Center(child: Text("No classes found"));
           }
           return ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             scrollDirection: Axis.horizontal,
-            itemCount: lessons.length,
+            itemCount: classes.length,
             separatorBuilder: (context, index) => const SizedBox(width: 16),
             itemBuilder: (context, index) {
-              final lesson = lessons[index];
+              final studentClass = classes[index];
               return SubjectCard(
-                lesson: lesson,
-                subjectName: lesson.objective,
+                studentClass: studentClass,
+                subjectName: studentClass.subject,
+                lesson: null,
               );
             },
           );
@@ -182,32 +187,42 @@ class StudentHomeDashboard extends ConsumerWidget {
 
   Widget _buildQuizzesList(WidgetRef ref) {
     final quizzesAsync = ref.watch(studentQuizzesProvider);
+    final resultsAsync = ref.watch(studentQuizResultsProvider);
 
     return quizzesAsync.when(
       data: (quizzes) {
         if (quizzes.isEmpty) {
           return const Center(child: Text("No quizzes available"));
         }
+
+        final results = resultsAsync.asData?.value ?? [];
+
         return ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: quizzes.length > 3
-              ? 3
-              : quizzes.length, // Show top 3 on dashboard
+          itemCount: quizzes.length > 3 ? 3 : quizzes.length,
           separatorBuilder: (context, index) => const SizedBox(height: 16),
           itemBuilder: (context, index) {
             final quiz = quizzes[index];
+
+            // Find the best score for this quiz if the student has taken it
+            final quizResult = results.cast<QuizResultModel?>().firstWhere(
+              (r) => r?.quizId == quiz.id,
+              orElse: () => null,
+            );
+
             final colors = [
               const Color(0xFF2E9B5B),
               const Color(0xFFE8A317),
               Colors.blue,
             ];
+
             return _buildQuizCard(
               context: context,
               quiz: quiz,
               color: colors[index % colors.length],
-              progress: 0.0, // Progress needs a specific API to track
+              progress: quizResult?.percentage ?? 0.0,
             );
           },
         );

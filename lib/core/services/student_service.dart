@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:opalmer_education/core/constants/api_constants.dart';
 import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/services/api_client.dart';
@@ -35,9 +36,86 @@ class StudentService {
 
   Future<List<HomeworkModel>> getHomework(String userId) async {
     try {
-      final response = await _apiClient.get('${ApiConstants.homework}/user/$userId');
-      final List<dynamic> data = response.data['data'] ?? [];
+      debugPrint('StudentService: Fetching homework for user: $userId');
+      final response = await _apiClient.get(
+        '${ApiConstants.homework}/user/$userId',
+      );
+      debugPrint(
+        'StudentService: getHomework response status: ${response.statusCode}',
+      );
+
+      var responseData = response.data['data'];
+      if (responseData == null) {
+        debugPrint('StudentService: No homework data found in response');
+        return [];
+      }
+
+      List<dynamic> data;
+      if (responseData is List) {
+        data = responseData;
+      } else if (responseData is Map && responseData.containsKey('homework')) {
+        data = responseData['homework'] as List? ?? [];
+      } else {
+        debugPrint(
+          'StudentService: Unexpected homework response format: ${responseData.runtimeType}',
+        );
+        return [];
+      }
+
+      debugPrint(
+        'StudentService: Found ${data.length} homework items for user',
+      );
       return data.map((json) => HomeworkModel.fromJson(json)).toList();
+    } catch (e, stack) {
+      debugPrint('StudentService: Error in getHomework: $e');
+      debugPrint(stack.toString());
+      return []; // Return empty instead of rethrowing to avoid total UI hang
+    }
+  }
+
+  Future<List<HomeworkModel>> getHomeworkByClass(String classId) async {
+    try {
+      debugPrint('StudentService: Fetching homework for class: $classId');
+      final response = await _apiClient.get(
+        ApiConstants.homeworkByClass(classId),
+      );
+      debugPrint(
+        'StudentService: getHomeworkByClass response status: ${response.statusCode}',
+      );
+
+      var responseData = response.data['data'];
+      if (responseData == null) return [];
+
+      List<dynamic> data;
+      if (responseData is List) {
+        data = responseData;
+      } else if (responseData is Map && responseData.containsKey('homework')) {
+        data = responseData['homework'] as List? ?? [];
+      } else {
+        debugPrint(
+          'StudentService: Unexpected class homework response format: ${responseData.runtimeType}',
+        );
+        return [];
+      }
+
+      debugPrint(
+        'StudentService: Found ${data.length} homework items for class $classId',
+      );
+      return data.map((json) => HomeworkModel.fromJson(json)).toList();
+    } catch (e, stack) {
+      debugPrint('StudentService: Error in getHomeworkByClass ($classId): $e');
+      debugPrint(stack.toString());
+      return [];
+    }
+  }
+
+  Future<List<GroupWorkModel>> getGroupWorkByClass(String classId) async {
+    try {
+      final response = await _apiClient.get(
+        ApiConstants.groupWorkByClass(classId),
+      );
+      final List<dynamic> data = response.data['data'] ?? [];
+      return data.map((json) => GroupWorkModel.fromJson(json)).toList();
     } catch (e) {
       rethrow;
     }
@@ -55,7 +133,9 @@ class StudentService {
 
   Future<List<QuizResultModel>> getQuizResults(String studentId) async {
     try {
-      final response = await _apiClient.get('${ApiConstants.quizResults}/$studentId');
+      final response = await _apiClient.get(
+        '${ApiConstants.quizResults}/$studentId',
+      );
       final List<dynamic> data = response.data['data'] ?? [];
       return data.map((json) => QuizResultModel.fromJson(json)).toList();
     } catch (e) {
@@ -63,22 +143,34 @@ class StudentService {
     }
   }
 
-  Future<List<dynamic>> getAcademicDocuments() async {
+  Future<List<AcademicDocumentModel>> getAcademicDocuments() async {
     try {
       final response = await _apiClient.get(ApiConstants.academicDocument);
-      return response.data['data'];
+      final List<dynamic> data = response.data['data'] ?? [];
+      return data.map((json) => AcademicDocumentModel.fromJson(json)).toList();
     } catch (e) {
       rethrow;
     }
   }
 
-  Future<List<AttendanceRecord>> getAttendance(String userId, String classId) async {
+  Future<List<AttendanceRecord>> getAttendance(
+    String userId,
+    String classId,
+  ) async {
     try {
       final response = await _apiClient.get(
-        '${ApiConstants.attendance}/student?userId=$userId&classId=$classId'
+        '${ApiConstants.attendance}/student',
+        queryParameters: {'userId': userId, 'classId': classId},
       );
-      final List<dynamic> records = response.data['data']['attendanceRecords'] ?? [];
+      // print('Attendance response for class $classId: ${response.data}'); // Debugging
+      // Backend returns { attendanceRecords, meta }
+      final List<dynamic> records =
+          response.data['data']?['attendanceRecords'] ?? [];
       return records.map((json) => AttendanceRecord.fromJson(json)).toList();
+    } on DioException catch (e) {
+      // Backend returns 404 if no records found, handle it gracefully
+      if (e.response?.statusCode == 404) return [];
+      rethrow;
     } catch (e) {
       rethrow;
     }
@@ -86,23 +178,36 @@ class StudentService {
 
   Future<QuizQA?> getQuizQA(String quizId) async {
     try {
+      debugPrint('StudentService: Fetching QA for quiz: $quizId');
       final response = await _apiClient.get('${ApiConstants.quizQA}/$quizId');
+      debugPrint('StudentService: getQuizQA response status: ${response.statusCode}');
+      
       if (response.data is Map && response.data['data'] != null) {
         return QuizQA.fromJson(response.data['data']);
       }
       return null;
     } on DioException catch (e) {
+      debugPrint('StudentService: DioException in getQuizQA ($quizId): ${e.message}');
+      debugPrint('StudentService: Response status: ${e.response?.statusCode}');
       // 404 means the teacher hasn't generated questions for this quiz yet;
       // surface that to the UI as an empty state rather than a crash.
-      if (e.response?.statusCode == 404) return null;
+      if (e.response?.statusCode == 404) {
+        debugPrint('StudentService: Quiz QA not found (404), returning null');
+        return null;
+      }
       rethrow;
     }
   }
 
-  Future<bool> submitQuiz(String quizId, String studentId, int score, int totalQuestions) async {
+  Future<bool> submitQuiz(
+    String quizId,
+    String studentId,
+    int score,
+    int totalQuestions,
+  ) async {
     try {
       final response = await _apiClient.post(
-        ApiConstants.submitQuiz,
+        '${ApiConstants.submitQuiz}/submit',
         data: {
           'quizId': quizId,
           'studentId': studentId,
@@ -116,12 +221,45 @@ class StudentService {
     }
   }
 
-  Future<List<dynamic>> getStudentClasses(String studentId) async {
+  Future<List<StudentClassModel>> getStudentClasses(String studentId) async {
     try {
+      debugPrint('StudentService: Fetching classes for student: $studentId');
       final response = await _apiClient.get(
-        '${ApiConstants.stuAssignToClass}/student/$studentId'
+        ApiConstants.classesByStudent(studentId),
       );
-      return response.data['data'];
+      debugPrint(
+        'StudentService: getStudentClasses response status: ${response.statusCode}',
+      );
+
+      final dynamic rawData = response.data['data'];
+      if (rawData == null) return [];
+
+      List<dynamic> data = [];
+      if (rawData is Map && rawData.containsKey('classes')) {
+        data = rawData['classes'] as List? ?? [];
+      } else if (rawData is List) {
+        data = rawData;
+      }
+
+      debugPrint('StudentService: Found ${data.length} classes for student');
+      return data.map((json) => StudentClassModel.fromJson(json)).toList();
+    } catch (e, stack) {
+      debugPrint('StudentService: Error in getStudentClasses: $e');
+      debugPrint(stack.toString());
+      rethrow;
+    }
+  }
+
+  /// Lightweight: fetches all classes (no enrichment) and returns IDs for a given grade.
+  /// Used by homework/groupWork providers to avoid the heavy enrichment timeout.
+  Future<List<String>> getClassIdsByGrade(int gradeLevel) async {
+    try {
+      final response = await _apiClient.get('/classes');
+      final List<dynamic> data = response.data['data'] ?? [];
+      return data
+          .where((c) => c['grade'] == gradeLevel)
+          .map<String>((c) => c['_id'].toString())
+          .toList();
     } catch (e) {
       rethrow;
     }

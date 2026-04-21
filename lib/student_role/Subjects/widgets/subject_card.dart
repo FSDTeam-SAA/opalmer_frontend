@@ -8,43 +8,23 @@ import 'package:opalmer_education/student_role/Subjects/subject_detail_screen.da
 class SubjectCard extends ConsumerWidget {
   final String subjectName;
   final double? width;
+  final StudentClassModel? studentClass;
+
   final LessonModel? lesson;
 
   const SubjectCard({
     Key? key,
     this.subjectName = "Science",
     this.width,
+    this.studentClass,
     this.lesson,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    String attendanceVal = "0%";
-    String progressVal = "0%";
-    String dateStr = "N/A";
-
-    final attendanceAsync = ref.watch(studentAttendanceProvider);
-    final quizResultsAsync = ref.watch(studentQuizResultsProvider);
-
-    attendanceAsync.whenData((records) {
-      if (records.isNotEmpty) {
-        final presentCount = records.where((r) => r.status.toLowerCase() == "present").length;
-        attendanceVal = "${((presentCount / records.length) * 100).toInt()}%";
-      }
-    });
-
-    quizResultsAsync.whenData((results) {
-      if (results.isNotEmpty) {
-        final avg = results.fold<double>(0, (sum, res) => sum + res.percentage) / results.length;
-        progressVal = "${(avg * 100).toInt()}%";
-      }
-    });
-
-    if (lesson?.createdAt != null) {
-      dateStr = "${lesson!.createdAt!.day.toString().padLeft(2, '0')}-${lesson!.createdAt!.month.toString().padLeft(2, '0')}-${lesson!.createdAt!.year.toString().substring(2)}";
-    }
-
-    final teacher = lesson?.teacher;
+    String attendanceVal = "${studentClass?.attendancePercentage ?? 0}%";
+    String progressVal = "${studentClass?.performancePercentage ?? 0}%";
+    String dateStr = studentClass?.formattedLastActivity ?? "N/A";
 
     return GestureDetector(
       onTap: () {
@@ -52,8 +32,9 @@ class SubjectCard extends ConsumerWidget {
           context,
           MaterialPageRoute(
             builder: (context) => SubjectDetailScreen(
-              subjectName: subjectName,
-              lesson: lesson,
+              subjectName: studentClass?.subject ?? subjectName,
+              // Note: SubjectDetailScreen might need update if it uses LessonModel
+              studentClass: studentClass,
             ),
           ),
         );
@@ -93,7 +74,7 @@ class SubjectCard extends ConsumerWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    subjectName,
+                    studentClass?.subject ?? subjectName,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -132,39 +113,52 @@ class SubjectCard extends ConsumerWidget {
                 CircleAvatar(
                   radius: 18,
                   backgroundColor: AppColors.primaryMid.withValues(alpha: 0.1),
-                  backgroundImage: teacher?.avatar != null && teacher!.avatar!.isNotEmpty
-                      ? NetworkImage(teacher.avatar!) as ImageProvider
+                  backgroundImage:
+                      studentClass?.teacherAvatar != null &&
+                          studentClass!.teacherAvatar!.isNotEmpty
+                      ? NetworkImage(studentClass!.teacherAvatar!)
+                            as ImageProvider
                       : null,
-                  child: teacher?.avatar == null || teacher!.avatar!.isEmpty
-                      ? const Icon(Icons.person, color: AppColors.primaryMid, size: 20)
+                  child:
+                      studentClass?.teacherAvatar == null ||
+                          studentClass!.teacherAvatar!.isEmpty
+                      ? const Icon(
+                          Icons.person,
+                          color: AppColors.primaryMid,
+                          size: 20,
+                        )
                       : null,
                 ),
                 const SizedBox(width: 10),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      teacher?.username ?? "N/A",
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        studentClass?.teacherName ?? "N/A",
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    Text(
-                      dateStr,
-                      style: const TextStyle(fontSize: 11, color: Colors.grey),
-                    ),
-                  ],
+                      Text(
+                        dateStr,
+                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
+                    ],
+                  ),
                 ),
-                const Spacer(),
+                const SizedBox(width: 8),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => SubjectDetailScreen(
-                          subjectName: subjectName,
-                          lesson: lesson,
+                          subjectName: studentClass?.subject ?? subjectName,
+                          studentClass: studentClass,
                         ),
                       ),
                     );

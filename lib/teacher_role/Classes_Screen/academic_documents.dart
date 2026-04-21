@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/providers/teacher_provider.dart';
 import 'add_document.dart';
@@ -116,11 +117,8 @@ class _AcademicDocumentsScreenState
     );
   }
 
-  Widget _buildDocumentCard(dynamic doc) {
-    String docUrl = "";
-    if (doc['document'] != null && doc['document']['url'] != null) {
-      docUrl = doc['document']['url'];
-    }
+  Widget _buildDocumentCard(AcademicDocumentModel doc) {
+    String docUrl = doc.url ?? "";
     // Extract file name from URL if possible, or just default
     String fileName = "Academic Notes PDF";
     if (docUrl.isNotEmpty) {
@@ -221,7 +219,7 @@ class _AcademicDocumentsScreenState
 
               if (confirm == true) {
                 final success = await ref.read(
-                  deleteAcademicDocumentProvider(doc['_id']).future,
+                  deleteAcademicDocumentProvider(doc.id).future,
                 );
                 if (success) {
                   ref.invalidate(

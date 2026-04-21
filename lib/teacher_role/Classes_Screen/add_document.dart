@@ -8,7 +8,7 @@ import '../../core/providers/teacher_provider.dart';
 
 class AddDocumentScreen extends ConsumerStatefulWidget {
   final String studentId;
-  const AddDocumentScreen({Key? key, required this.studentId}) : super(key: key);
+  const AddDocumentScreen({super.key, required this.studentId});
 
   @override
   ConsumerState<AddDocumentScreen> createState() => _AddDocumentScreenState();

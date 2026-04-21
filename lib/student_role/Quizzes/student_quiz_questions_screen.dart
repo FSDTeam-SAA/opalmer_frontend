@@ -45,6 +45,9 @@ class _StudentQuizQuestionsScreenState
       );
 
       if (success && mounted) {
+        // Invalidate quiz results so the dashboard and other screens fetch fresh data
+        ref.invalidate(studentQuizResultsProvider);
+        
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const StudentQuizResultScreen()),

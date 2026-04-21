@@ -10,7 +10,7 @@ class SubjectsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final lessonsAsync = ref.watch(studentLessonsProvider);
+    final classesAsync = ref.watch(studentClassesProvider);
 
     return Scaffold(
       backgroundColor: AppColors.scaffoldBg,
@@ -18,21 +18,21 @@ class SubjectsScreen extends ConsumerWidget {
         children: [
           _buildHeader(context),
           Expanded(
-            child: lessonsAsync.when(
-              data: (lessons) {
-                if (lessons.isEmpty) {
-                  return const Center(child: Text("No subjects found"));
+            child: classesAsync.when(
+              data: (classes) {
+                if (classes.isEmpty) {
+                  return const Center(child: Text("No classes found"));
                 }
                 return ListView.separated(
                   padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
-                  itemCount: lessons.length,
+                  itemCount: classes.length,
                   separatorBuilder: (context, index) => const SizedBox(height: 16),
                   itemBuilder: (context, index) {
-                    final lesson = lessons[index];
+                    final studentClass = classes[index];
                     return SubjectCard(
                       width: double.infinity,
-                      lesson: lesson,
-                      subjectName: lesson.objective,
+                      studentClass: studentClass,
+                      subjectName: studentClass.subject,
                     );
                   },
                 );
@@ -65,7 +65,7 @@ class SubjectsScreen extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  "Subjects",
+                  "Classes",
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,

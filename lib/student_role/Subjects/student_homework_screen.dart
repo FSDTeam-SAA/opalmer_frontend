@@ -18,28 +18,60 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
   @override
   Widget build(BuildContext context) {
     final homeworkAsync = ref.watch(studentHomeworkProvider);
+    final groupWorkAsync = ref.watch(studentGroupWorkProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
-      body: homeworkAsync.when(
-        data: (homework) => Column(
-          children: [
-            const SizedBox(height: 16),
-            _buildTabToggle(),
-            const SizedBox(height: 24),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+      body: Column(
+        children: [
+          const SizedBox(height: 16),
+          _buildTabToggle(),
+          const SizedBox(height: 24),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () async {
+                ref.invalidate(studentHomeworkProvider);
+                ref.invalidate(studentGroupWorkProvider);
+                await ref.read(studentHomeworkProvider.future);
+              },
+              // ✅ FIX 1: AnimatedSwitcher দিয়ে smooth transition
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
                 child: isClassSelected
-                    ? _buildClassHomework(homework)
-                    : _buildGroupsHomework(),
+                    ? homeworkAsync.when(
+                        // ✅ FIX 2: ValueKey দিয়ে Flutter কে বলা হচ্ছে এটা আলাদা widget
+                        data: (homework) => ListView(
+                          key: const ValueKey('class_list'),
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [_buildClassHomework(homework)],
+                        ),
+                        loading: () =>
+                            const _LoadingList(key: ValueKey('class_loading')),
+                        error: (err, stack) => _ErrorList(
+                          key: const ValueKey('class_error'),
+                          error: err,
+                        ),
+                      )
+                    : groupWorkAsync.when(
+                        data: (groupWork) => ListView(
+                          key: const ValueKey('group_list'),
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [_buildGroupsHomework(groupWork)],
+                        ),
+                        loading: () =>
+                            const _LoadingList(key: ValueKey('group_loading')),
+                        error: (err, stack) => _ErrorList(
+                          key: const ValueKey('group_error'),
+                          error: err,
+                        ),
+                      ),
               ),
             ),
-          ],
-        ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+          ),
+        ],
       ),
     );
   }
@@ -147,12 +179,8 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
   }
 
   Widget _buildClassHomework(List<HomeworkModel> homework) {
-    final activeHomework = homework
-        .where((h) => h.archived == false)
-        .toList();
-    final archivedHomework = homework
-        .where((h) => h.archived == true)
-        .toList();
+    final activeHomework = homework.where((h) => h.archived == false).toList();
+    final archivedHomework = homework.where((h) => h.archived == true).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,21 +195,38 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
         ),
         const SizedBox(height: 16),
         if (activeHomework.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
-            child: Text(
-              "No homework for today",
-              style: TextStyle(color: Colors.grey),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 40),
+            child: Center(
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.assignment_outlined,
+                    size: 48,
+                    color: Colors.grey.shade300,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "No active homework found for your classes.",
+                    style: TextStyle(color: Colors.grey, fontSize: 14),
+                  ),
+                ],
+              ),
             ),
           )
         else
           ...activeHomework.map(
             (h) => _buildHomeworkCard(
               title: h.title,
-              description: "Attached files: ${h.fileUrls.length}",
-              dueDate: h.createdAt != null
-                  ? "Created: ${h.createdAt.toString().split(' ')[0]}"
-                  : "N/A",
+              description: h.description ??
+                  (h.fileUrls.isNotEmpty
+                      ? "${h.fileUrls.length} file(s) attached"
+                      : "No additional description."),
+              dueDate: h.dueDate != null
+                  ? "Due: ${_formatDate(h.dueDate!)}"
+                  : (h.createdAt != null
+                      ? "Assigned: ${_formatDate(h.createdAt!)}"
+                      : "Assigned: N/A"),
             ),
           ),
         const SizedBox(height: 32),
@@ -216,10 +261,12 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
           ...archivedHomework.map(
             (h) => _buildHomeworkCard(
               title: h.title,
-              description: "Attached files: ${h.fileUrls.length}",
-              dueDate: h.createdAt != null
-                  ? h.createdAt.toString().split(' ')[0]
-                  : "N/A",
+              description: h.description ?? "Archived assignment",
+              dueDate: h.dueDate != null
+                  ? "Due: ${_formatDate(h.dueDate!)}"
+                  : (h.createdAt != null
+                      ? "Assigned: ${_formatDate(h.createdAt!)}"
+                      : "N/A"),
             ),
           ),
         const SizedBox(height: 20),
@@ -227,72 +274,81 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
     );
   }
 
-  Widget _buildGroupsHomework() {
+  Widget _buildGroupsHomework(List<GroupWorkModel> groupWork) {
+    // ✅ FIX 3: Center এর বদলে Column — Center unbounded height এর কারণে crash করে
+    if (groupWork.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: const [
+          SizedBox(height: 40),
+          Icon(Icons.group_outlined, size: 48, color: Color(0xFFCCCCCC)),
+          SizedBox(height: 16),
+          Text(
+            "No group assignments found.",
+            style: TextStyle(color: Colors.grey, fontSize: 14),
+          ),
+        ],
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Alpha Group (4)",
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 16),
-        _buildMemberCard("Mia johnson"),
-        const SizedBox(height: 12),
-        _buildMemberCard("Mia johnson"),
-        const SizedBox(height: 12),
-        _buildMemberCard("Mia johnson"),
-        const SizedBox(height: 12),
-        _buildMemberCard("Mia johnson"),
-        const SizedBox(height: 32),
-        const Text(
-          "Today's Homework",
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 16),
-        _buildHomeworkCard(
-          title: "Fractions Practice",
-          description: "Solve question 1-10 on page 42 of the textbook.",
-          dueDate: "Due: June 13,2025",
-        ),
-        const SizedBox(height: 32),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
+      children: groupWork.map((gw) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             Text(
-              "Archived Homework",
-              style: TextStyle(
+              gw.title,
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
               ),
             ),
-            Icon(
-              Icons.calendar_month_outlined,
-              color: AppColors.primaryMid,
-              size: 24,
+            const SizedBox(height: 8),
+            if (gw.description != null)
+              Text(
+                gw.description!,
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+              ),
+            const SizedBox(height: 16),
+
+            // ✅ FIX 4: Duplicate const সরানো হয়েছে
+            const Text(
+              "Group Members",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey,
+              ),
             ),
+            const SizedBox(height: 12),
+            ...gw.members.map(
+              (m) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _buildMemberCard(m.username, m.avatar),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            _buildHomeworkCard(
+              title: "Assignment Details",
+              description: gw.description ?? "No additional description.",
+              dueDate: gw.dueDate != null
+                  ? "Due: ${gw.dueDate.toString().split(' ')[0]}"
+                  : (gw.createdAt != null
+                        ? "Created: ${gw.createdAt.toString().split(' ')[0]}"
+                        : "Assigned: N/A"),
+            ),
+            const Divider(height: 40),
           ],
-        ),
-        const SizedBox(height: 16),
-        _buildHomeworkCard(
-          title: "Fractions Practice",
-          description: "Solve question 1-10 on page 42 of the textbook.",
-          dueDate: "Due: June 13,2025",
-        ),
-        const SizedBox(height: 20),
-      ],
+        );
+      }).toList(),
     );
   }
 
-  Widget _buildMemberCard(String name) {
+  Widget _buildMemberCard(String name, String? avatarUrl) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -308,19 +364,24 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
       ),
       child: Row(
         children: [
-          const CircleAvatar(
+          CircleAvatar(
             radius: 20,
-            backgroundImage: AssetImage(
-              'assets/images/classes/student_image.png',
-            ),
+            backgroundColor: Colors.grey.shade200,
+            backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty
+                ? NetworkImage(avatarUrl)
+                : const AssetImage('assets/images/classes/student_image.png')
+                      as ImageProvider,
           ),
           const SizedBox(width: 16),
-          Text(
-            name,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
+          Expanded(
+            child: Text(
+              name,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -370,16 +431,106 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
           const SizedBox(height: 16),
           Divider(color: Colors.grey.shade200, height: 1),
           const SizedBox(height: 14),
-          Text(
-            dueDate,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade500,
-              fontWeight: FontWeight.w500,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Flexible(
+                child: Text(
+                  dueDate,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade500,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: () {
+                  // ✅ FIX 5: mounted check করা হচ্ছে — dispose হয়ে গেলে crash এড়ানো
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Submission feature coming soon!'),
+                      backgroundColor: AppColors.primaryMid,
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryMid,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  elevation: 0,
+                  textStyle: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                child: const Text("SUBMIT"),
+              ),
+            ],
           ),
         ],
       ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays == 0) {
+      return "Today";
+    } else if (difference.inDays == 1) {
+      return "Yesterday";
+    } else if (difference.inDays < 7) {
+      return "${difference.inDays} days ago";
+    } else {
+      return "${date.day}/${date.month}/${date.year}";
+    }
+  }
+}
+
+// ✅ FIX 6: Loading ও Error কে আলাদা const widget বানানো হয়েছে
+// এতে করে rebuild এ নতুন instance তৈরি হয় না — semantics stable থাকে
+class _LoadingList extends StatelessWidget {
+  const _LoadingList({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: const [
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 60),
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      ],
+    );
+  }
+}
+
+class _ErrorList extends StatelessWidget {
+  final Object error;
+  const _ErrorList({Key? key, required this.error}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 60),
+          child: Center(child: Text('Error: $error')),
+        ),
+      ],
     );
   }
 }

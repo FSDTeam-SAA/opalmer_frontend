@@ -122,12 +122,12 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                               user.avatar!,
                               fit: BoxFit.cover,
                               errorBuilder: (_, __, ___) => Image.asset(
-                                'assets/images/profile /olivia.png',
+                                'assets/images/profile/olivia.png',
                                 fit: BoxFit.cover,
                               ),
                             )
                           : Image.asset(
-                              'assets/images/profile /olivia.png',
+                              'assets/images/profile/olivia.png',
                               fit: BoxFit.cover,
                             ),
                     ),
