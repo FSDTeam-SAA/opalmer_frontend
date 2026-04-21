@@ -66,27 +66,30 @@ class HomeworkModel {
   });
 
   factory HomeworkModel.fromJson(Map<String, dynamic> json) {
-    var files = json['file'] as List? ?? [];
-    List<String> urls = files
-        .map((f) => f is Map ? (f['url']?.toString() ?? '') : f.toString())
-        .where((url) => url.isNotEmpty)
-        .toList();
+    final rawFiles = json['file'];
+    List<String> urls = [];
+    if (rawFiles is List) {
+      urls = rawFiles
+          .map((f) => f is Map ? (f['url']?.toString() ?? '') : f.toString())
+          .where((url) => url.isNotEmpty)
+          .toList();
+    }
 
     return HomeworkModel(
-      id: json['_id'] ?? '',
+      id: (json['_id'] ?? json['id'] ?? '').toString(),
       classId: json['classId'] is Map
-          ? json['classId']['_id']
+          ? (json['classId']['_id']?.toString() ?? '')
           : (json['classId']?.toString() ?? ''),
       userId: json['userId'] is Map
-          ? json['userId']['_id']
+          ? (json['userId']['_id']?.toString() ?? '')
           : (json['userId']?.toString() ?? ''),
-      title: json['title'] ?? '',
-      description: json['description'],
-      dueDate: json['dueDate'] != null ? DateTime.tryParse(json['dueDate']) : null,
+      title: json['title']?.toString() ?? '',
+      description: json['description']?.toString(),
+      dueDate: json['dueDate'] != null ? DateTime.tryParse(json['dueDate'].toString()) : null,
       fileUrls: urls,
       archived: json['archived'] ?? false,
       createdAt: json['created_at'] != null
-          ? DateTime.tryParse(json['created_at'])
+          ? DateTime.tryParse(json['created_at'].toString())
           : null,
     );
   }
@@ -443,27 +446,38 @@ class GroupWorkModel {
   });
 
   factory GroupWorkModel.fromJson(Map<String, dynamic> json) {
-    var memberList = json['userId'] as List? ?? [];
-    var files = json['file'] as List? ?? [];
-
-    return GroupWorkModel(
-      id: json['_id'] ?? '',
-      classId: json['classId'] is Map ? json['classId']['_id'] : (json['classId']?.toString() ?? ''),
-      members: memberList
+    final rawMembers = json['userId'];
+    List<GroupMemberModel> members = [];
+    if (rawMembers is List) {
+      members = rawMembers
           .map((e) => e is Map<String, dynamic>
               ? GroupMemberModel.fromJson(e)
               : GroupMemberModel(id: e.toString(), username: 'Member'))
-          .toList(),
-      title: json['title'] ?? '',
-      description: json['description'],
-      dueDate: json['dueDate'] != null ? DateTime.tryParse(json['dueDate']) : null,
-      fileUrls: files
+          .toList();
+    }
+
+    final rawFiles = json['file'];
+    List<String> urls = [];
+    if (rawFiles is List) {
+      urls = rawFiles
           .map((f) => f is Map ? (f['url']?.toString() ?? '') : f.toString())
           .where((url) => url.isNotEmpty)
-          .toList(),
+          .toList();
+    }
+
+    return GroupWorkModel(
+      id: (json['_id'] ?? json['id'] ?? '').toString(),
+      classId: json['classId'] is Map 
+          ? (json['classId']['_id']?.toString() ?? '') 
+          : (json['classId']?.toString() ?? ''),
+      members: members,
+      title: json['title']?.toString() ?? '',
+      description: json['description']?.toString(),
+      dueDate: json['dueDate'] != null ? DateTime.tryParse(json['dueDate'].toString()) : null,
+      fileUrls: urls,
       archived: json['archived'] ?? false,
       createdAt:
-          json['created_at'] != null ? DateTime.tryParse(json['created_at']) : null,
+          json['created_at'] != null ? DateTime.tryParse(json['created_at'].toString()) : null,
     );
   }
 }

@@ -1,120 +1,50 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/chat/providers/chat_provider.dart';
+import 'package:opalmer_education/chat/services/chat_api_service.dart';
 
 import '../models/chat_role.dart';
-import 'compose_message.dart';
+import 'chat_screen.dart';
 
-class SendToScreen extends StatefulWidget {
+class SendToScreen extends ConsumerStatefulWidget {
   final ChatRole role;
 
   const SendToScreen({super.key, this.role = ChatRole.teacher});
 
   @override
-  State<SendToScreen> createState() => _SendToScreenState();
+  ConsumerState<SendToScreen> createState() => _SendToScreenState();
 }
 
-class _SendToScreenState extends State<SendToScreen> {
-  final Set<int> _selectedIndices = {};
+class _SendToScreenState extends ConsumerState<SendToScreen> {
+  final ChatApiService _apiService = ChatApiService();
+  List<Map<String, dynamic>> _contacts = [];
+  bool _isLoading = true;
+  final Set<String> _selectedIds = {};
 
-  List<Map<String, dynamic>> get _frequentChats {
-    if (widget.role == ChatRole.parent) {
-      return [
-        {
-          "name": "Ms. Sarah Michelle",
-          "time": "11/19/19",
-          "message": "Science progress update",
-          "imageUrl": "https://i.pravatar.cc/150?u=sarah",
-        },
-        {
-          "name": "Subject Teachers - Science",
-          "time": "11/19/19",
-          "message": "Ask the science teaching team",
-          "icon": Icons.co_present_outlined,
-        },
-        {
-          "name": "Mr. Randolph",
-          "time": "11/19/19",
-          "message": "Math homework support",
-          "imageUrl": "https://i.pravatar.cc/150?u=randolph",
-        },
-      ];
-    }
-
-    return [
-      {
-        "name": "Sarah Michelle",
-        "time": "11/19/19",
-        "message": "0:14",
-        "imageUrl": "https://i.pravatar.cc/150?u=sarah",
-        "icon": Icons.mic_none_outlined,
-      },
-      {
-        "name": "Grade 6 - Science",
-        "time": "11/19/19",
-        "message": "Actually I wanted to check with you...",
-        "icon": Icons.school_outlined,
-      },
-      {
-        "name": "Tabitha Potter",
-        "time": "11/19/19",
-        "message": "Actually I wanted to check with you...",
-        "imageUrl": "https://i.pravatar.cc/150?u=tabitha",
-      },
-    ];
+  @override
+  void initState() {
+    super.initState();
+    _loadContacts();
   }
 
-  List<Map<String, dynamic>> get _recentChats {
-    if (widget.role == ChatRole.parent) {
-      return [
-        {
-          "name": "Subject Teachers - Math",
-          "time": "11/19/19",
-          "message": "Practice sheets are ready",
-          "icon": Icons.co_present_outlined,
-        },
-        {
-          "name": "Ms. Tabitha Potter",
-          "time": "11/19/19",
-          "message": "Reading notes for Mia",
-          "imageUrl": "https://i.pravatar.cc/150?u=tabitha",
-        },
-      ];
+  Future<void> _loadContacts() async {
+    try {
+      final contacts = await _apiService.getContacts();
+      setState(() {
+        _contacts = contacts;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
     }
-
-    return [
-      {
-        "name": "Grade 5 - Science",
-        "time": "11/19/19",
-        "message": "Actually I wanted to check with you...",
-        "icon": Icons.school_outlined,
-      },
-      {
-        "name": "Grade 3 - Science",
-        "time": "11/19/19",
-        "message": "Actually I wanted to check with you...",
-        "icon": Icons.school_outlined,
-      },
-      {
-        "name": "Kiron Doston",
-        "time": "11/19/19",
-        "message": "Ok, have a good day",
-        "imageUrl": "https://i.pravatar.cc/150?u=kiron",
-        "showCheck": true,
-      },
-      {
-        "name": "Maximillian Jacobson",
-        "time": "11/19/19",
-        "message": "Actually I wanted to check with you...",
-        "imageUrl": "https://i.pravatar.cc/150?u=max",
-      },
-    ];
   }
 
-  void _toggleSelection(int id) {
+  void _toggleSelection(String id) {
     setState(() {
-      if (_selectedIndices.contains(id)) {
-        _selectedIndices.remove(id);
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
       } else {
-        _selectedIndices.add(id);
+        _selectedIds.add(id);
       }
     });
   }
@@ -181,36 +111,18 @@ class _SendToScreenState extends State<SendToScreen> {
           ),
           // List
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              children: [
-                Text(
-                  widget.role.frequentSectionLabel,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF222222),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _contacts.isEmpty
+                ? const Center(child: Text("No contacts found"))
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: _contacts.length,
+                    itemBuilder: (context, index) {
+                      final contact = _contacts[index];
+                      return _buildListTile(contact);
+                    },
                   ),
-                ),
-                const SizedBox(height: 16),
-                ...List.generate(_frequentChats.length, (index) {
-                  return _buildListTile(index, _frequentChats[index]);
-                }),
-                const SizedBox(height: 16),
-                Text(
-                  widget.role.recentSectionLabel,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF222222),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ...List.generate(_recentChats.length, (index) {
-                  return _buildListTile(index + 100, _recentChats[index]);
-                }),
-              ],
-            ),
           ),
           // Bottom Button
           Padding(
@@ -219,28 +131,21 @@ class _SendToScreenState extends State<SendToScreen> {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: _selectedIndices.isEmpty
+                onPressed: _selectedIds.isEmpty
                     ? null
-                    : () {
-                        // Find the first selected recipient's info
-                        Map<String, dynamic> selectedChat;
-                        if (_selectedIndices.isNotEmpty) {
-                          int id = _selectedIndices.first;
-                          if (id < 100) {
-                            selectedChat = _frequentChats[id];
-                          } else {
-                            selectedChat = _recentChats[id - 100];
-                          }
-                          Navigator.push(
+                    : () async {
+                        // Create room or go to existing
+                        final participants = _selectedIds.toList();
+                        final room = await _apiService.createRoom(participants);
+                        if (room != null && mounted) {
+                          // Register room with notifier
+                          ref.read(chatNotifierProvider.notifier).addRoom(room);
+
+                          Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ComposeMessageScreen(
-                                name: selectedChat['name'],
-                                imageUrl:
-                                    selectedChat['imageUrl'] ??
-                                    "https://i.pravatar.cc/150?u=${selectedChat['name'].hashCode}",
-                                role: widget.role,
-                              ),
+                              builder: (context) =>
+                                  ChatScreen(session: room, role: widget.role),
                             ),
                           );
                         }
@@ -253,7 +158,7 @@ class _SendToScreenState extends State<SendToScreen> {
                   elevation: 0,
                 ),
                 child: Text(
-                  "(${_selectedIndices.length}) SEND",
+                  "(${_selectedIds.length}) SEND",
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -268,22 +173,25 @@ class _SendToScreenState extends State<SendToScreen> {
     );
   }
 
-  Widget _buildListTile(int id, Map<String, dynamic> chat) {
-    bool isSelected = _selectedIndices.contains(id);
+  Widget _buildListTile(Map<String, dynamic> contact) {
+    final String id = contact['id']?.toString() ?? "";
+    final String name = contact['username'] ?? contact['name'] ?? "User";
+    final String? avatarUrl = contact['avatar'] ?? contact['imageUrl'];
+    bool isSelected = _selectedIds.contains(id);
 
     return GestureDetector(
       onTap: () => _toggleSelection(id),
       child: Container(
         padding: const EdgeInsets.only(bottom: 20),
-        color: Colors.transparent, // For reliable tapping
+        color: Colors.transparent,
         child: Row(
           children: [
             Stack(
               children: [
-                if (chat['imageUrl'] != null)
+                if (avatarUrl != null && avatarUrl.isNotEmpty)
                   CircleAvatar(
                     radius: 28,
-                    backgroundImage: NetworkImage(chat['imageUrl']),
+                    backgroundImage: NetworkImage(avatarUrl),
                   )
                 else
                   Container(
@@ -293,9 +201,9 @@ class _SendToScreenState extends State<SendToScreen> {
                       color: const Color(0xFF871DAD).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
-                      chat['icon'],
-                      color: const Color(0xFF871DAD),
+                    child: const Icon(
+                      Icons.person,
+                      color: Color(0xFF871DAD),
                       size: 28,
                     ),
                   ),
@@ -322,57 +230,24 @@ class _SendToScreenState extends State<SendToScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        chat['name'],
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Color(0xFF222222),
-                        ),
-                      ),
-                      Text(
-                        chat['time'],
-                        style: TextStyle(
-                          color: Colors.grey.shade400,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Color(0xFF222222),
+                    ),
                   ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      if (chat['icon'] != null && chat['imageUrl'] != null) ...[
-                        Icon(
-                          chat['icon'],
-                          size: 16,
-                          color: const Color(0xFF4CAF50),
-                        ),
-                        const SizedBox(width: 4),
-                      ],
-                      if (chat['showCheck'] == true) ...[
-                        const Icon(
-                          Icons.done_all,
-                          size: 16,
-                          color: Color(0xFF4FA0F3),
-                        ),
-                        const SizedBox(width: 4),
-                      ],
-                      Expanded(
-                        child: Text(
-                          chat['message'],
-                          style: TextStyle(
-                            color: Colors.grey.shade500,
-                            fontSize: 14,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                  if (contact['role'] != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      contact['role'].toString().toUpperCase(),
+                      style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 12,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ],
               ),
             ),

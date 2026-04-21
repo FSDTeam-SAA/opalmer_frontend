@@ -8,7 +8,6 @@ import 'package:opalmer_education/custom_bottom_navigation_bar/main_shell.dart';
 import 'package:opalmer_education/parent_role/parent_main_shell.dart';
 import 'package:opalmer_education/student_role/student_main_shell.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
-import 'package:opalmer_education/core/models/user_model.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   final bool isRegistrationFlow;
@@ -190,13 +189,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     // Connect to backend
     ref.read(loginLoadingProvider.notifier).state = true;
     try {
-      final loginResponse = await ref.read(authServiceProvider).login(schoolId, password);
-      
+      final loginResponse = await ref
+          .read(authServiceProvider)
+          .login(schoolId, password);
+
       if (loginResponse != null) {
         // Validation: Ensure the user's role matches what was selected
         final selectedRole = ref.read(roleProvider);
-        final backendRoleStr = (loginResponse.user.type ?? loginResponse.user.role).toLowerCase();
-        
+        final backendRoleStr =
+            (loginResponse.user.type ?? loginResponse.user.role).toLowerCase();
+
         // Map backend string to UserRole for comparison
         UserRole backendRole;
         if (backendRoleStr == 'student') {
@@ -211,7 +213,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
         if (selectedRole != UserRole.guest && backendRole != selectedRole) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Access Denied: You are not registered as a ${selectedRole.name}.")),
+            SnackBar(
+              content: Text(
+                "Access Denied: You are not registered as a ${selectedRole.name}.",
+              ),
+            ),
           );
           return;
         }
@@ -221,8 +227,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
         // Refresh with the full profile from GET /users/me so cached
         // state matches what the edit form will read/write.
-        final fullUser =
-            await ref.read(authServiceProvider).fetchCurrentUser();
+        final fullUser = await ref.read(authServiceProvider).fetchCurrentUser();
         if (fullUser != null) {
           ref.read(authStateProvider.notifier).state = fullUser;
         }
@@ -233,7 +238,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         _routeToDashboard(backendRole);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Login failed. Please check your credentials.")),
+          const SnackBar(
+            content: Text("Login failed. Please check your credentials."),
+          ),
         );
       }
     } catch (e) {
@@ -263,9 +270,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       );
     } else {
       // Default or Guest
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Unknown user role.")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Unknown user role.")));
     }
   }
 

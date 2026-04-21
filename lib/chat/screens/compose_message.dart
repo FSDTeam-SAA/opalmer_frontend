@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 
 import '../models/chat_role.dart';
+import '../models/chat_session_model.dart';
 import 'chat_dashboard.dart';
 import 'chat_screen.dart';
 
 class ComposeMessageScreen extends StatefulWidget {
-  final String name;
-  final String imageUrl;
+  final ChatSessionModel session;
   final ChatRole role;
 
   const ComposeMessageScreen({
     super.key,
-    required this.name,
-    required this.imageUrl,
-    this.role = ChatRole.teacher,
+    required this.session,
+    required this.role,
   });
 
   @override
@@ -149,8 +148,8 @@ class _ComposeMessageScreenState extends State<ComposeMessageScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => ChatScreen(
-                              name: widget.name,
-                              imageUrl: widget.imageUrl,
+                              session: widget.session,
+                              role: widget.role,
                             ),
                           ),
                         );

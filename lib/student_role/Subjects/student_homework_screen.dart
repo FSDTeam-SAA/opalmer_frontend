@@ -35,40 +35,33 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
                 ref.invalidate(studentGroupWorkProvider);
                 await ref.read(studentHomeworkProvider.future);
               },
-              // ✅ FIX 1: AnimatedSwitcher দিয়ে smooth transition
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: isClassSelected
-                    ? homeworkAsync.when(
-                        // ✅ FIX 2: ValueKey দিয়ে Flutter কে বলা হচ্ছে এটা আলাদা widget
-                        data: (homework) => ListView(
-                          key: const ValueKey('class_list'),
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          children: [_buildClassHomework(homework)],
-                        ),
-                        loading: () =>
-                            const _LoadingList(key: ValueKey('class_loading')),
-                        error: (err, stack) => _ErrorList(
-                          key: const ValueKey('class_error'),
-                          error: err,
-                        ),
-                      )
-                    : groupWorkAsync.when(
-                        data: (groupWork) => ListView(
-                          key: const ValueKey('group_list'),
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          children: [_buildGroupsHomework(groupWork)],
-                        ),
-                        loading: () =>
-                            const _LoadingList(key: ValueKey('group_loading')),
-                        error: (err, stack) => _ErrorList(
-                          key: const ValueKey('group_error'),
-                          error: err,
-                        ),
+              child: isClassSelected
+                  ? homeworkAsync.when(
+                      data: (homework) => ListView(
+                        key: const ValueKey('class_list'),
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children: _buildClassHomeworkItems(homework),
                       ),
-              ),
+                      loading: () => const _LoadingList(key: ValueKey('class_loading')),
+                      error: (err, stack) => _ErrorList(
+                        key: const ValueKey('class_error'),
+                        error: err,
+                      ),
+                    )
+                  : groupWorkAsync.when(
+                      data: (groupWork) => ListView(
+                        key: const ValueKey('group_list'),
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children: _buildGroupsHomeworkItems(groupWork),
+                      ),
+                      loading: () => const _LoadingList(key: ValueKey('group_loading')),
+                      error: (err, stack) => _ErrorList(
+                        key: const ValueKey('group_error'),
+                        error: err,
+                      ),
+                    ),
             ),
           ),
         ],
@@ -178,174 +171,174 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
     );
   }
 
-  Widget _buildClassHomework(List<HomeworkModel> homework) {
+  List<Widget> _buildClassHomeworkItems(List<HomeworkModel> homework) {
     final activeHomework = homework.where((h) => h.archived == false).toList();
     final archivedHomework = homework.where((h) => h.archived == true).toList();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Today's Homework",
-          style: TextStyle(
+    return [
+      const Text(
+        "Today's Homework",
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: AppColors.textPrimary,
+        ),
+      ),
+      const SizedBox(height: 16),
+      if (activeHomework.isEmpty)
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 40),
+          child: Center(
+            child: Column(
+              children: [
+                Icon(
+                  Icons.assignment_outlined,
+                  size: 48,
+                  color: Colors.grey.shade300,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  "No active homework found for your classes.",
+                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+        )
+      else
+        ...activeHomework.map(
+          (h) => _buildHomeworkCard(
+            title: h.title,
+            description: h.description ??
+                (h.fileUrls.isNotEmpty
+                    ? "${h.fileUrls.length} file(s) attached"
+                    : "No additional description."),
+            dueDate: h.dueDate != null
+                ? "Due: ${_formatDate(h.dueDate!)}"
+                : (h.createdAt != null
+                    ? "Assigned: ${_formatDate(h.createdAt!)}"
+                    : "Assigned: N/A"),
+          ),
+        ),
+      const SizedBox(height: 32),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: const [
+          Text(
+            "Archived Homework",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          Icon(
+            Icons.calendar_month_outlined,
+            color: AppColors.primaryMid,
+            size: 24,
+          ),
+        ],
+      ),
+      const SizedBox(height: 16),
+      if (archivedHomework.isEmpty)
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 20),
+          child: Text(
+            "No archived homework",
+            style: TextStyle(color: Colors.grey),
+          ),
+        )
+      else
+        ...archivedHomework.map(
+          (h) => _buildHomeworkCard(
+            title: h.title,
+            description: h.description ?? "Archived assignment",
+            dueDate: h.dueDate != null
+                ? "Due: ${_formatDate(h.dueDate!)}"
+                : (h.createdAt != null
+                    ? "Assigned: ${_formatDate(h.createdAt!)}"
+                    : "N/A"),
+          ),
+        ),
+      const SizedBox(height: 20),
+    ];
+  }
+
+  List<Widget> _buildGroupsHomeworkItems(List<GroupWorkModel> groupWork) {
+    if (groupWork.isEmpty) {
+      return [
+        const SizedBox(height: 40),
+        const Center(
+          child: Column(
+            children: [
+              Icon(Icons.group_outlined, size: 48, color: Color(0xFFCCCCCC)),
+              SizedBox(height: 16),
+              Text(
+                "No group assignments found.",
+                style: TextStyle(color: Colors.grey, fontSize: 14),
+              ),
+            ],
+          ),
+        ),
+      ];
+    }
+
+    final List<Widget> items = [];
+    for (final gw in groupWork) {
+      items.add(
+        Text(
+          gw.title,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimary,
           ),
         ),
-        const SizedBox(height: 16),
-        if (activeHomework.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 40),
-            child: Center(
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.assignment_outlined,
-                    size: 48,
-                    color: Colors.grey.shade300,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    "No active homework found for your classes.",
-                    style: TextStyle(color: Colors.grey, fontSize: 14),
-                  ),
-                ],
-              ),
-            ),
-          )
-        else
-          ...activeHomework.map(
-            (h) => _buildHomeworkCard(
-              title: h.title,
-              description: h.description ??
-                  (h.fileUrls.isNotEmpty
-                      ? "${h.fileUrls.length} file(s) attached"
-                      : "No additional description."),
-              dueDate: h.dueDate != null
-                  ? "Due: ${_formatDate(h.dueDate!)}"
-                  : (h.createdAt != null
-                      ? "Assigned: ${_formatDate(h.createdAt!)}"
-                      : "Assigned: N/A"),
-            ),
-          ),
-        const SizedBox(height: 32),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            Text(
-              "Archived Homework",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            Icon(
-              Icons.calendar_month_outlined,
-              color: AppColors.primaryMid,
-              size: 24,
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        if (archivedHomework.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
-            child: Text(
-              "No archived homework",
-              style: TextStyle(color: Colors.grey),
-            ),
-          )
-        else
-          ...archivedHomework.map(
-            (h) => _buildHomeworkCard(
-              title: h.title,
-              description: h.description ?? "Archived assignment",
-              dueDate: h.dueDate != null
-                  ? "Due: ${_formatDate(h.dueDate!)}"
-                  : (h.createdAt != null
-                      ? "Assigned: ${_formatDate(h.createdAt!)}"
-                      : "N/A"),
-            ),
-          ),
-        const SizedBox(height: 20),
-      ],
-    );
-  }
-
-  Widget _buildGroupsHomework(List<GroupWorkModel> groupWork) {
-    // ✅ FIX 3: Center এর বদলে Column — Center unbounded height এর কারণে crash করে
-    if (groupWork.isEmpty) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: const [
-          SizedBox(height: 40),
-          Icon(Icons.group_outlined, size: 48, color: Color(0xFFCCCCCC)),
-          SizedBox(height: 16),
-          Text(
-            "No group assignments found.",
-            style: TextStyle(color: Colors.grey, fontSize: 14),
-          ),
-        ],
       );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: groupWork.map((gw) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              gw.title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            if (gw.description != null)
-              Text(
-                gw.description!,
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-              ),
-            const SizedBox(height: 16),
-
-            // ✅ FIX 4: Duplicate const সরানো হয়েছে
-            const Text(
-              "Group Members",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey,
-              ),
-            ),
-            const SizedBox(height: 12),
-            ...gw.members.map(
-              (m) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _buildMemberCard(m.username, m.avatar),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            _buildHomeworkCard(
-              title: "Assignment Details",
-              description: gw.description ?? "No additional description.",
-              dueDate: gw.dueDate != null
-                  ? "Due: ${gw.dueDate.toString().split(' ')[0]}"
-                  : (gw.createdAt != null
-                        ? "Created: ${gw.createdAt.toString().split(' ')[0]}"
-                        : "Assigned: N/A"),
-            ),
-            const Divider(height: 40),
-          ],
+      items.add(const SizedBox(height: 8));
+      if (gw.description != null) {
+        items.add(
+          Text(
+            gw.description!,
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+          ),
         );
-      }).toList(),
-    );
+      }
+      items.add(const SizedBox(height: 16));
+      items.add(
+        const Text(
+          "Group Members",
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey,
+          ),
+        ),
+      );
+      items.add(const SizedBox(height: 12));
+      items.addAll(
+        gw.members.map(
+          (m) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _buildMemberCard(m.username, m.avatar),
+          ),
+        ),
+      );
+      items.add(const SizedBox(height: 20));
+      items.add(
+        _buildHomeworkCard(
+          title: "Assignment Details",
+          description: gw.description ?? "No additional description.",
+          dueDate: gw.dueDate != null
+              ? "Due: ${gw.dueDate.toString().split(' ')[0]}"
+              : (gw.createdAt != null
+                  ? "Created: ${gw.createdAt.toString().split(' ')[0]}"
+                  : "Assigned: N/A"),
+        ),
+      );
+      items.add(const Divider(height: 40));
+    }
+    return items;
   }
 
   Widget _buildMemberCard(String name, String? avatarUrl) {
@@ -356,7 +349,7 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -370,7 +363,7 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
             backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty
                 ? NetworkImage(avatarUrl)
                 : const AssetImage('assets/images/classes/student_image.png')
-                      as ImageProvider,
+                    as ImageProvider,
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -402,7 +395,7 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -448,7 +441,6 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
               const SizedBox(width: 8),
               ElevatedButton(
                 onPressed: () {
-                  // ✅ FIX 5: mounted check করা হচ্ছে — dispose হয়ে গেলে crash এড়ানো
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -498,8 +490,6 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
   }
 }
 
-// ✅ FIX 6: Loading ও Error কে আলাদা const widget বানানো হয়েছে
-// এতে করে rebuild এ নতুন instance তৈরি হয় না — semantics stable থাকে
 class _LoadingList extends StatelessWidget {
   const _LoadingList({Key? key}) : super(key: key);
 
@@ -534,3 +524,4 @@ class _ErrorList extends StatelessWidget {
     );
   }
 }
+

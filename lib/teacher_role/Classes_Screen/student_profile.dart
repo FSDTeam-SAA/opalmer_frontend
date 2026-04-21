@@ -1,7 +1,13 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/chat/providers/chat_provider.dart';
 import '../../core/providers/teacher_provider.dart';
+import 'package:opalmer_education/chat/models/chat_role.dart';
+import 'package:opalmer_education/chat/screens/call.dart';
+import 'package:opalmer_education/chat/screens/chat_screen.dart';
+import 'package:opalmer_education/chat/services/chat_api_service.dart';
+
 import 'behavior_record.dart';
 import 'academic_documents.dart';
 import 'grading_progress.dart';
@@ -56,7 +62,9 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
             .toList();
         if (completed.isNotEmpty) {
           double total = completed.fold(
-              0.0, (sum, r) => sum + (r['percentage']?.toDouble() ?? 0.0));
+            0.0,
+            (sum, r) => sum + (r['percentage']?.toDouble() ?? 0.0),
+          );
           progressPercent = (total / completed.length).round();
         }
       }
@@ -75,7 +83,9 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
     }
 
     // Fix relative URL if any (assuming localhost:5000)
-    if (avatarUrl != null && avatarUrl.isNotEmpty && !avatarUrl.startsWith('http')) {
+    if (avatarUrl != null &&
+        avatarUrl.isNotEmpty &&
+        !avatarUrl.startsWith('http')) {
       avatarUrl = 'http://localhost:5000$avatarUrl';
     }
 
@@ -86,7 +96,7 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
 
     // Fallback image if avatarUrl is empty
     if (avatarUrl == null || avatarUrl.isEmpty) {
-      avatarUrl = null; 
+      avatarUrl = null;
     }
 
     return Scaffold(
@@ -168,7 +178,9 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                student['username'] ?? student['name'] ?? 'Unknown Student',
+                                student['username'] ??
+                                    student['name'] ??
+                                    'Unknown Student',
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 18,
@@ -185,7 +197,9 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                student['phoneNumber'] ?? student['phone'] ?? '01700000000',
+                                student['phoneNumber'] ??
+                                    student['phone'] ??
+                                    '01700000000',
                                 style: TextStyle(
                                   color: Colors.grey.shade500,
                                   fontSize: 14,
@@ -194,13 +208,25 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                             ],
                           ),
                         ),
-                        _buildAction(Icons.chat_bubble_outline),
+                        _buildAction(
+                          Icons.chat_bubble_outline,
+                          onTap: () => _handleChat(
+                            studentId,
+                            student['username'] ?? 'Student',
+                            avatarUrl,
+                          ),
+                        ),
                         const SizedBox(width: 10),
-                        _buildAction(Icons.phone_outlined),
+                        _buildAction(
+                          Icons.phone_outlined,
+                          onTap: () => _handleCall(
+                            student['username'] ?? 'Student',
+                            avatarUrl ?? '',
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 28),
-
 
                     // ── Stats Block ──
                     Row(
@@ -283,13 +309,12 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                                     ),
                                   ),
                                   clipBehavior: Clip.hardEdge,
-                                  child: avatarUrl != null &&
-                                          avatarUrl.isNotEmpty
+                                  child:
+                                      avatarUrl != null && avatarUrl.isNotEmpty
                                       ? Image.network(
                                           avatarUrl,
                                           fit: BoxFit.cover,
-                                          errorBuilder: (_, __, ___) =>
-                                              Image.asset(
+                                          errorBuilder: (_, __, ___) => Image.asset(
                                             'assets/images/classes/student_image.png',
                                             fit: BoxFit.cover,
                                           ),
@@ -310,9 +335,20 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                                     ),
                                   ),
                                 ),
-                                _buildAction(Icons.chat_bubble_outline),
+                                _buildAction(
+                                  Icons.chat_bubble_outline,
+                                  onTap: () => _handleChat(
+                                    parentUser['_id'],
+                                    parentName,
+                                    avatarUrl,
+                                  ),
+                                ),
                                 const SizedBox(width: 10),
-                                _buildAction(Icons.phone_outlined),
+                                _buildAction(
+                                  Icons.phone_outlined,
+                                  onTap: () =>
+                                      _handleCall(parentName, avatarUrl ?? ''),
+                                ),
                               ],
                             ),
                             const SizedBox(height: 28),
@@ -462,15 +498,49 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
     );
   }
 
-  Widget _buildAction(IconData icon) {
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: const BoxDecoration(
-        color: Color(0xFF871DAD),
-        shape: BoxShape.circle,
+  Widget _buildAction(IconData icon, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: const BoxDecoration(
+          color: Color(0xFF871DAD),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: Colors.white, size: 20),
       ),
-      child: Icon(icon, color: Colors.white, size: 20),
+    );
+  }
+
+  Future<void> _handleChat(
+    String otherUserId,
+    String name,
+    String? avatar,
+  ) async {
+    final chatApi = ChatApiService();
+    // Create or get room
+    final room = await chatApi.createRoom([otherUserId]);
+    if (room != null && mounted) {
+      // Register room with notifier to ensure socket join and local list update
+      ref.read(chatNotifierProvider.notifier).addRoom(room);
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              ChatScreen(session: room, role: ChatRole.teacher),
+        ),
+      );
+    }
+  }
+
+  void _handleCall(String name, String avatar) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CallScreen(name: name, imageUrl: avatar),
+      ),
     );
   }
 

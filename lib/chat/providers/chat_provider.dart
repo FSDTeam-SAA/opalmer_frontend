@@ -1,209 +1,180 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../models/chat_role.dart';
+import 'package:opalmer_education/core/providers/auth_provider.dart';
+import 'package:opalmer_education/core/services/secure_storage_service.dart';
 import '../models/chat_session_model.dart';
 import '../models/message_model.dart';
+import '../services/chat_api_service.dart';
+import '../services/chat_socket_service.dart';
 
 class ChatState {
-  final List<ChatSessionModel> chats;
-  final List<ChatSessionModel> drafts;
-  final List<ChatSessionModel> groups;
+  final List<ChatSessionModel> rooms;
   final List<MessageModel> messages;
+  final bool isLoading;
+  final String? error;
 
   const ChatState({
-    required this.chats,
-    required this.drafts,
-    required this.groups,
+    this.rooms = const [],
     this.messages = const [],
+    this.isLoading = false,
+    this.error,
   });
 
-  factory ChatState.seeded(ChatRole role) {
-    final updatedAt = DateTime(2019, 11, 19);
-
-    switch (role) {
-      case ChatRole.parent:
-        return ChatState(
-          chats: [
-            ChatSessionModel(
-              id: 'parent-teacher-science',
-              type: ChatSessionType.direct,
-              title: 'Ms. Sarah Michelle',
-              subtitle: 'Mia is doing well in science.',
-              updatedAt: updatedAt,
-              participantIds: const ['parent-1', 'teacher-science'],
-              avatarUrl: 'https://i.pravatar.cc/150?u=sarah',
-            ),
-            ChatSessionModel(
-              id: 'parent-teacher-math',
-              type: ChatSessionType.direct,
-              title: 'Mr. Randolph',
-              subtitle: '2pm is awesome',
-              updatedAt: updatedAt,
-              participantIds: const ['parent-1', 'teacher-math'],
-              avatarUrl: 'https://i.pravatar.cc/150?u=randolph',
-            ),
-          ],
-          drafts: [
-            ChatSessionModel(
-              id: 'parent-draft-teacher',
-              type: ChatSessionType.draft,
-              title: 'Draft Message',
-              subtitle: 'Can we discuss Alex homework?',
-              updatedAt: updatedAt,
-              participantIds: const ['parent-1', 'teacher-science'],
-            ),
-          ],
-          groups: [
-            ChatSessionModel(
-              id: 'parent-subject-teachers-science',
-              type: ChatSessionType.group,
-              title: 'Subject Teachers - Science',
-              subtitle: 'Science is going well.',
-              updatedAt: updatedAt,
-              participantIds: const [
-                'parent-1',
-                'teacher-science',
-                'advisor-1',
-              ],
-            ),
-            ChatSessionModel(
-              id: 'parent-subject-teachers-math',
-              type: ChatSessionType.group,
-              title: 'Subject Teachers - Math',
-              subtitle: 'Practice sheets are ready.',
-              updatedAt: updatedAt,
-              participantIds: const ['parent-1', 'teacher-math', 'advisor-1'],
-            ),
-          ],
-        );
-      case ChatRole.student:
-        return ChatState(
-          chats: [
-            ChatSessionModel(
-              id: 'student-chat-mia',
-              type: ChatSessionType.direct,
-              title: 'Mia Johnson',
-              subtitle: 'See you in class.',
-              updatedAt: updatedAt,
-              participantIds: const ['student-1', 'student-mia'],
-              avatarUrl: 'https://i.pravatar.cc/150?u=mia',
-            ),
-          ],
-          drafts: const [],
-          groups: [
-            ChatSessionModel(
-              id: 'student-science-group',
-              type: ChatSessionType.group,
-              title: 'Science Study Group',
-              subtitle: 'Quiz review at 4pm.',
-              updatedAt: updatedAt,
-              participantIds: const [
-                'student-1',
-                'student-2',
-                'teacher-science',
-              ],
-            ),
-          ],
-        );
-      case ChatRole.teacher:
-        return ChatState(
-          chats: [
-            ChatSessionModel(
-              id: 'teacher-randolph',
-              type: ChatSessionType.direct,
-              title: 'Randolph',
-              subtitle: '2pm is awesome',
-              updatedAt: updatedAt,
-              participantIds: const ['teacher-1', 'randolph'],
-              avatarUrl: 'https://i.pravatar.cc/150?u=randolph',
-            ),
-            ChatSessionModel(
-              id: 'teacher-sarah',
-              type: ChatSessionType.direct,
-              title: 'Sarah Michelle',
-              subtitle: '0:14',
-              updatedAt: updatedAt,
-              participantIds: const ['teacher-1', 'sarah'],
-              avatarUrl: 'https://i.pravatar.cc/150?u=sarah',
-              previewType: MessagePreviewType.voice,
-            ),
-            ChatSessionModel(
-              id: 'teacher-max',
-              type: ChatSessionType.direct,
-              title: 'Maximillian Jacobson',
-              subtitle: 'Yes, 2pm is awesome',
-              updatedAt: updatedAt,
-              participantIds: const ['teacher-1', 'max'],
-              avatarUrl: 'https://i.pravatar.cc/150?u=max',
-              showReadReceipt: true,
-            ),
-            ChatSessionModel(
-              id: 'teacher-martha',
-              type: ChatSessionType.direct,
-              title: 'Martha Carig',
-              subtitle: 'Photo',
-              updatedAt: updatedAt,
-              participantIds: const ['teacher-1', 'martha'],
-              avatarUrl: 'https://i.pravatar.cc/150?u=martha',
-              previewType: MessagePreviewType.photo,
-            ),
-          ],
-          drafts: List.generate(
-            8,
-            (index) => ChatSessionModel(
-              id: 'teacher-draft-$index',
-              type: ChatSessionType.draft,
-              title: 'Draft Message',
-              subtitle: 'Actually I wanted to check with you...',
-              updatedAt: updatedAt,
-              participantIds: const ['teacher-1'],
-            ),
-          ),
-          groups: List.generate(
-            8,
-            (index) => ChatSessionModel(
-              id: 'teacher-grade-${index + 1}-science',
-              type: ChatSessionType.group,
-              title: 'Grade ${index + 1} - Science',
-              subtitle: 'Actually I wanted to check with you...',
-              updatedAt: updatedAt,
-              participantIds: const ['teacher-1'],
-            ),
-          ),
-        );
-    }
-  }
-
   ChatState copyWith({
-    List<ChatSessionModel>? chats,
-    List<ChatSessionModel>? drafts,
-    List<ChatSessionModel>? groups,
+    List<ChatSessionModel>? rooms,
     List<MessageModel>? messages,
+    bool? isLoading,
+    String? error,
   }) {
     return ChatState(
-      chats: chats ?? this.chats,
-      drafts: drafts ?? this.drafts,
-      groups: groups ?? this.groups,
+      rooms: rooms ?? this.rooms,
       messages: messages ?? this.messages,
+      isLoading: isLoading ?? this.isLoading,
+      error: error,
     );
   }
 }
 
 class ChatNotifier extends StateNotifier<ChatState> {
-  ChatNotifier(this.role) : super(ChatState.seeded(role));
+  final ChatApiService _apiService = ChatApiService();
+  final ChatSocketService _socketService = ChatSocketService();
+  final SecureStorageService _storage = SecureStorageService();
+  final Ref _ref;
 
-  final ChatRole role;
-
-  void receiveMessage(MessageModel message) {
-    state = state.copyWith(messages: [...state.messages, message]);
+  ChatNotifier(this._ref) : super(const ChatState()) {
+    _init();
   }
 
-  void saveDraft(ChatSessionModel draft) {
-    state = state.copyWith(drafts: [draft, ...state.drafts]);
+  StreamSubscription? _messageSubscription;
+  StreamSubscription? _statusSubscription;
+
+  Future<void> _init() async {
+    final user = _ref.read(authStateProvider);
+    if (user == null) return;
+
+    final token = await _storage.getToken();
+    if (token != null) {
+      _socketService.connect(token: token);
+      _setupListeners();
+    }
+
+    loadRooms();
+  }
+
+  void _setupListeners() {
+    _messageSubscription?.cancel();
+    _messageSubscription = _socketService.messages.listen((message) {
+      _handleNewIncomingMessage(message);
+    });
+
+    _statusSubscription?.cancel();
+    _statusSubscription = _socketService.statusStream.listen((status) {
+      if (status == ChatSocketConnectionStatus.connected) {
+        // Re-join active rooms if needed, or refresh list
+        loadRooms();
+      }
+    });
+  }
+
+  void _handleNewIncomingMessage(MessageModel message) {
+    // Prevent duplicates
+    if (state.messages.any((m) => m.id == message.id)) return;
+
+    final List<MessageModel> updatedMessages = [...state.messages, message];
+    
+    // Update rooms list with last message snippet
+    final updatedRooms = state.rooms.map((room) {
+      if (room.id == message.chatSessionId) {
+        return room.copyWith(
+          subtitle: message.text,
+          updatedAt: DateTime.now(),
+        );
+      }
+      return room;
+    }).toList();
+
+    state = state.copyWith(messages: updatedMessages, rooms: updatedRooms);
+  }
+
+  Future<void> loadRooms() async {
+    final user = _ref.read(authStateProvider);
+    if (user == null) return;
+
+    state = state.copyWith(isLoading: true);
+    try {
+      final rooms = await _apiService.getRooms();
+      state = state.copyWith(rooms: rooms, isLoading: false);
+      
+      // Auto-join all rooms via socket
+      for (var room in rooms) {
+        _socketService.joinRoom(room.id);
+      }
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  /// Manually add and join a room (e.g. after creating one)
+  void addRoom(ChatSessionModel room) {
+    if (!state.rooms.any((r) => r.id == room.id)) {
+      state = state.copyWith(rooms: [room, ...state.rooms]);
+    }
+    _socketService.joinRoom(room.id);
+  }
+
+  Future<void> loadMessages(String roomId) async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final messages = await _apiService.getMessages(roomId);
+      final newMessages = messages.reversed.toList();
+      
+      // Merge with existing messages, avoiding duplicates
+      final existingIds = state.messages.map((m) => m.id).toSet();
+      final filteredNew = newMessages.where((m) => !existingIds.contains(m.id)).toList();
+      
+      state = state.copyWith(
+        messages: [...state.messages, ...filteredNew],
+        isLoading: false
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> sendMessage(String roomId, String text) async {
+    try {
+      final newMessage = await _apiService.sendMessage(roomId, text);
+      if (newMessage != null) {
+        // Optimistically add to local state if socket didn't beat us to it
+        _handleNewIncomingMessage(newMessage);
+      }
+    } catch (e) {
+      state = state.copyWith(error: 'Failed to send message: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _messageSubscription?.cancel();
+    _statusSubscription?.cancel();
+    super.dispose();
   }
 }
 
-final chatProvider =
-    StateNotifierProvider.family<ChatNotifier, ChatState, ChatRole>(
-      (ref, role) => ChatNotifier(role),
-    );
+final chatNotifierProvider = StateNotifierProvider<ChatNotifier, ChatState>((ref) {
+  return ChatNotifier(ref);
+});
+
+// Helper for UI to filter rooms by role-specific logic if needed
+final chatRoomsProvider = Provider<List<ChatSessionModel>>((ref) {
+  final state = ref.watch(chatNotifierProvider);
+  return state.rooms;
+});
+
+final chatMessagesProvider = Provider.family<List<MessageModel>, String>((ref, roomId) {
+  final state = ref.watch(chatNotifierProvider);
+  final roomMessages = state.messages.where((m) => m.chatSessionId == roomId).toList();
+  // Sort by timestamp to ensure correct order after merging history/new messages
+  roomMessages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+  return roomMessages;
+});

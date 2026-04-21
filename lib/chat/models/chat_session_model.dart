@@ -12,6 +12,12 @@ class ChatSessionModel {
   final String? avatarUrl;
   final MessagePreviewType previewType;
   final bool showReadReceipt;
+  final String? lastMessageId;
+  final DateTime? lastMessageAt;
+  final String? createdBy;
+  final bool isBlocked;
+  final List<String> blockedBy;
+  final List<String> mutedBy;
 
   const ChatSessionModel({
     required this.id,
@@ -23,7 +29,54 @@ class ChatSessionModel {
     this.avatarUrl,
     this.previewType = MessagePreviewType.text,
     this.showReadReceipt = false,
+    this.lastMessageId,
+    this.lastMessageAt,
+    this.createdBy,
+    this.isBlocked = false,
+    this.blockedBy = const [],
+    this.mutedBy = const [],
   });
+
+  factory ChatSessionModel.fromJson(Map<String, dynamic> json) {
+    return ChatSessionModel(
+      id: json['_id'] ?? json['id'] ?? '',
+      type: _parseType(json['type']),
+      title: json['name'] ?? '',
+      subtitle: json['lastMessage'] ?? '',
+      updatedAt: json['updated_at'] != null 
+          ? DateTime.parse(json['updated_at'].toString()) 
+          : DateTime.now(),
+      participantIds: (json['participants'] as List? ?? [])
+          .map((p) => p['userId']?.toString() ?? '')
+          .where((id) => id.isNotEmpty)
+          .toList(),
+      avatarUrl: json['avatar'],
+      lastMessageId: json['lastMessageId'],
+      lastMessageAt: json['lastMessageAt'] != null 
+          ? DateTime.tryParse(json['lastMessageAt'].toString()) 
+          : null,
+      createdBy: json['createdBy'],
+      isBlocked: json['isBlocked'] ?? false,
+      blockedBy: (json['blockedBy'] as List? ?? [])
+          .map((id) => id.toString())
+          .toList(),
+      mutedBy: (json['mutedBy'] as List? ?? [])
+          .map((id) => id.toString())
+          .toList(),
+    );
+  }
+
+  static ChatSessionType _parseType(dynamic type) {
+    switch (type?.toString()) {
+      case 'direct':
+        return ChatSessionType.direct;
+      case 'draft':
+        return ChatSessionType.draft;
+      case 'group':
+      default:
+        return ChatSessionType.group;
+    }
+  }
 
   String get displayDate {
     final month = updatedAt.month.toString().padLeft(2, '0');
@@ -33,4 +86,58 @@ class ChatSessionModel {
   }
 
   bool get isGroupOrDraft => type != ChatSessionType.direct;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'type': type.name,
+      'name': title,
+      'lastMessage': subtitle,
+      'updated_at': updatedAt.toIso8601String(),
+      'participants': participantIds.map((id) => {'userId': id}).toList(),
+      'avatar': avatarUrl,
+      'lastMessageId': lastMessageId,
+      'lastMessageAt': lastMessageAt?.toIso8601String(),
+      'createdBy': createdBy,
+      'isBlocked': isBlocked,
+      'blockedBy': blockedBy,
+      'mutedBy': mutedBy,
+    };
+  }
+
+  ChatSessionModel copyWith({
+    String? id,
+    ChatSessionType? type,
+    String? title,
+    String? subtitle,
+    DateTime? updatedAt,
+    List<String>? participantIds,
+    String? avatarUrl,
+    MessagePreviewType? previewType,
+    bool? showReadReceipt,
+    String? lastMessageId,
+    DateTime? lastMessageAt,
+    String? createdBy,
+    bool? isBlocked,
+    List<String>? blockedBy,
+    List<String>? mutedBy,
+  }) {
+    return ChatSessionModel(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      title: title ?? this.title,
+      subtitle: subtitle ?? this.subtitle,
+      updatedAt: updatedAt ?? this.updatedAt,
+      participantIds: participantIds ?? this.participantIds,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      previewType: previewType ?? this.previewType,
+      showReadReceipt: showReadReceipt ?? this.showReadReceipt,
+      lastMessageId: lastMessageId ?? this.lastMessageId,
+      lastMessageAt: lastMessageAt ?? this.lastMessageAt,
+      createdBy: createdBy ?? this.createdBy,
+      isBlocked: isBlocked ?? this.isBlocked,
+      blockedBy: blockedBy ?? this.blockedBy,
+      mutedBy: mutedBy ?? this.mutedBy,
+    );
+  }
 }

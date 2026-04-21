@@ -66,4 +66,14 @@ class ApiConstants {
 
   // Attendance list for a single student in a single class (paginated)
   static const String attendanceByStudent = '/attendances/student';
+
+  // Chat Endpoints
+  static const String rooms = '/rooms';
+  static const String messages = '/message';
+  static String roomMessages(String roomId) => '/message/room/$roomId';
+  static String get myRooms => '/rooms/my-rooms';
+
+  // Call Logs
+  static const String callLogs = '/call-logs';
+  static const String myCallLogs = '/call-logs/my-logs';
 }

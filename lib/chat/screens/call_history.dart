@@ -1,10 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:opalmer_education/chat/services/chat_api_service.dart';
+import 'package:opalmer_education/core/providers/auth_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CallHistoryScreen extends StatelessWidget {
+class CallHistoryScreen extends ConsumerStatefulWidget {
   const CallHistoryScreen({super.key});
 
   @override
+  ConsumerState<CallHistoryScreen> createState() => _CallHistoryScreenState();
+}
+
+class _CallHistoryScreenState extends ConsumerState<CallHistoryScreen> {
+  final ChatApiService _apiService = ChatApiService();
+  List<Map<String, dynamic>> _logs = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLogs();
+  }
+
+  Future<void> _loadLogs() async {
+    try {
+      final logs = await _apiService.getCallLogs();
+      setState(() {
+        _logs = logs;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final currentUser = ref.watch(authStateProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -41,21 +73,29 @@ class CallHistoryScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        itemCount: 15, // Mock data count
-        separatorBuilder: (context, index) =>
-            const Divider(height: 1, color: Color(0xFFF5F5F5)),
-        itemBuilder: (context, index) {
-          final isIncoming = index % 2 == 0;
-          return _buildCallItem(
-            name: "Sarah Michelle",
-            date: "06/03/2025",
-            isIncoming: isIncoming,
-            imageUrl: "https://i.pravatar.cc/150?u=sarah$index",
-          );
-        },
-      ),
+      body: _isLoading 
+        ? const Center(child: CircularProgressIndicator())
+        : _logs.isEmpty
+          ? const Center(child: Text("No call history found"))
+          : ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              itemCount: _logs.length,
+              separatorBuilder: (context, index) =>
+                  const Divider(height: 1, color: Color(0xFFF5F5F5)),
+              itemBuilder: (context, index) {
+                final log = _logs[index];
+                final isIncoming = log['to'] == currentUser?.id;
+                final participant = isIncoming ? log['from_user'] : log['to_user'];
+                
+                return _buildCallItem(
+                  name: participant?['username'] ?? "Unknown",
+                  date: log['startedAt'] ?? "Unknown",
+                  isIncoming: isIncoming,
+                  imageUrl: participant?['avatar'] ?? "",
+                  status: log['status'] ?? "ended",
+                );
+              },
+            ),
     );
   }
 
@@ -64,12 +104,24 @@ class CallHistoryScreen extends StatelessWidget {
     required String date,
     required bool isIncoming,
     required String imageUrl,
+    required String status,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
         children: [
-          CircleAvatar(radius: 28, backgroundImage: NetworkImage(imageUrl)),
+          if (imageUrl.isNotEmpty)
+            CircleAvatar(radius: 28, backgroundImage: NetworkImage(imageUrl))
+          else
+            Container(
+              width: 56,
+              height: 56,
+              decoration: const BoxDecoration(
+                color: Color(0xFFF1F0F0),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.person, color: Color(0xFF871DAD)),
+            ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -89,13 +141,13 @@ class CallHistoryScreen extends StatelessWidget {
                     Icon(
                       isIncoming ? Icons.south_west : Icons.north_east,
                       size: 14,
-                      color: isIncoming
-                          ? const Color(0xFF4CAF50)
-                          : const Color(0xFFEA4335),
+                      color: status == 'missed' 
+                        ? const Color(0xFFEA4335)
+                        : const Color(0xFF4CAF50),
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      date,
+                      "$date • $status",
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey.shade400,

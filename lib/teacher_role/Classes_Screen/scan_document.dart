@@ -79,9 +79,11 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
 
   Future<void> _onGallery() async {
     if (_isProcessing) return;
-    
-    debugPrint("ScanDoc: _onGallery using FilePicker.custom to avoid PHPicker hang");
-    
+
+    debugPrint(
+      "ScanDoc: _onGallery using FilePicker.custom to avoid PHPicker hang",
+    );
+
     // 1. Fully release camera hardware
     setState(() => _isCameraInitialized = false);
     await _controller?.dispose();
@@ -113,7 +115,7 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
   Future<void> _processImage(String path) async {
     if (!mounted) return;
     setState(() => _isProcessing = true);
-    
+
     final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
     try {
       final inputImage = InputImage.fromFilePath(path);
@@ -123,13 +125,14 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("OCR failed: $e")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("OCR failed: $e")));
       }
     } finally {
       textRecognizer.close();
       if (mounted) setState(() => _isProcessing = false);
     }
-    */
 
     // MOCK DELAY for testing
     await Future.delayed(const Duration(seconds: 1));

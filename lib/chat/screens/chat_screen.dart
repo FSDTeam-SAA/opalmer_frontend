@@ -1,30 +1,72 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/providers/auth_provider.dart';
 import 'package:opalmer_education/teacher_role/profile_screen/language.dart';
 
+import '../models/chat_role.dart';
+import '../models/chat_session_model.dart';
+import '../models/message_model.dart';
+import '../providers/chat_provider.dart';
 import 'block_user.dart';
 import 'call.dart';
 
-class ChatScreen extends StatefulWidget {
-  final String name;
-  final String imageUrl;
+class ChatScreen extends ConsumerStatefulWidget {
+  final ChatSessionModel session;
+  final ChatRole role;
 
-  const ChatScreen({super.key, required this.name, required this.imageUrl});
+  const ChatScreen({
+    super.key,
+    required this.session,
+    required this.role,
+  });
 
   @override
-  State<ChatScreen> createState() => _ChatScreenState();
+  ConsumerState<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref.read(chatNotifierProvider.notifier).loadMessages(widget.session.id);
+    });
+  }
 
   @override
   void dispose() {
     _messageController.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _sendMessage() {
+    final text = _messageController.text.trim();
+    if (text.isNotEmpty) {
+      ref.read(chatNotifierProvider.notifier).sendMessage(widget.session.id, text);
+      _messageController.clear();
+      // Scroll to bottom
+      Timer(const Duration(milliseconds: 300), () {
+        if (_scrollController.hasClients) {
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final messages = ref.watch(chatMessagesProvider(widget.session.id));
+    final currentUser = ref.watch(authStateProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -58,20 +100,31 @@ class _ChatScreenState extends State<ChatScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => BlockUserScreen(userName: widget.name),
+                builder: (context) => BlockUserScreen(userName: widget.session.title),
               ),
             );
           },
           child: Row(
             children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundImage: NetworkImage(widget.imageUrl),
-              ),
+              if (widget.session.avatarUrl != null && widget.session.avatarUrl!.isNotEmpty)
+                CircleAvatar(
+                  radius: 20,
+                  backgroundImage: NetworkImage(widget.session.avatarUrl!),
+                )
+              else
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF1F0F0),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.person, color: Color(0xFF871DAD)),
+                ),
               const SizedBox(width: 12),
               Flexible(
                 child: Text(
-                  widget.name,
+                  widget.session.title,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -101,7 +154,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (context) =>
-                      CallScreen(name: widget.name, imageUrl: widget.imageUrl),
+                      CallScreen(name: widget.session.title, imageUrl: widget.session.avatarUrl ?? ""),
                 ),
               );
             },
@@ -112,42 +165,20 @@ class _ChatScreenState extends State<ChatScreen> {
       body: Column(
         children: [
           Expanded(
-            child: ListView(
+            child: ListView.builder(
+              controller: _scrollController,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              children: [
-                _buildMessage(text: "Good Morning!", time: "17:47", isMe: true),
-                _buildMessage(
-                  text: "Hey! How are you?",
-                  time: "17:47",
-                  isMe: false,
-                ),
-                _buildMessage(
-                  text: "He skips homework sometimes.",
-                  time: "17:47",
-                  isMe: true,
-                ),
-                _buildMessage(
-                  text: "Science is going well.",
-                  time: "17:47",
-                  isMe: false,
-                ),
-                _buildMessage(
-                  text: "Any suggestions for home?",
-                  time: "17:47",
-                  isMe: false,
-                ),
-                _buildMessage(
-                  text: "Short quizzes, fun learning. I'll share resources.",
-                  time: "17:47",
-                  isMe: true,
-                ),
-                _buildMessage(
-                  text: "Thank you very much.",
-                  time: "17:47",
-                  isMe: false,
-                ),
-                _buildVoiceMessage(time: "17:47", isMe: false),
-              ],
+              itemCount: messages.length,
+              itemBuilder: (context, index) {
+                final message = messages[index];
+                final isMe = message.senderId == currentUser?.id;
+                return _buildMessage(
+                  text: message.text,
+                  time: "${message.timestamp.hour}:${message.timestamp.minute.toString().padLeft(2, '0')}",
+                  isMe: isMe,
+                  status: message.deliveryStatus,
+                );
+              },
             ),
           ),
           // Input Bar
@@ -214,21 +245,25 @@ class _ChatScreenState extends State<ChatScreen> {
                     color: Color(0xFF871DAD),
                   ),
                 ),
+                onSubmitted: (_) => _sendMessage(),
               ),
             ),
           ),
           const SizedBox(width: 12),
-          Container(
-            width: 52,
-            height: 52,
-            decoration: const BoxDecoration(
-              color: Color(0xFF871DAD),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.send_outlined,
-              color: Colors.white,
-              size: 24,
+          GestureDetector(
+            onTap: _sendMessage,
+            child: Container(
+              width: 52,
+              height: 52,
+              decoration: const BoxDecoration(
+                color: Color(0xFF871DAD),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.send_outlined,
+                color: Colors.white,
+                size: 24,
+              ),
             ),
           ),
         ],
@@ -240,6 +275,7 @@ class _ChatScreenState extends State<ChatScreen> {
     required String text,
     required String time,
     required bool isMe,
+    required MessageDeliveryStatus status,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -282,10 +318,10 @@ class _ChatScreenState extends State<ChatScreen> {
                         ),
                         if (isMe) ...[
                           const SizedBox(width: 4),
-                          const Icon(
-                            Icons.done_all,
+                          Icon(
+                            status == MessageDeliveryStatus.read ? Icons.done_all : Icons.done,
                             size: 14,
-                            color: Color(0xFF4FA0F3),
+                            color: status == MessageDeliveryStatus.read ? const Color(0xFF4FA0F3) : Colors.grey.shade400,
                           ),
                         ],
                       ],
@@ -296,124 +332,6 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildVoiceMessage({required String time, required bool isMe}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: isMe
-            ? CrossAxisAlignment.end
-            : CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: isMe
-                ? MainAxisAlignment.end
-                : MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              CustomPaint(
-                painter: _UnifiedBubblePainter(
-                  isMe: isMe,
-                  color: const Color(0xFF871DAD),
-                ),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 34,
-                            height: 34,
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.play_arrow,
-                              color: Color(0xFF871DAD),
-                              size: 24,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          _buildWaveform(),
-                          const SizedBox(width: 10),
-                          _buildPill("05:00"),
-                          const SizedBox(width: 4),
-                          _buildPill("1x"),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        time,
-                        style: const TextStyle(
-                          fontSize: 10,
-                          color: Colors.white70,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Padding(
-            padding: const EdgeInsets.only(left: 12),
-            child: Text(
-              "View Transcript",
-              style: TextStyle(
-                fontSize: 12,
-                color: const Color(0xFF871DAD),
-                decoration: TextDecoration.underline,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWaveform() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: List.generate(10, (index) {
-        double h = (2 + (index % 5) * 6).toDouble();
-        return Container(
-          width: 1.5,
-          height: h,
-          margin: const EdgeInsets.symmetric(horizontal: 1.5),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(0.5),
-          ),
-        );
-      }),
-    );
-  }
-
-  Widget _buildPill(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 11,
-          color: Colors.white,
-          fontWeight: FontWeight.w600,
-        ),
       ),
     );
   }

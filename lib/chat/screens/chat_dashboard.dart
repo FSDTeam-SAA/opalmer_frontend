@@ -7,7 +7,6 @@ import '../models/chat_session_model.dart';
 import '../providers/chat_provider.dart';
 import 'call_history.dart';
 import 'chat_screen.dart';
-import 'group_call.dart';
 import 'send_to.dart';
 
 class ChatDashboard extends ConsumerStatefulWidget {
@@ -35,7 +34,6 @@ class _ChatDashboardState extends ConsumerState<ChatDashboard> {
   }
 
   void _handleSlide(int tab, int index) {
-    // We use a combination of tab and index to create a unique ID
     int uniqueId = tab * 1000 + index;
     if (_openedIndex != uniqueId) {
       setState(() {
@@ -66,7 +64,7 @@ class _ChatDashboardState extends ConsumerState<ChatDashboard> {
                   );
                 },
                 backgroundColor: const Color(0xFF871DAD),
-                shape: CircleBorder(),
+                shape: const CircleBorder(),
                 child: const Icon(Icons.add, color: Colors.white, size: 32),
               ),
             ),
@@ -76,7 +74,7 @@ class _ChatDashboardState extends ConsumerState<ChatDashboard> {
   }
 
   Widget _buildContent() {
-    final chatState = ref.watch(chatProvider(widget.role));
+    final chatState = ref.watch(chatNotifierProvider);
 
     return Column(
       children: [
@@ -122,7 +120,7 @@ class _ChatDashboardState extends ConsumerState<ChatDashboard> {
                           child: Container(
                             width: 38,
                             height: 38,
-                            decoration: BoxDecoration(shape: BoxShape.circle),
+                            decoration: const BoxDecoration(shape: BoxShape.circle),
                             child: Center(
                               child: Image.asset(
                                 'assets/images/home_dashboard/call_icons.png',
@@ -192,14 +190,18 @@ class _ChatDashboardState extends ConsumerState<ChatDashboard> {
 
         // Tabs Content
         Expanded(
-          child: IndexedStack(
-            index: _selectedTab,
-            children: [
-              _buildChatList(chatState.chats),
-              _buildDraftList(chatState.drafts),
-              _buildGroupList(chatState.groups),
-            ],
-          ),
+          child: chatState.isLoading 
+            ? const Center(child: CircularProgressIndicator())
+            : chatState.error != null
+              ? Center(child: Text(chatState.error!, style: const TextStyle(color: Colors.red)))
+              : IndexedStack(
+                  index: _selectedTab,
+                  children: [
+                    _buildRoomList(chatState.rooms.where((r) => r.type == ChatSessionType.direct).toList(), 0),
+                    _buildRoomList(chatState.rooms.where((r) => r.type == ChatSessionType.draft).toList(), 1),
+                    _buildRoomList(chatState.rooms.where((r) => r.type == ChatSessionType.group).toList(), 2),
+                  ],
+                ),
         ),
       ],
     );
@@ -228,30 +230,15 @@ class _ChatDashboardState extends ConsumerState<ChatDashboard> {
     );
   }
 
-  Widget _buildDraftList(List<ChatSessionModel> sessions) {
+  Widget _buildRoomList(List<ChatSessionModel> sessions, int tab) {
+    if (sessions.isEmpty) {
+      return Center(child: Text("No ${tab == 0 ? 'chats' : tab == 1 ? 'drafts' : 'groups'} found", style: TextStyle(color: Colors.grey.shade400)));
+    }
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       itemCount: sessions.length,
       itemBuilder: (context, index) =>
-          _buildSessionListItem(sessions[index], index, 1),
-    );
-  }
-
-  Widget _buildGroupList(List<ChatSessionModel> sessions) {
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      itemCount: sessions.length,
-      itemBuilder: (context, index) =>
-          _buildSessionListItem(sessions[index], index, 2),
-    );
-  }
-
-  Widget _buildChatList(List<ChatSessionModel> sessions) {
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      itemCount: sessions.length,
-      itemBuilder: (context, index) =>
-          _buildSessionListItem(sessions[index], index, 0),
+          _buildSessionListItem(sessions[index], index, tab),
     );
   }
 
@@ -261,14 +248,8 @@ class _ChatDashboardState extends ConsumerState<ChatDashboard> {
       tab: tab,
       openedIndex: _openedIndex,
       onSlide: _handleSlide,
-      title: session.title,
-      subtitle: session.subtitle,
-      date: session.displayDate,
-      imageUrl: session.avatarUrl,
-      icon: _sessionIcon(session),
-      statusIcon: _previewIcon(session.previewType),
-      showCheck: session.showReadReceipt,
-      isGroupOrDraft: session.isGroupOrDraft,
+      session: session,
+      role: widget.role,
       actions: _actionsForSession(session),
     );
   }
@@ -297,30 +278,6 @@ class _ChatDashboardState extends ConsumerState<ChatDashboard> {
       ),
     ];
   }
-
-  IconData _sessionIcon(ChatSessionModel session) {
-    switch (session.type) {
-      case ChatSessionType.draft:
-        return Icons.description_outlined;
-      case ChatSessionType.group:
-        return widget.role == ChatRole.parent
-            ? Icons.co_present_outlined
-            : Icons.school_outlined;
-      case ChatSessionType.direct:
-        return Icons.person_outline;
-    }
-  }
-
-  IconData? _previewIcon(MessagePreviewType previewType) {
-    switch (previewType) {
-      case MessagePreviewType.voice:
-        return Icons.mic_none_outlined;
-      case MessagePreviewType.photo:
-        return Icons.camera_alt_outlined;
-      case MessagePreviewType.text:
-        return null;
-    }
-  }
 }
 
 class _SlidableAction {
@@ -339,14 +296,8 @@ class _SlidableListItem extends StatefulWidget {
   final int tab;
   final int? openedIndex;
   final Function(int, int) onSlide;
-  final String title;
-  final String subtitle;
-  final String date;
-  final String? imageUrl;
-  final IconData? icon;
-  final IconData? statusIcon;
-  final bool showCheck;
-  final bool isGroupOrDraft;
+  final ChatSessionModel session;
+  final ChatRole role;
   final List<_SlidableAction> actions;
 
   const _SlidableListItem({
@@ -354,14 +305,8 @@ class _SlidableListItem extends StatefulWidget {
     required this.tab,
     required this.openedIndex,
     required this.onSlide,
-    required this.title,
-    required this.subtitle,
-    required this.date,
-    this.imageUrl,
-    this.icon,
-    this.statusIcon,
-    this.showCheck = false,
-    this.isGroupOrDraft = false,
+    required this.session,
+    required this.role,
     required this.actions,
   });
 
@@ -438,6 +383,7 @@ class _SlidableListItemState extends State<_SlidableListItem>
 
   @override
   Widget build(BuildContext context) {
+    final session = widget.session;
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Stack(
@@ -475,17 +421,10 @@ class _SlidableListItemState extends State<_SlidableListItem>
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) {
-                    if (widget.tab == 2) {
-                      return GroupChatScreen(groupName: widget.title);
-                    }
-                    return ChatScreen(
-                      name: widget.title,
-                      imageUrl:
-                          widget.imageUrl ??
-                          "https://i.pravatar.cc/150?u=${widget.title.hashCode}",
-                    );
-                  },
+                  builder: (context) => ChatScreen(
+                    session: session,
+                    role: widget.role,
+                  ),
                 ),
               );
             },
@@ -495,10 +434,10 @@ class _SlidableListItemState extends State<_SlidableListItem>
                 color: Colors.white,
                 child: Row(
                   children: [
-                    if (widget.imageUrl != null)
+                    if (session.avatarUrl != null && session.avatarUrl!.isNotEmpty)
                       CircleAvatar(
                         radius: 28,
-                        backgroundImage: NetworkImage(widget.imageUrl!),
+                        backgroundImage: NetworkImage(session.avatarUrl!),
                       )
                     else
                       Container(
@@ -509,7 +448,7 @@ class _SlidableListItemState extends State<_SlidableListItem>
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          widget.icon,
+                          _sessionIcon(session),
                           color: const Color(0xFF871DAD),
                           size: 28,
                         ),
@@ -523,7 +462,7 @@ class _SlidableListItemState extends State<_SlidableListItem>
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                widget.title,
+                                session.title,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
@@ -531,7 +470,7 @@ class _SlidableListItemState extends State<_SlidableListItem>
                                 ),
                               ),
                               Text(
-                                widget.date,
+                                session.displayDate,
                                 style: TextStyle(
                                   color: Colors.grey.shade400,
                                   fontSize: 12,
@@ -542,15 +481,15 @@ class _SlidableListItemState extends State<_SlidableListItem>
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              if (widget.statusIcon != null) ...[
+                              if (session.previewType != MessagePreviewType.text) ...[
                                 Icon(
-                                  widget.statusIcon,
+                                  _previewIcon(session.previewType),
                                   size: 16,
                                   color: const Color(0xFF4CAF50),
                                 ),
                                 const SizedBox(width: 4),
                               ],
-                              if (widget.showCheck) ...[
+                              if (session.showReadReceipt) ...[
                                 const Icon(
                                   Icons.done_all,
                                   size: 16,
@@ -560,7 +499,7 @@ class _SlidableListItemState extends State<_SlidableListItem>
                               ],
                               Expanded(
                                 child: Text(
-                                  widget.subtitle,
+                                  session.subtitle,
                                   style: TextStyle(
                                     color: Colors.grey.shade500,
                                     fontSize: 14,
@@ -581,5 +520,29 @@ class _SlidableListItemState extends State<_SlidableListItem>
         ],
       ),
     );
+  }
+
+  IconData _sessionIcon(ChatSessionModel session) {
+    switch (session.type) {
+      case ChatSessionType.draft:
+        return Icons.description_outlined;
+      case ChatSessionType.group:
+        return widget.role == ChatRole.parent
+            ? Icons.co_present_outlined
+            : Icons.school_outlined;
+      case ChatSessionType.direct:
+        return Icons.person_outline;
+    }
+  }
+
+  IconData? _previewIcon(MessagePreviewType previewType) {
+    switch (previewType) {
+      case MessagePreviewType.voice:
+        return Icons.mic_none_outlined;
+      case MessagePreviewType.photo:
+        return Icons.camera_alt_outlined;
+      case MessagePreviewType.text:
+        return null;
+    }
   }
 }

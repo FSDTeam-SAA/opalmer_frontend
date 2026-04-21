@@ -27,10 +27,16 @@ class StudentService {
   Future<List<LessonModel>> getLessons() async {
     try {
       final response = await _apiClient.get(ApiConstants.lessons);
-      final List<dynamic> data = response.data['data'] ?? [];
-      return data.map((json) => LessonModel.fromJson(json)).toList();
+      final rawData = response.data['data'];
+      if (rawData is! List) return [];
+      
+      return rawData
+          .whereType<Map<String, dynamic>>()
+          .map((json) => LessonModel.fromJson(json))
+          .toList();
     } catch (e) {
-      rethrow;
+      debugPrint('StudentService: Error in getLessons: $e');
+      return [];
     }
   }
 
@@ -50,22 +56,21 @@ class StudentService {
         return [];
       }
 
-      List<dynamic> data;
+      List<dynamic> data = [];
       if (responseData is List) {
         data = responseData;
       } else if (responseData is Map && responseData.containsKey('homework')) {
-        data = responseData['homework'] as List? ?? [];
-      } else {
-        debugPrint(
-          'StudentService: Unexpected homework response format: ${responseData.runtimeType}',
-        );
-        return [];
+        final homeworkList = responseData['homework'];
+        if (homeworkList is List) data = homeworkList;
       }
 
       debugPrint(
         'StudentService: Found ${data.length} homework items for user',
       );
-      return data.map((json) => HomeworkModel.fromJson(json)).toList();
+      return data
+          .whereType<Map<String, dynamic>>()
+          .map((json) => HomeworkModel.fromJson(json))
+          .toList();
     } catch (e, stack) {
       debugPrint('StudentService: Error in getHomework: $e');
       debugPrint(stack.toString());
@@ -86,22 +91,21 @@ class StudentService {
       var responseData = response.data['data'];
       if (responseData == null) return [];
 
-      List<dynamic> data;
+      List<dynamic> data = [];
       if (responseData is List) {
         data = responseData;
       } else if (responseData is Map && responseData.containsKey('homework')) {
-        data = responseData['homework'] as List? ?? [];
-      } else {
-        debugPrint(
-          'StudentService: Unexpected class homework response format: ${responseData.runtimeType}',
-        );
-        return [];
+        final homeworkList = responseData['homework'];
+        if (homeworkList is List) data = homeworkList;
       }
 
       debugPrint(
         'StudentService: Found ${data.length} homework items for class $classId',
       );
-      return data.map((json) => HomeworkModel.fromJson(json)).toList();
+      return data
+          .whereType<Map<String, dynamic>>()
+          .map((json) => HomeworkModel.fromJson(json))
+          .toList();
     } catch (e, stack) {
       debugPrint('StudentService: Error in getHomeworkByClass ($classId): $e');
       debugPrint(stack.toString());
@@ -114,10 +118,16 @@ class StudentService {
       final response = await _apiClient.get(
         ApiConstants.groupWorkByClass(classId),
       );
-      final List<dynamic> data = response.data['data'] ?? [];
-      return data.map((json) => GroupWorkModel.fromJson(json)).toList();
+      final rawData = response.data['data'];
+      if (rawData is! List) return [];
+      
+      return rawData
+          .whereType<Map<String, dynamic>>()
+          .map((json) => GroupWorkModel.fromJson(json))
+          .toList();
     } catch (e) {
-      rethrow;
+      debugPrint('StudentService: Error in getGroupWorkByClass: $e');
+      return [];
     }
   }
 

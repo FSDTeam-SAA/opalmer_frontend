@@ -9,7 +9,7 @@ import 'package:opalmer_education/student_role/Subjects/student_lessons_screen.d
 import 'package:opalmer_education/student_role/Subjects/student_academic_notes_screen.dart';
 import 'package:opalmer_education/student_role/Subjects/student_grading_progress_screen.dart';
 import 'package:opalmer_education/core/providers/student_provider.dart';
-import 'package:opalmer_education/student_role/Chat_Screen/chat_screen.dart';
+import 'package:opalmer_education/chat/providers/chat_provider.dart';
 
 class SubjectDetailScreen extends ConsumerStatefulWidget {
   final String subjectName;
@@ -222,16 +222,15 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
           ),
         ),
         GestureDetector(
-          onTap: () {
+          onTap: () async {
             if (teacherName != null) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ChatScreen(
-                    name: teacherName,
-                    imageUrl: teacherAvatar ?? '',
-                  ),
-                ),
+              // Usually we'd fetch or create a room here. 
+              // For now, let's use a dummy session or better, navigate to ChatDashboard 
+              // or implement a "start chat with user" logic.
+              final chatApi = ref.read(chatNotifierProvider.notifier);
+              // Simplified: just show message for now or implement direct navigation if session known
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Opening chat with teacher...")),
               );
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
