@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/core/widgets/pressable_card.dart';
+import 'package:opalmer_education/core/providers/teacher_provider.dart';
+import 'package:opalmer_education/core/models/teacher_class_model.dart';
+import '../Classes_Screen/class_details.dart';
+import '../Classes_Screen/classes_screen.dart';
 import '../../notification/notification.dart';
+import 'package:opalmer_education/core/providers/navigation_provider.dart';
 
-class HomeDashboard extends StatefulWidget {
+class HomeDashboard extends ConsumerStatefulWidget {
   const HomeDashboard({Key? key}) : super(key: key);
 
   @override
-  State<HomeDashboard> createState() => _HomeDashboardState();
+  ConsumerState<HomeDashboard> createState() => _HomeDashboardState();
 }
 
-class _HomeDashboardState extends State<HomeDashboard>
+class _HomeDashboardState extends ConsumerState<HomeDashboard>
     with TickerProviderStateMixin {
   late AnimationController _headerController;
   late AnimationController _statsController;
@@ -63,28 +69,11 @@ class _HomeDashboardState extends State<HomeDashboard>
           CurvedAnimation(parent: _bellController, curve: Curves.easeInOut),
         );
 
-    // Class stat cards staggered animation
+    // Class stat cards staggered animation - initialized with count 2 as default
     _statsController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
     );
-
-    for (int i = 0; i < 2; i++) {
-      final controller = AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 500),
-      );
-      _cardControllers.add(controller);
-      _cardFades.add(
-        CurvedAnimation(parent: controller, curve: Curves.easeOut),
-      );
-      _cardSlides.add(
-        Tween<Offset>(
-          begin: const Offset(0.3, 0),
-          end: Offset.zero,
-        ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut)),
-      );
-    }
 
     // Quiz cards staggered animation
     _quizController = AnimationController(
@@ -112,6 +101,43 @@ class _HomeDashboardState extends State<HomeDashboard>
     _startAnimations();
   }
 
+  void _setupCardAnimations(int count) {
+    if (_cardControllers.length == count) return;
+    
+    for (var c in _cardControllers) {
+      c.dispose();
+    }
+    _cardControllers.clear();
+    _cardFades.clear();
+    _cardSlides.clear();
+
+    for (int i = 0; i < count; i++) {
+      final controller = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 500),
+      );
+      _cardControllers.add(controller);
+      _cardFades.add(
+        CurvedAnimation(parent: controller, curve: Curves.easeOut),
+      );
+      _cardSlides.add(
+        Tween<Offset>(
+          begin: const Offset(0.3, 0),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut)),
+      );
+    }
+    
+    _triggerCardAnimations();
+  }
+
+  Future<void> _triggerCardAnimations() async {
+    for (int i = 0; i < _cardControllers.length; i++) {
+      await Future.delayed(const Duration(milliseconds: 120));
+      if (mounted) _cardControllers[i].forward();
+    }
+  }
+
   Future<void> _startAnimations() async {
     // Header fades in
     _headerController.forward();
@@ -119,13 +145,6 @@ class _HomeDashboardState extends State<HomeDashboard>
     // Bell shakes after header appears
     await Future.delayed(const Duration(milliseconds: 600));
     _bellController.forward();
-
-    // Class cards slide in staggered
-    await Future.delayed(const Duration(milliseconds: 200));
-    for (int i = 0; i < _cardControllers.length; i++) {
-      await Future.delayed(const Duration(milliseconds: 120));
-      _cardControllers[i].forward();
-    }
 
     // Quiz cards slide in staggered
     await Future.delayed(const Duration(milliseconds: 100));
@@ -152,6 +171,8 @@ class _HomeDashboardState extends State<HomeDashboard>
 
   @override
   Widget build(BuildContext context) {
+    final classesAsync = ref.watch(teacherClassesProvider);
+
     return Scaffold(
       backgroundColor: AppColors.scaffoldBg,
       body: SingleChildScrollView(
@@ -186,7 +207,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Text(
-                                      "Hi, Olivia Carter 👋",
+                                      "Hi, Teacher 👋",
                                       style: TextStyle(
                                         fontSize: 24,
                                         fontWeight: FontWeight.bold,
@@ -275,12 +296,17 @@ class _HomeDashboardState extends State<HomeDashboard>
                             color: AppColors.textPrimary,
                           ),
                         ),
-                        Text(
-                          "View All",
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.primaryMid,
+                        GestureDetector(
+                          onTap: () {
+                            ref.read(teacherTabIndexProvider.notifier).state = 1;
+                          },
+                          child: Text(
+                            "View All",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primaryMid,
+                            ),
                           ),
                         ),
                       ],
@@ -291,42 +317,51 @@ class _HomeDashboardState extends State<HomeDashboard>
                   // Horizontal scrollable Class Stats cards
                   SizedBox(
                     height: 160,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      children: [
-                        FadeTransition(
-                          opacity: _cardFades[0],
-                          child: SlideTransition(
-                            position: _cardSlides[0],
-                            child: _buildClassCard(
-                              subject: "Grade 6 - Science",
-                              days: "Mon, Wed",
-                              students: "28 Students",
-                              room: "6B",
-                              attendance: "92%",
-                              performance: "85%",
-                              color: AppColors.success,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        FadeTransition(
-                          opacity: _cardFades[1],
-                          child: SlideTransition(
-                            position: _cardSlides[1],
-                            child: _buildClassCard(
-                              subject: "Grade 7 - Math",
-                              days: "Tue, Thu",
-                              students: "32 Students",
-                              room: "7A",
-                              attendance: "88%",
-                              performance: "79%",
-                              color: AppColors.warning,
-                            ),
-                          ),
-                        ),
-                      ],
+                    child: classesAsync.when(
+                      data: (classes) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          _setupCardAnimations(classes.length);
+                        });
+                        
+                        if (classes.isEmpty) {
+                          return const Center(child: Text("No classes found."));
+                        }
+
+                        return ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          itemCount: classes.length,
+                          itemBuilder: (context, index) {
+                            final cls = classes[index];
+                            final Color cardColor = index % 2 == 0 
+                                ? AppColors.success 
+                                : AppColors.warning;
+
+                            return Row(
+                              children: [
+                                FadeTransition(
+                                  opacity: index < _cardFades.length 
+                                      ? _cardFades[index] 
+                                      : const AlwaysStoppedAnimation(1),
+                                  child: SlideTransition(
+                                    position: index < _cardSlides.length 
+                                        ? _cardSlides[index] 
+                                        : const AlwaysStoppedAnimation(Offset.zero),
+                                    child: _HomeClassCard(
+                                      classData: cls,
+                                      color: cardColor,
+                                    ),
+                                  ),
+                                ),
+                                if (index < classes.length - 1) 
+                                  const SizedBox(width: 14),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                      loading: () => const Center(child: CircularProgressIndicator()),
+                      error: (err, _) => Center(child: Text("Error: $err")),
                     ),
                   ),
 
@@ -432,134 +467,6 @@ class _HomeDashboardState extends State<HomeDashboard>
     );
   }
 
-  Widget _buildClassCard({
-    required String subject,
-    required String days,
-    required String students,
-    required String room,
-    required String attendance,
-    required String performance,
-    required Color color,
-  }) {
-    return PressableCard(
-      child: Container(
-        width: 280,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.school_rounded,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  subject,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                const Icon(Icons.access_time, color: Colors.white70, size: 14),
-                const SizedBox(width: 4),
-                Text(
-                  days,
-                  style: const TextStyle(fontSize: 12, color: Colors.white70),
-                ),
-                const SizedBox(width: 12),
-                const Icon(
-                  Icons.people_outline,
-                  color: Colors.white70,
-                  size: 14,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  students,
-                  style: const TextStyle(fontSize: 12, color: Colors.white70),
-                ),
-                const SizedBox(width: 12),
-                const Icon(
-                  Icons.location_on_outlined,
-                  color: Colors.white70,
-                  size: 14,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  room,
-                  style: const TextStyle(fontSize: 12, color: Colors.white70),
-                ),
-              ],
-            ),
-            const Spacer(),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Attendance",
-                        style: TextStyle(fontSize: 11, color: Colors.white70),
-                      ),
-                      Text(
-                        attendance,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Performance",
-                        style: TextStyle(fontSize: 11, color: Colors.white70),
-                      ),
-                      Text(
-                        performance,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildQuizCard({
     required String title,
     required String questions,
@@ -633,6 +540,169 @@ class _HomeDashboardState extends State<HomeDashboard>
                   color: Colors.white,
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HomeClassCard extends ConsumerWidget {
+  final TeacherClassModel classData;
+  final Color color;
+
+  const _HomeClassCard({
+    Key? key,
+    required this.classData,
+    required this.color,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final attendanceAsync = ref.watch(classAttendanceStatsProvider(classData.id));
+
+    return PressableCard(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ClassDetailsScreen(classData: classData),
+          ),
+        );
+      },
+      child: Container(
+        width: 280,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.school_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    "Grade ${classData.grade} - ${classData.subject}",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Icon(Icons.access_time, color: Colors.white70, size: 14),
+                const SizedBox(width: 4),
+                const Text(
+                  "Mon, Wed", // Mock schedule
+                  style: TextStyle(fontSize: 12, color: Colors.white70),
+                ),
+                const SizedBox(width: 12),
+                const Icon(
+                  Icons.people_outline,
+                  color: Colors.white70,
+                  size: 14,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  "${classData.studentCount} Students",
+                  style: const TextStyle(fontSize: 12, color: Colors.white70),
+                ),
+                const SizedBox(width: 12),
+                const Icon(
+                  Icons.location_on_outlined,
+                  color: Colors.white70,
+                  size: 14,
+                ),
+                const SizedBox(width: 4),
+                const Text(
+                  "6B", // Mock room
+                  style: TextStyle(fontSize: 12, color: Colors.white70),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Attendance",
+                        style: TextStyle(fontSize: 11, color: Colors.white70),
+                      ),
+                      attendanceAsync.when(
+                        data: (percentage) => Text(
+                          "$percentage%",
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        loading: () => const Text(
+                          "...%",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        error: (_, __) => const Text(
+                          "N/A",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Performance",
+                        style: TextStyle(fontSize: 11, color: Colors.white70),
+                      ),
+                      Text(
+                        classData.performance,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ],
         ),

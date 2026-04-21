@@ -1,12 +1,55 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/providers/grading_provider.dart';
 import 'package:opalmer_education/teacher_role/Quiz_Screen/attended_students.dart';
 import 'package:opalmer_education/teacher_role/Quiz_Screen/create_quiz.dart';
 
-class QuizDetailScreen extends StatelessWidget {
-  const QuizDetailScreen({super.key});
+class QuizDetailScreen extends ConsumerWidget {
+  final String sessionId;
+  const QuizDetailScreen({super.key, required this.sessionId});
+
+  int _toInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  int _extractAttendedCount(Map<String, dynamic> payload) {
+    final summary = payload['summary'];
+    if (summary is Map<String, dynamic>) {
+      final fromSummary = summary['attendedStudents'];
+      if (fromSummary != null) {
+        return _toInt(fromSummary);
+      }
+    }
+
+    final results = payload['results'];
+    if (results is List) {
+      return results.where((result) {
+        if (result is! Map) return false;
+        final status = result['status']?.toString().toLowerCase();
+        return status == 'completed';
+      }).length;
+    }
+
+    return 0;
+  }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sessionAsync = ref.watch(sessionDetailsProvider(sessionId));
+    final questionsAsync = ref.watch(sessionQuestionsProvider(sessionId));
+    final attendedStudentsAsync = ref.watch(
+      attendedSubmittedStudentsProvider(sessionId),
+    );
+
+    final attendedLabel = attendedStudentsAsync.when(
+      data: (payload) =>
+          '(${_extractAttendedCount(payload)}) STUDENTS ATTENDED',
+      loading: () => '(0) STUDENTS ATTENDED',
+      error: (_, stackTrace) => '(0) STUDENTS ATTENDED',
+    );
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -73,116 +116,176 @@ class QuizDetailScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          ListView(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+      body: sessionAsync.when(
+        data: (session) {
+          final title = session['title'] ?? 'Untitled';
+          final questionCount = session['questionCount'] ?? 0;
+          final time = session['time'] ?? 0;
+          final status = session['status'] ?? 'Draft';
+
+          final classInfo = session['classId'];
+          final grade = (classInfo is Map)
+              ? classInfo['grade'] ?? 'N/A'
+              : 'N/A';
+          final subject = (classInfo is Map)
+              ? classInfo['subject'] ?? 'N/A'
+              : 'N/A';
+
+          String imageUrl =
+              "https://img.freepik.com/free-photo/view-planet-earth-from-space_23-2148705432.jpg";
+          if (session['image'] != null &&
+              session['image'].toString().isNotEmpty) {
+            imageUrl = session['image'].toString();
+          }
+
+          return Stack(
             children: [
-              // Summary Green Card
-              _buildSummaryCard(),
+              ListView(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+                children: [
+                  // Summary Green Card
+                  _buildSummaryCard(
+                    title,
+                    questionCount,
+                    time,
+                    status,
+                    imageUrl,
+                  ),
 
-              const SizedBox(height: 24),
-              _buildInfoRow("Grade :", "6th"),
-              const SizedBox(height: 12),
-              _buildInfoRow("Subject :", "Math"),
+                  const SizedBox(height: 24),
+                  _buildInfoRow("Grade :", grade.toString()),
+                  const SizedBox(height: 12),
+                  _buildInfoRow("Subject :", subject.toString()),
 
-              const SizedBox(height: 28),
-              const Text(
-                "Questions",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF222222),
+                  const SizedBox(height: 28),
+                  const Text(
+                    "Questions",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF222222),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  questionsAsync.when(
+                    data: (questions) => ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: questions.length,
+                      itemBuilder: (context, index) {
+                        final q = questions[index];
+                        return _buildQuestionTile(
+                          number: index + 1,
+                          question: q['question'] ?? '',
+                          options: List<String>.from(q['options'] ?? []),
+                          answer: q['answer'] ?? '',
+                          initiallyExpanded: index == 0,
+                        );
+                      },
+                    ),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (err, stack) {
+                      // Check if it's a 404 (No questions found)
+                      return Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.quiz_outlined,
+                              size: 48,
+                              color: Colors.grey.shade300,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              "No questions found for this session.",
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 15,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            TextButton.icon(
+                              onPressed: () => ref.refresh(
+                                sessionQuestionsProvider(sessionId),
+                              ),
+                              icon: const Icon(Icons.refresh),
+                              label: const Text("Retry"),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+
+              // Fixed Bottom Button
+              Positioned(
+                bottom: 12,
+                left: 20,
+                right: 20,
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            AttendedStudentsScreen(sessionId: sessionId),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF871DAD),
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF871DAD).withValues(alpha: 0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      attendedLabel,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-
-              _buildQuestionTile(
-                number: 1,
-                question: "What is 1/2 as a decimal?",
-                options: ["0.5", "0.25", "0.75", "1.0"],
-                answer: "0.5",
-              ),
-              _buildQuestionTile(
-                number: 2,
-                question: "What is 0.75 as a fraction?",
-                options: ["3/4", "1/2", "2/5", "5/8"],
-                answer: "3/4",
-                initiallyExpanded: true,
-              ),
-              _buildQuestionTile(
-                number: 3,
-                question: "What is 7/10 as a decimal?",
-                options: ["0.7", "0.07", "7.0", "0.77"],
-                answer: "0.7",
-              ),
-              _buildQuestionTile(
-                number: 4,
-                question: "Convert 0.2 into a fraction.",
-                options: ["1/5", "2/5", "1/2", "1/10"],
-                answer: "1/5",
-              ),
-              _buildQuestionTile(
-                number: 5,
-                question: "Which decimal is equal to 3/4?",
-                options: ["0.75", "0.5", "0.25", "0.8"],
-                answer: "0.75",
               ),
             ],
-          ),
-
-          // Fixed Bottom Button
-          Positioned(
-            bottom: 12,
-            left: 20,
-            right: 20,
-            child: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AttendedStudentsScreen(),
-                  ),
-                );
-              },
-              child: Container(
-                height: 60,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF871DAD),
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF871DAD).withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                alignment: Alignment.center,
-                child: const Text(
-                  "(20) STUDENTS ATTENDED",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text("Error: $err")),
       ),
     );
   }
 
-  Widget _buildSummaryCard() {
+  Widget _buildSummaryCard(
+    String title,
+    int questions,
+    int time,
+    String status,
+    String imageUrl,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(
-          0xFF4DB68D,
-        ), // Matching the greenish-blue mockup color
+        color: const Color(0xFF4DB68D),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -197,7 +300,7 @@ class QuizDetailScreen extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: Image.network(
-              "https://img.freepik.com/free-photo/view-planet-earth-from-space_23-2148705432.jpg",
+              imageUrl,
               width: 84,
               height: 84,
               fit: BoxFit.cover,
@@ -208,18 +311,18 @@ class QuizDetailScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "Fractions and Decimals",
-                  style: TextStyle(
+                Text(
+                  title,
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 6),
-                const Text(
-                  "10 Questions · 5 min",
-                  style: TextStyle(fontSize: 13, color: Colors.white),
+                Text(
+                  "$questions Questions · $time min",
+                  style: const TextStyle(fontSize: 13, color: Colors.white),
                 ),
                 const SizedBox(height: 10),
                 Container(
@@ -231,9 +334,9 @@ class QuizDetailScreen extends StatelessWidget {
                     color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: const Text(
-                    "Published",
-                    style: TextStyle(
+                  child: Text(
+                    status[0].toUpperCase() + status.substring(1),
+                    style: const TextStyle(
                       fontSize: 11,
                       color: Colors.white,
                       fontWeight: FontWeight.bold,

@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/providers/teacher_provider.dart';
 import 'create_lesson_screen.dart';
 import 'lesson_overview_screen.dart';
 
-class LessonsScreen extends StatefulWidget {
-  const LessonsScreen({super.key});
+class LessonsScreen extends ConsumerStatefulWidget {
+  final String classId;
+  const LessonsScreen({super.key, required this.classId});
 
   @override
-  State<LessonsScreen> createState() => _LessonsScreenState();
+  ConsumerState<LessonsScreen> createState() => _LessonsScreenState();
 }
 
-class _LessonsScreenState extends State<LessonsScreen> {
+class _LessonsScreenState extends ConsumerState<LessonsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,7 +76,7 @@ class _LessonsScreenState extends State<LessonsScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const CreateLessonScreen(),
+                              builder: (_) => CreateLessonScreen(classId: widget.classId),
                             ),
                           );
                         },
@@ -119,35 +122,37 @@ class _LessonsScreenState extends State<LessonsScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Archived Lessons List
-                    _buildLessonCard(
-                      title: "Photosynthesis",
-                      description:
-                          "Solve question 1-10 on page 42 of the textbook.",
-                      dueDate: "Due: June 13,2025",
-                      showOptions: true,
-                    ),
-                    _buildLessonCard(
-                      title: "Fractions Practice",
-                      description:
-                          "Solve question 1-10 on page 42 of the textbook.",
-                      dueDate: "Due: June 13,2025",
-                      showOptions: false,
-                    ),
-                    _buildLessonCard(
-                      title: "Fractions Practice",
-                      description:
-                          "Solve question 1-10 on page 42 of the textbook.",
-                      dueDate: "Due: June 13,2025",
-                      showOptions: false,
-                    ),
-                    _buildLessonCard(
-                      title: "Fractions Practice",
-                      description:
-                          "Solve question 1-10 on page 42 of the textbook.",
-                      dueDate: "Due: June 13,2025",
-                      showOptions: false,
-                    ),
+                    // Lessons List
+                    ref.watch(classLessonsProvider(widget.classId)).when(
+                          data: (lessons) {
+                            if (lessons.isEmpty) {
+                              return const Padding(
+                                padding: EdgeInsets.only(top: 20),
+                                child: Text("No archived lessons yet."),
+                              );
+                            }
+                            return Column(
+                              children: lessons.map((lesson) {
+                                return _buildLessonCard(
+                                  lesson: lesson,
+                                  title: lesson['title'] ?? lesson['objective'] ?? 'No Title',
+                                  description: lesson['note'] ?? 'No Description',
+                                  dueDate: lesson['created_at'] != null
+                                      ? "Date: ${lesson['created_at'].toString().split('T')[0]}"
+                                      : "Date: TBD",
+                                  showOptions: true,
+                                );
+                              }).toList(),
+                            );
+                          },
+                          loading: () => const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(20),
+                              child: CircularProgressIndicator(),
+                            ),
+                          ),
+                          error: (err, stack) => Text("Error: $err"),
+                        ),
                   ],
                 ),
               ),
@@ -159,6 +164,7 @@ class _LessonsScreenState extends State<LessonsScreen> {
   }
 
   Widget _buildLessonCard({
+    required Map<String, dynamic> lesson,
     required String title,
     required String description,
     required String dueDate,
@@ -215,7 +221,7 @@ class _LessonsScreenState extends State<LessonsScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const LessonOverviewScreen(),
+                          builder: (_) => LessonOverviewScreen(lesson: lesson),
                         ),
                       );
                     },
