@@ -174,15 +174,21 @@ class StudentService {
       );
       // print('Attendance response for class $classId: ${response.data}'); // Debugging
       // Backend returns { attendanceRecords, meta }
-      final List<dynamic> records =
-          response.data['data']?['attendanceRecords'] ?? [];
-      return records.map((json) => AttendanceRecord.fromJson(json)).toList();
+      final rawData = response.data['data'];
+      List<dynamic> records = [];
+      if (rawData is Map) {
+        records = rawData['attendanceRecords'] as List? ?? [];
+      }
+      return records
+          .whereType<Map<String, dynamic>>()
+          .map((json) => AttendanceRecord.fromJson(json))
+          .toList();
     } on DioException catch (e) {
-      // Backend returns 404 if no records found, handle it gracefully
       if (e.response?.statusCode == 404) return [];
       rethrow;
     } catch (e) {
-      rethrow;
+      debugPrint('StudentService: Error in getAttendance: $e');
+      return [];
     }
   }
 
@@ -280,17 +286,19 @@ class StudentService {
       );
 
       final dynamic rawData = response.data['data'];
-      if (rawData == null) return [];
-
       List<dynamic> data = [];
       if (rawData is Map && rawData.containsKey('classes')) {
-        data = rawData['classes'] as List? ?? [];
+        final classesList = rawData['classes'];
+        if (classesList is List) data = classesList;
       } else if (rawData is List) {
         data = rawData;
       }
 
       debugPrint('StudentService: Found ${data.length} classes for student');
-      return data.map((json) => StudentClassModel.fromJson(json)).toList();
+      return data
+          .whereType<Map<String, dynamic>>()
+          .map((json) => StudentClassModel.fromJson(json))
+          .toList();
     } catch (e, stack) {
       debugPrint('StudentService: Error in getStudentClasses: $e');
       debugPrint(stack.toString());

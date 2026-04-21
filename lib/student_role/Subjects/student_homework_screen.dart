@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/providers/student_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
+import 'package:opalmer_education/student_role/Subjects/widgets/homework_card.dart';
+import 'package:opalmer_education/student_role/Subjects/widgets/group_member_card.dart';
 
 class StudentHomeworkScreen extends ConsumerStatefulWidget {
-  const StudentHomeworkScreen({Key? key}) : super(key: key);
+  const StudentHomeworkScreen({super.key});
 
   @override
   ConsumerState<StudentHomeworkScreen> createState() =>
@@ -43,35 +45,49 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
                   } catch (_) {}
                 }
               },
-              child: isClassSelected
-                  ? homeworkAsync.when(
-                      data: (homework) => ListView(
-                        key: const ValueKey('class_list'),
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        children: _buildClassHomeworkItems(homework),
-                      ),
-                      loading: () =>
-                          const _LoadingList(key: ValueKey('class_loading')),
-                      error: (err, stack) => _ErrorList(
-                        key: const ValueKey('class_error'),
-                        error: err,
-                      ),
+              child: ListView(
+                key: const ValueKey('homework_main_list'),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  if (isClassSelected)
+                    ...homeworkAsync.maybeWhen(
+                      data: (homework) => _buildClassHomeworkItems(homework),
+                      loading: () => [
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 60),
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                      ],
+                      orElse: () => [
+                        if (homeworkAsync.hasError)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 60),
+                            child:
+                                Center(child: Text('Error: ${homeworkAsync.error}')),
+                          ),
+                      ],
                     )
-                  : groupWorkAsync.when(
-                      data: (groupWork) => ListView(
-                        key: const ValueKey('group_list'),
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        children: _buildGroupsHomeworkItems(groupWork),
-                      ),
-                      loading: () =>
-                          const _LoadingList(key: ValueKey('group_loading')),
-                      error: (err, stack) => _ErrorList(
-                        key: const ValueKey('group_error'),
-                        error: err,
-                      ),
+                  else
+                    ...groupWorkAsync.maybeWhen(
+                      data: (groupWork) => _buildGroupsHomeworkItems(groupWork),
+                      loading: () => [
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 60),
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                      ],
+                      orElse: () => [
+                        if (groupWorkAsync.hasError)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 60),
+                            child:
+                                Center(child: Text('Error: ${groupWorkAsync.error}')),
+                          ),
+                      ],
                     ),
+                ],
+              ),
             ),
           ),
         ],
@@ -217,18 +233,17 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
         )
       else
         ...activeHomework.map(
-          (h) => _buildHomeworkCard(
+          (h) => HomeworkCard(
             title: h.title,
-            description:
-                h.description ??
+            description: h.description ??
                 (h.fileUrls.isNotEmpty
                     ? "${h.fileUrls.length} file(s) attached"
                     : "No additional description."),
             dueDate: h.dueDate != null
                 ? "Due: ${_formatDate(h.dueDate!)}"
                 : (h.createdAt != null
-                      ? "Assigned: ${_formatDate(h.createdAt!)}"
-                      : "Assigned: N/A"),
+                    ? "Assigned: ${_formatDate(h.createdAt!)}"
+                    : "Assigned: N/A"),
           ),
         ),
       const SizedBox(height: 32),
@@ -261,14 +276,14 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
         )
       else
         ...archivedHomework.map(
-          (h) => _buildHomeworkCard(
+          (h) => HomeworkCard(
             title: h.title,
             description: h.description ?? "Archived assignment",
             dueDate: h.dueDate != null
                 ? "Due: ${_formatDate(h.dueDate!)}"
                 : (h.createdAt != null
-                      ? "Assigned: ${_formatDate(h.createdAt!)}"
-                      : "N/A"),
+                    ? "Assigned: ${_formatDate(h.createdAt!)}"
+                    : "N/A"),
           ),
         ),
       const SizedBox(height: 20),
@@ -331,158 +346,25 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
         gw.members.map(
           (m) => Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: _buildMemberCard(m.username, m.avatar),
+            child: GroupMemberCard(name: m.username, avatarUrl: m.avatar),
           ),
         ),
       );
       items.add(const SizedBox(height: 20));
       items.add(
-        _buildHomeworkCard(
+        HomeworkCard(
           title: "Assignment Details",
           description: gw.description ?? "No additional description.",
           dueDate: gw.dueDate != null
               ? "Due: ${gw.dueDate.toString().split(' ')[0]}"
               : (gw.createdAt != null
-                    ? "Created: ${gw.createdAt.toString().split(' ')[0]}"
-                    : "Assigned: N/A"),
+                  ? "Created: ${gw.createdAt.toString().split(' ')[0]}"
+                  : "Assigned: N/A"),
         ),
       );
       items.add(const Divider(height: 40));
     }
     return items;
-  }
-
-  Widget _buildMemberCard(String name, String? avatarUrl) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: Colors.grey.shade200,
-            backgroundImage: (avatarUrl != null && avatarUrl.isNotEmpty)
-                ? NetworkImage(avatarUrl)
-                : const AssetImage('assets/images/classes/student_image.png')
-                      as ImageProvider,
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              name,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHomeworkCard({
-    required String title,
-    required String description,
-    required String dueDate,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            description,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade600,
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Divider(color: Colors.grey.shade200, height: 1),
-          const SizedBox(height: 14),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Flexible(
-                child: Text(
-                  dueDate,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade500,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 8),
-              ElevatedButton(
-                onPressed: () {
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Submission feature coming soon!'),
-                      backgroundColor: AppColors.primaryMid,
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryMid,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  elevation: 0,
-                  textStyle: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                child: const Text("SUBMIT"),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
   }
 
   String _formatDate(DateTime date) {
@@ -501,37 +383,4 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
   }
 }
 
-class _LoadingList extends StatelessWidget {
-  const _LoadingList({Key? key}) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      children: const [
-        Padding(
-          padding: EdgeInsets.symmetric(vertical: 60),
-          child: Center(child: CircularProgressIndicator()),
-        ),
-      ],
-    );
-  }
-}
-
-class _ErrorList extends StatelessWidget {
-  final Object error;
-  const _ErrorList({Key? key, required this.error}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 60),
-          child: Center(child: Text('Error: $error')),
-        ),
-      ],
-    );
-  }
-}
