@@ -31,44 +31,47 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async {
-                ref.invalidate(studentHomeworkProvider);
-                ref.invalidate(studentGroupWorkProvider);
-                await ref.read(studentHomeworkProvider.future);
+                if (isClassSelected) {
+                  ref.invalidate(studentHomeworkProvider);
+                  try {
+                    await ref.read(studentHomeworkProvider.future);
+                  } catch (_) {}
+                } else {
+                  ref.invalidate(studentGroupWorkProvider);
+                  try {
+                    await ref.read(studentGroupWorkProvider.future);
+                  } catch (_) {}
+                }
               },
-              // ✅ FIX 1: AnimatedSwitcher দিয়ে smooth transition
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: isClassSelected
-                    ? homeworkAsync.when(
-                        // ✅ FIX 2: ValueKey দিয়ে Flutter কে বলা হচ্ছে এটা আলাদা widget
-                        data: (homework) => ListView(
-                          key: const ValueKey('class_list'),
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          children: [_buildClassHomework(homework)],
-                        ),
-                        loading: () =>
-                            const _LoadingList(key: ValueKey('class_loading')),
-                        error: (err, stack) => _ErrorList(
-                          key: const ValueKey('class_error'),
-                          error: err,
-                        ),
-                      )
-                    : groupWorkAsync.when(
-                        data: (groupWork) => ListView(
-                          key: const ValueKey('group_list'),
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          children: [_buildGroupsHomework(groupWork)],
-                        ),
-                        loading: () =>
-                            const _LoadingList(key: ValueKey('group_loading')),
-                        error: (err, stack) => _ErrorList(
-                          key: const ValueKey('group_error'),
-                          error: err,
-                        ),
+              child: isClassSelected
+                  ? homeworkAsync.when(
+                      data: (homework) => ListView(
+                        key: const ValueKey('class_list'),
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children: [_buildClassHomework(homework)],
                       ),
-              ),
+                      loading: () =>
+                          const _LoadingList(key: ValueKey('class_loading')),
+                      error: (err, stack) => _ErrorList(
+                        key: const ValueKey('class_error'),
+                        error: err,
+                      ),
+                    )
+                  : groupWorkAsync.when(
+                      data: (groupWork) => ListView(
+                        key: const ValueKey('group_list'),
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children: [_buildGroupsHomework(groupWork)],
+                      ),
+                      loading: () =>
+                          const _LoadingList(key: ValueKey('group_loading')),
+                      error: (err, stack) => _ErrorList(
+                        key: const ValueKey('group_error'),
+                        error: err,
+                      ),
+                    ),
             ),
           ),
         ],
@@ -275,7 +278,6 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
   }
 
   Widget _buildGroupsHomework(List<GroupWorkModel> groupWork) {
-    // ✅ FIX 3: Center এর বদলে Column — Center unbounded height এর কারণে crash করে
     if (groupWork.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -308,12 +310,10 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
             const SizedBox(height: 8),
             if (gw.description != null)
               Text(
-                gw.description!,
+                gw.description ?? '',
                 style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
               ),
             const SizedBox(height: 16),
-
-            // ✅ FIX 4: Duplicate const সরানো হয়েছে
             const Text(
               "Group Members",
               style: TextStyle(
@@ -329,17 +329,15 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
                 child: _buildMemberCard(m.username, m.avatar),
               ),
             ),
-
             const SizedBox(height: 20),
-
             _buildHomeworkCard(
               title: "Assignment Details",
               description: gw.description ?? "No additional description.",
               dueDate: gw.dueDate != null
                   ? "Due: ${gw.dueDate.toString().split(' ')[0]}"
                   : (gw.createdAt != null
-                        ? "Created: ${gw.createdAt.toString().split(' ')[0]}"
-                        : "Assigned: N/A"),
+                      ? "Created: ${gw.createdAt.toString().split(' ')[0]}"
+                      : "Assigned: N/A"),
             ),
             const Divider(height: 40),
           ],
@@ -367,10 +365,10 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
           CircleAvatar(
             radius: 20,
             backgroundColor: Colors.grey.shade200,
-            backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty
+            backgroundImage: (avatarUrl != null && avatarUrl.isNotEmpty)
                 ? NetworkImage(avatarUrl)
                 : const AssetImage('assets/images/classes/student_image.png')
-                      as ImageProvider,
+                    as ImageProvider,
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -448,7 +446,6 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
               const SizedBox(width: 8),
               ElevatedButton(
                 onPressed: () {
-                  // ✅ FIX 5: mounted check করা হচ্ছে — dispose হয়ে গেলে crash এড়ানো
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -498,8 +495,6 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
   }
 }
 
-// ✅ FIX 6: Loading ও Error কে আলাদা const widget বানানো হয়েছে
-// এতে করে rebuild এ নতুন instance তৈরি হয় না — semantics stable থাকে
 class _LoadingList extends StatelessWidget {
   const _LoadingList({Key? key}) : super(key: key);
 

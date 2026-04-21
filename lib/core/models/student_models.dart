@@ -253,6 +253,7 @@ class BehaviorRecord {
 class QuizResultModel {
   final String id;
   final String? quizId;
+  final String? classId;
   final String quizTitle;
   final int score;
   final double percentage;
@@ -262,6 +263,7 @@ class QuizResultModel {
   QuizResultModel({
     required this.id,
     this.quizId,
+    this.classId,
     required this.quizTitle,
     required this.score,
     required this.percentage,
@@ -273,10 +275,12 @@ class QuizResultModel {
     // Handle both populated and non-populated quizId
     String title = "Unknown Quiz";
     String? qId;
+    String? cId;
     
     if (json['quizId'] is Map) {
       title = json['quizId']['title'] ?? "Unknown Quiz";
       qId = json['quizId']['_id'];
+      cId = json['quizId']['classId']?.toString();
     } else {
       qId = json['quizId']?.toString();
     }
@@ -284,11 +288,59 @@ class QuizResultModel {
     return QuizResultModel(
       id: json['_id'] ?? '',
       quizId: qId,
+      classId: cId,
       quizTitle: title,
       score: (json['score'] ?? 0).toInt(),
       percentage: (json['percentage'] ?? 0).toDouble() / 100.0, // Scale to 0.0-1.0 for progress bar
       status: json['progress']?['status'] ?? 'completed',
       createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+    );
+  }
+}
+
+class QuizSubmissionResult {
+  final int correctCount;
+  final int totalQuestions;
+  final double percentage;
+  final List<QuizAnswerSummary> answers;
+
+  QuizSubmissionResult({
+    required this.correctCount,
+    required this.totalQuestions,
+    required this.percentage,
+    required this.answers,
+  });
+
+  factory QuizSubmissionResult.fromJson(Map<String, dynamic> json) {
+    var answerList = json['answers'] as List? ?? [];
+    return QuizSubmissionResult(
+      correctCount: (json['correctCount'] ?? 0).toInt(),
+      totalQuestions: (json['totalQuestions'] ?? 0).toInt(),
+      percentage: (json['percentage'] ?? 0).toDouble(),
+      answers: answerList.map((e) => QuizAnswerSummary.fromJson(e)).toList(),
+    );
+  }
+}
+
+class QuizAnswerSummary {
+  final String question;
+  final String selectedAnswer;
+  final String? correctAnswer;
+  final bool isCorrect;
+
+  QuizAnswerSummary({
+    required this.question,
+    required this.selectedAnswer,
+    this.correctAnswer,
+    required this.isCorrect,
+  });
+
+  factory QuizAnswerSummary.fromJson(Map<String, dynamic> json) {
+    return QuizAnswerSummary(
+      question: json['question'] ?? '',
+      selectedAnswer: json['selectedAnswer'] ?? '',
+      correctAnswer: json['correctAnswer'], // Might need to be added to backend response
+      isCorrect: json['isCorrect'] ?? false,
     );
   }
 }
@@ -393,7 +445,8 @@ class AcademicDocumentModel {
       id: json['_id'] ?? '',
       studentId: json['studentId'] is Map ? json['studentId']['_id'] : json['studentId']?.toString(),
       teacherId: json['teacherId'] is Map ? json['teacherId']['_id'] : json['teacherId']?.toString(),
-      url: json['document']?['url'] ?? json['url'], // Handle both structures
+      url: (json['document'] is Map ? json['document']['url']?.toString() : null) ?? 
+           (json['url'] is Map ? json['url']['url']?.toString() : json['url']?.toString()),
       createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at']) : null,
     );
   }
@@ -414,7 +467,9 @@ class GroupMemberModel {
     return GroupMemberModel(
       id: json['_id'] ?? '',
       username: json['username'] ?? '',
-      avatar: json['avatar'],
+      avatar: json['avatar'] is Map
+          ? json['avatar']['url']?.toString()
+          : json['avatar']?.toString(),
     );
   }
 }

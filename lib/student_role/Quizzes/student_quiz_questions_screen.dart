@@ -19,6 +19,39 @@ class _StudentQuizQuestionsScreenState
     extends ConsumerState<StudentQuizQuestionsScreen> {
   final Map<int, int> _answers = {};
   bool _isSubmitting = false;
+  bool _isInitializing = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeQuiz();
+  }
+
+  Future<void> _initializeQuiz() async {
+    try {
+      await ref.read(studentServiceProvider).startQuiz(widget.quiz.id);
+    } catch (e) {
+      debugPrint('Error starting quiz: $e');
+    } finally {
+      if (mounted) setState(() => _isInitializing = false);
+    }
+  }
+
+  Future<void> _saveAnswer(int questionIdx, int optionIdx, List<QuizQuestion> questions) async {
+    setState(() => _answers[questionIdx] = optionIdx);
+    
+    // Auto-save progress to backend
+    try {
+      final question = questions[questionIdx];
+      await ref.read(studentServiceProvider).saveQuizProgress(
+        widget.quiz.id,
+        question.question,
+        question.options[optionIdx],
+      );
+    } catch (e) {
+      debugPrint('Error saving progress: $e');
+    }
+  }
 
   Future<void> _submitQuiz(List<QuizQuestion> questions) async {
     final user = ref.read(authStateProvider);
@@ -37,20 +70,21 @@ class _StudentQuizQuestionsScreenState
         }
       }
 
-      final success = await ref.read(studentServiceProvider).submitQuiz(
+      final result = await ref.read(studentServiceProvider).submitQuiz(
         widget.quiz.id,
         user.id,
         score,
         questions.length,
       );
 
-      if (success && mounted) {
-        // Invalidate quiz results so the dashboard and other screens fetch fresh data
+      if (result != null && mounted) {
+        // Invalidate providers so the dashboard and other screens fetch fresh data
         ref.invalidate(studentQuizResultsProvider);
+        ref.invalidate(studentClassesProvider);
         
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const StudentQuizResultScreen()),
+          MaterialPageRoute(builder: (_) => StudentQuizResultScreen(result: result)),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -73,8 +107,10 @@ class _StudentQuizQuestionsScreenState
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
-      body: quizQAAsync.when(
-        data: (quizQA) {
+      body: _isInitializing 
+        ? const Center(child: CircularProgressIndicator())
+        : quizQAAsync.when(
+            data: (quizQA) {
           if (quizQA == null || quizQA.questions.isEmpty) {
             return _buildEmptyState();
           }
@@ -94,6 +130,7 @@ class _StudentQuizQuestionsScreenState
                         idx,
                         q.question,
                         q.options,
+                        questions,
                       );
                     }).toList(),
                   ],
@@ -266,7 +303,7 @@ class _StudentQuizQuestionsScreenState
     );
   }
 
-  Widget _buildQuestionCard(int index, String question, List<String> options) {
+  Widget _buildQuestionCard(int index, String question, List<String> options, List<QuizQuestion> questions) {
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(20),
@@ -300,7 +337,7 @@ class _StudentQuizQuestionsScreenState
             bool isSelected = _answers[index] == optIdx;
 
             return GestureDetector(
-              onTap: () => setState(() => _answers[index] = optIdx),
+              onTap: () => _saveAnswer(index, optIdx, questions),
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Row(
@@ -372,7 +409,7 @@ class _StudentQuizQuestionsScreenState
         width: double.infinity,
         height: 56,
         child: ElevatedButton(
-          onPressed: _isSubmitting ? null : () => _submitQuiz(questions),
+          onPressed: (_isSubmitting || _isInitializing) ? null : () => _submitQuiz(questions),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryMid,
             shape: RoundedRectangleBorder(

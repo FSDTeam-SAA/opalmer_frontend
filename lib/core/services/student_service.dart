@@ -199,7 +199,42 @@ class StudentService {
     }
   }
 
-  Future<bool> submitQuiz(
+  Future<bool> startQuiz(String quizId) async {
+    try {
+      final response = await _apiClient.post(
+        '${ApiConstants.submitQuiz}/start',
+        data: {'quizId': quizId},
+      );
+      return response.statusCode == 201 || response.statusCode == 200;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 409) return true; // Already started
+      rethrow;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<bool> saveQuizProgress(
+    String quizId,
+    String question,
+    String selectedAnswer,
+  ) async {
+    try {
+      final response = await _apiClient.post(
+        '${ApiConstants.submitQuiz}/save-progress',
+        data: {
+          'quizId': quizId,
+          'question': question,
+          'selectedAnswer': selectedAnswer,
+        },
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<QuizSubmissionResult?> submitQuiz(
     String quizId,
     String studentId,
     int score,
@@ -215,7 +250,10 @@ class StudentService {
           'totalQuestion': totalQuestions,
         },
       );
-      return response.statusCode == 201 || response.statusCode == 200;
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return QuizSubmissionResult.fromJson(response.data['data']);
+      }
+      return null;
     } catch (e) {
       rethrow;
     }
