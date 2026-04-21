@@ -8,6 +8,7 @@ import 'student_attendence.dart';
 import 'student_profile.dart';
 import 'lessons_screen.dart';
 import 'homework_screen.dart';
+import 'lesson_overview_screen.dart';
 
 class ClassDetailsScreen extends ConsumerStatefulWidget {
   final TeacherClassModel classData;
@@ -232,13 +233,22 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                             itemCount: lessons.length,
                             itemBuilder: (context, index) {
                               final lesson = lessons[index];
-                              return _buildLessonCard(
-                                title: lesson['name'] ?? 'No Title',
-                                description:
-                                    lesson['description'] ?? 'No Description',
-                                dueDate: lesson['date'] != null
-                                    ? "Date: ${lesson['date'].toString().split('T')[0]}"
-                                    : "Date: TBD",
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => LessonOverviewScreen(lesson: lesson),
+                                    ),
+                                  );
+                                },
+                                child: _buildLessonCard(
+                                  title: lesson['title'] ?? lesson['objective'] ?? 'No Title',
+                                  description: lesson['note'] ?? 'No Description',
+                                  dueDate: lesson['created_at'] != null
+                                      ? "Date: ${lesson['created_at'].toString().split('T')[0]}"
+                                      : "Date: TBD",
+                                ),
                               );
                             },
                           );

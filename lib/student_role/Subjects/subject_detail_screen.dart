@@ -14,11 +14,13 @@ import 'package:opalmer_education/student_role/Chat_Screen/chat_screen.dart';
 class SubjectDetailScreen extends ConsumerStatefulWidget {
   final String subjectName;
   final LessonModel? lesson;
+  final StudentClassModel? studentClass;
 
   const SubjectDetailScreen({
     Key? key,
     this.subjectName = "Science",
     this.lesson,
+    this.studentClass,
   }) : super(key: key);
 
   @override
@@ -90,7 +92,7 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
         ),
       ),
       title: Text(
-        widget.lesson?.objective ?? widget.subjectName,
+        widget.studentClass?.subject ?? widget.lesson?.objective ?? widget.subjectName,
         style: const TextStyle(
           fontSize: 22,
           fontWeight: FontWeight.bold,
@@ -188,16 +190,18 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
   }
 
   Widget _buildTeacherProfile() {
-    final teacher = widget.lesson?.teacher;
+    final teacherName = widget.studentClass?.teacherName ?? widget.lesson?.teacher?.username;
+    final teacherAvatar = widget.studentClass?.teacherAvatar ?? widget.lesson?.teacher?.avatar;
+
     return Row(
       children: [
         CircleAvatar(
           radius: 28,
           backgroundColor: AppColors.primaryMid.withValues(alpha: 0.1),
-          backgroundImage: teacher?.avatar != null && teacher!.avatar!.isNotEmpty
-              ? NetworkImage(teacher.avatar!) as ImageProvider
+          backgroundImage: teacherAvatar != null && teacherAvatar.isNotEmpty
+              ? NetworkImage(teacherAvatar) as ImageProvider
               : null,
-          child: teacher?.avatar == null || teacher!.avatar!.isEmpty
+          child: teacherAvatar == null || teacherAvatar.isEmpty
               ? const Icon(Icons.person, color: AppColors.primaryMid)
               : null,
         ),
@@ -207,7 +211,7 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                teacher?.username ?? "No Teacher Assigned",
+                teacherName ?? "No Teacher Assigned",
                 style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
@@ -219,19 +223,19 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
         ),
         GestureDetector(
           onTap: () {
-            if (teacher != null) {
+            if (teacherName != null) {
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => ChatScreen(
-                    name: teacher.username,
-                    imageUrl: teacher.avatar ?? '',
+                    name: teacherName,
+                    imageUrl: teacherAvatar ?? '',
                   ),
                 ),
               );
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("No teacher assigned to this lesson")),
+                const SnackBar(content: Text("No teacher assigned to this class")),
               );
             }
           },
@@ -240,7 +244,7 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
         const SizedBox(width: 12),
         GestureDetector(
           onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Calling ${teacher?.username ?? 'Teacher'}...")),
+            SnackBar(content: Text("Calling ${teacherName ?? 'Teacher'}...")),
           ),
           child: _buildCircleActionIcon(Icons.call_outlined),
         ),

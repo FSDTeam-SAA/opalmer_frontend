@@ -15,6 +15,7 @@ class CreateLessonScreen extends ConsumerStatefulWidget {
 }
 
 class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
+  final TextEditingController _titleController = TextEditingController();
   final TextEditingController _objectiveController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
   PlatformFile? _selectedFile;
@@ -62,15 +63,15 @@ class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
       final apiClient = ref.read(apiClientProvider);
 
       final formData = FormData.fromMap({
-        'name': _objectiveController.text.trim(),
-        'description': _noteController.text.trim(),
+        'title': _titleController.text.trim(),
+        'objective': _objectiveController.text.trim(),
+        'note': _noteController.text.trim(),
         'classId': widget.classId,
-        'date': DateTime.now().toIso8601String(),
       });
 
       if (_selectedFile != null && _selectedFile!.path != null) {
         formData.files.add(MapEntry(
-          'pdf',
+          'document',
           await MultipartFile.fromFile(
             _selectedFile!.path!,
             filename: _selectedFile!.name,
@@ -150,6 +151,44 @@ class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Title Field
+                    const Text(
+                      "Title",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF333333),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _titleController,
+                      decoration: InputDecoration(
+                        hintText: "Enter title here",
+                        hintStyle: TextStyle(
+                          color: Colors.grey.shade400,
+                          fontSize: 14,
+                        ),
+                        filled: true,
+                        fillColor: const Color(0xFFFAFAFA),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF871DAD),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
                     // Objective Field
                     const Text(
                       "Objective",
@@ -163,7 +202,7 @@ class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
                     TextField(
                       controller: _objectiveController,
                       decoration: InputDecoration(
-                        hintText: "Enter title here",
+                        hintText: "Enter objective here",
                         hintStyle: TextStyle(
                           color: Colors.grey.shade400,
                           fontSize: 14,

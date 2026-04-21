@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'package:camera/camera.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
 class ScanDocumentScreen extends StatefulWidget {
   const ScanDocumentScreen({super.key});
@@ -39,7 +39,6 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
   }
 
   Future<void> _startCamera(int index) async {
-    debugPrint("ScanDoc: _startCamera called for index $index");
     if (_controller != null) {
       await _controller!.dispose();
     }
@@ -52,23 +51,19 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
 
     try {
       await _controller!.initialize();
-      setState(() {
-        _cameraIndex = index;
-        _isCameraInitialized = true;
-      });
+      if (mounted) {
+        setState(() {
+          _cameraIndex = index;
+          _isCameraInitialized = true;
+        });
+      }
     } catch (e) {
       debugPrint("Camera Error: $e");
     }
   }
 
   Future<void> _onCapture() async {
-    debugPrint("ScanDoc: _onCapture called");
-    if (!_isCameraInitialized || _isProcessing) {
-      debugPrint(
-        "ScanDoc: Capture blocked. Init: $_isCameraInitialized, Proc: $_isProcessing",
-      );
-      return;
-    }
+    if (!_isCameraInitialized || _isProcessing) return;
     setState(() => _isProcessing = true);
     try {
       final image = await _controller!.takePicture();
@@ -78,46 +73,61 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text("Capture failed: $e")));
     } finally {
-      setState(() => _isProcessing = false);
+      if (mounted) setState(() => _isProcessing = false);
     }
   }
 
   Future<void> _onGallery() async {
-    debugPrint("ScanDoc: _onGallery called");
     if (_isProcessing) return;
-
-    // Simple approach: Dispose camera before opening gallery
-    debugPrint("ScanDoc: Disposing camera for gallery...");
+    
+    debugPrint("ScanDoc: _onGallery using FilePicker.custom to avoid PHPicker hang");
+    
+    // 1. Fully release camera hardware
     setState(() => _isCameraInitialized = false);
     await _controller?.dispose();
     _controller = null;
 
-    final pickedFile = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
-    );
+    // 2. Short safety delay
+    await Future.delayed(const Duration(milliseconds: 500));
 
-    if (pickedFile != null) {
-      await _processImage(pickedFile.path);
+    try {
+      // Use custom extensions to FORCE iOS to use the Files Browser (stable)
+      // instead of the Photos Picker (unstable on simulator)
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'heic'],
+        allowMultiple: false,
+      );
+
+      if (result != null && result.files.single.path != null) {
+        await _processImage(result.files.single.path!);
+      }
+    } catch (e) {
+      debugPrint("ScanDoc: Picker error: $e");
+    } finally {
+      // 3. Re-init camera after picker closes
+      _initCameras();
     }
-
-    // Re-init camera after gallery work
-    _initCameras();
   }
 
   Future<void> _processImage(String path) async {
+    if (!mounted) return;
     setState(() => _isProcessing = true);
-    // COMMENTED OUT FOR SIMULATOR: Google MLKit does not support arm64 simulator.
-    /*
+    
     final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
     try {
       final inputImage = InputImage.fromFilePath(path);
       final recognizedText = await textRecognizer.processImage(inputImage);
-      _showResultSheet(path, recognizedText.text);
+      if (mounted) {
+        _showResultSheet(path, recognizedText.text);
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("OCR failed: $e")));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("OCR failed: $e")));
+      }
     } finally {
       textRecognizer.close();
-      setState(() => _isProcessing = false);
+      if (mounted) setState(() => _isProcessing = false);
     }
     */
 

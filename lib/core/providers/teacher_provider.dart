@@ -1,7 +1,8 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/models/teacher_class_model.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
 import 'package:opalmer_education/core/services/api_client.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
 
@@ -66,9 +67,17 @@ final classStudentsProvider = FutureProvider.family<List<dynamic>, String>((ref,
 
 final classLessonsProvider = FutureProvider.family<List<dynamic>, String>((ref, classId) async {
   final apiClient = ref.read(apiClientProvider);
-  final response = await apiClient.get('/lessons/class/$classId');
+  final response = await apiClient.get('/lessons/teacher-lessons');
   if (response.statusCode == 200 && response.data['success'] == true) {
-    return response.data['data'];
+    final List<dynamic> allLessons = response.data['data'];
+    // Filter by classId since this screen is for a specific class
+    return allLessons.where((lesson) {
+      final cId = lesson['classId'];
+      if (cId is Map) {
+        return cId['_id'] == classId;
+      }
+      return cId == classId;
+    }).toList();
   }
   return [];
 });
@@ -186,18 +195,17 @@ final deleteBehaviorProvider = FutureProvider.family<bool, String>((ref, behavio
   return response.statusCode == 200 && response.data['success'] == true;
 });
 
-final studentAcademicDocumentsProvider = FutureProvider.family<List<dynamic>, String>((ref, studentId) async {
+final studentAcademicDocumentsProvider =
+    FutureProvider.family<List<AcademicDocumentModel>, String>(
+        (ref, studentId) async {
   final apiClient = ref.read(apiClientProvider);
   final response = await apiClient.get('/academicDocument/teacher-documents');
   if (response.statusCode == 200 && response.data['success'] == true) {
     final List<dynamic> allDocs = response.data['data'] ?? [];
-    return allDocs.where((doc) {
-      final sId = doc['studentId'];
-      if (sId is Map) {
-        return sId['_id'] == studentId;
-      }
-      return sId == studentId;
-    }).toList();
+    return allDocs
+        .map((e) => AcademicDocumentModel.fromJson(e))
+        .where((doc) => doc.studentId == studentId)
+        .toList();
   }
   return [];
 });

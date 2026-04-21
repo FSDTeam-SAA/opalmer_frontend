@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/providers/student_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 
@@ -24,8 +25,8 @@ class StudentAcademicNotesScreen extends ConsumerWidget {
             separatorBuilder: (context, index) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
               final doc = documents[index];
-              final date = doc['created_at'] != null 
-                ? doc['created_at'].toString().split('T')[0] 
+              final date = doc.createdAt != null 
+                ? doc.createdAt!.toString().split(' ')[0] 
                 : "N/A";
               return _buildDocumentCard("Academic Note - $date");
             },

@@ -113,7 +113,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(60),
                             child: Image.asset(
-                              'assets/images/profile /olivia.png',
+                              'assets/images/profile/olivia.png',
                               fit: BoxFit.cover,
                             ),
                           ),
