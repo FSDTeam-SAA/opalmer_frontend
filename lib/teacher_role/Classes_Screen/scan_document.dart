@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+// import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ScanDocumentScreen extends StatefulWidget {
@@ -43,9 +43,13 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
     if (_controller != null) {
       await _controller!.dispose();
     }
-    
-    _controller = CameraController(_cameras[index], ResolutionPreset.high, enableAudio: false);
-    
+
+    _controller = CameraController(
+      _cameras[index],
+      ResolutionPreset.high,
+      enableAudio: false,
+    );
+
     try {
       await _controller!.initialize();
       setState(() {
@@ -60,7 +64,9 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
   Future<void> _onCapture() async {
     debugPrint("ScanDoc: _onCapture called");
     if (!_isCameraInitialized || _isProcessing) {
-      debugPrint("ScanDoc: Capture blocked. Init: $_isCameraInitialized, Proc: $_isProcessing");
+      debugPrint(
+        "ScanDoc: Capture blocked. Init: $_isCameraInitialized, Proc: $_isProcessing",
+      );
       return;
     }
     setState(() => _isProcessing = true);
@@ -68,7 +74,9 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
       final image = await _controller!.takePicture();
       await _processImage(image.path);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Capture failed: $e")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Capture failed: $e")));
     } finally {
       setState(() => _isProcessing = false);
     }
@@ -77,25 +85,29 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
   Future<void> _onGallery() async {
     debugPrint("ScanDoc: _onGallery called");
     if (_isProcessing) return;
-    
+
     // Simple approach: Dispose camera before opening gallery
     debugPrint("ScanDoc: Disposing camera for gallery...");
     setState(() => _isCameraInitialized = false);
     await _controller?.dispose();
     _controller = null;
 
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
-    
+    final pickedFile = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+    );
+
     if (pickedFile != null) {
       await _processImage(pickedFile.path);
     }
-    
+
     // Re-init camera after gallery work
     _initCameras();
   }
 
   Future<void> _processImage(String path) async {
     setState(() => _isProcessing = true);
+    // COMMENTED OUT FOR SIMULATOR: Google MLKit does not support arm64 simulator.
+    /*
     final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
     try {
       final inputImage = InputImage.fromFilePath(path);
@@ -107,6 +119,15 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
       textRecognizer.close();
       setState(() => _isProcessing = false);
     }
+    */
+
+    // MOCK DELAY for testing
+    await Future.delayed(const Duration(seconds: 1));
+    _showResultSheet(
+      path,
+      "[SIMULATOR MODE] OCR is disabled on simulators because Google MLKit lacks arm64 support. Test on a physical device to see actual OCR results.",
+    );
+    setState(() => _isProcessing = false);
   }
 
   void _showResultSheet(String path, String text) {
@@ -114,24 +135,41 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) => Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text("Scan Results", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              "Scan Results",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 16),
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.file(File(path), height: 150, width: double.infinity, fit: BoxFit.cover),
+              child: Image.file(
+                File(path),
+                height: 150,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
             ),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(12),
+              ),
               constraints: const BoxConstraints(maxHeight: 200),
-              child: SingleChildScrollView(child: SelectableText(text.isEmpty ? "No text detected." : text)),
+              child: SingleChildScrollView(
+                child: SelectableText(
+                  text.isEmpty ? "No text detected." : text,
+                ),
+              ),
             ),
             const SizedBox(height: 20),
             Row(
@@ -142,16 +180,26 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
                       Clipboard.setData(ClipboardData(text: text));
                       Navigator.pop(context);
                     },
-                    style: OutlinedButton.styleFrom(side: const BorderSide(color: Color(0xFF871DAD))),
-                    child: const Text("COPY", style: TextStyle(color: Color(0xFF871DAD))),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFF871DAD)),
+                    ),
+                    child: const Text(
+                      "COPY",
+                      style: TextStyle(color: Color(0xFF871DAD)),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF871DAD)),
-                    child: const Text("DONE", style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF871DAD),
+                    ),
+                    child: const Text(
+                      "DONE",
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ),
               ],
@@ -173,7 +221,10 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
           onPressed: () => Navigator.pop(context),
           icon: const Icon(Icons.arrow_back, color: Color(0xFF871DAD)),
         ),
-        title: const Text("Scan Document", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Scan Document",
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
       ),
       body: Column(
         children: [
@@ -187,31 +238,69 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
                     borderRadius: BorderRadius.circular(20),
                     child: _isCameraInitialized && _controller != null
                         ? CameraPreview(_controller!)
-                        : Container(color: Colors.black, child: const Center(child: CircularProgressIndicator(color: Colors.white))),
+                        : Container(
+                            color: Colors.black,
+                            child: const Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
                   ),
-                  if (_isProcessing) Container(color: Colors.black45, child: const Center(child: CircularProgressIndicator(color: Colors.white))),
+                  if (_isProcessing)
+                    Container(
+                      color: Colors.black45,
+                      child: const Center(
+                        child: CircularProgressIndicator(color: Colors.white),
+                      ),
+                    ),
                 ],
               ),
             ),
           ),
           Container(
             padding: const EdgeInsets.symmetric(vertical: 30),
-            decoration: const BoxDecoration(color: Color(0xFF871DAD), borderRadius: BorderRadius.vertical(top: Radius.circular(32))),
+            decoration: const BoxDecoration(
+              color: Color(0xFF871DAD),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                IconButton(onPressed: _onGallery, icon: const Icon(Icons.photo_library, color: Colors.white, size: 30)),
+                IconButton(
+                  onPressed: _onGallery,
+                  icon: const Icon(
+                    Icons.photo_library,
+                    color: Colors.white,
+                    size: 30,
+                  ),
+                ),
                 GestureDetector(
                   onTap: _onCapture,
                   child: Container(
                     padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 3)),
-                    child: Container(width: 50, height: 50, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 3),
+                    ),
+                    child: Container(
+                      width: 50,
+                      height: 50,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
                   ),
                 ),
                 IconButton(
-                  onPressed: () => _startCamera((_cameraIndex + 1) % _cameras.length),
-                  icon: const Icon(Icons.flip_camera_ios, color: Colors.white, size: 30),
+                  onPressed: () =>
+                      _startCamera((_cameraIndex + 1) % _cameras.length),
+                  icon: const Icon(
+                    Icons.flip_camera_ios,
+                    color: Colors.white,
+                    size: 30,
+                  ),
                 ),
               ],
             ),

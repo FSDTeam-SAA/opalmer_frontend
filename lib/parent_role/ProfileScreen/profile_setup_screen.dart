@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -51,6 +50,9 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   }
 
   Future<void> _showPickerSheet() async {
+    // Unfocus any active text fields to prevent keyboard/modal interaction freezes
+    FocusManager.instance.primaryFocus?.unfocus();
+
     final choice = await showModalBottomSheet<ImageSource>(
       context: context,
       backgroundColor: Colors.white,
@@ -82,6 +84,11 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
       ),
     );
     if (choice == null) return;
+
+    // IMPORTANT: Wait for the bottom sheet dismissal animation to fully complete
+    // before asking iOS to present the native UIImagePickerController.
+    // Without this delay, the iOS application context can freeze on the Simulator.
+    await Future.delayed(const Duration(milliseconds: 300));
 
     try {
       final picked = await _picker.pickImage(
@@ -128,7 +135,6 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
       final response = await _api.dio.put(
         '/users/${user.id}',
         data: formData,
-        options: Options(contentType: 'multipart/form-data'),
       );
 
       if (response.data is! Map || response.data['success'] != true) {
