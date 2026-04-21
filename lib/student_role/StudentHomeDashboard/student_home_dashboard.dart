@@ -158,7 +158,7 @@ class StudentHomeDashboard extends ConsumerWidget {
     final classesAsync = ref.watch(studentClassesProvider);
 
     return SizedBox(
-      height: 180,
+      height: 220,
       child: classesAsync.when(
         data: (classes) {
           if (classes.isEmpty) {
@@ -192,7 +192,12 @@ class StudentHomeDashboard extends ConsumerWidget {
     return quizzesAsync.when(
       data: (quizzes) {
         if (quizzes.isEmpty) {
-          return const Center(child: Text("No quizzes available"));
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 40),
+              child: Text("No quizzes available", style: TextStyle(color: Colors.grey)),
+            ),
+          );
         }
 
         final results = resultsAsync.asData?.value ?? [];
@@ -206,22 +211,15 @@ class StudentHomeDashboard extends ConsumerWidget {
           itemBuilder: (context, index) {
             final quiz = quizzes[index];
 
-            // Find the best score for this quiz if the student has taken it
+            // Find the best score for this quiz
             final quizResult = results.cast<QuizResultModel?>().firstWhere(
               (r) => r?.quizId == quiz.id,
               orElse: () => null,
             );
 
-            final colors = [
-              const Color(0xFF2E9B5B),
-              const Color(0xFFE8A317),
-              Colors.blue,
-            ];
-
             return _buildQuizCard(
               context: context,
               quiz: quiz,
-              color: colors[index % colors.length],
               progress: quizResult?.percentage ?? 0.0,
             );
           },
@@ -235,19 +233,20 @@ class StudentHomeDashboard extends ConsumerWidget {
   Widget _buildQuizCard({
     required BuildContext context,
     required QuizModel quiz,
-    required Color color,
     required double progress,
   }) {
+    final bool isCompleted = progress >= 1.0;
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -256,15 +255,18 @@ class StudentHomeDashboard extends ConsumerWidget {
         children: [
           Row(
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Container(
-                  width: 50,
-                  height: 50,
-                  color: Colors.grey.shade100,
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryMid.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Center(
                   child: Image.asset(
-                    'assets/images/classes/book_icon.png', // Using an existing asset
-                    fit: BoxFit.cover,
+                    'assets/images/classes/book_icon.png',
+                    width: 32,
+                    height: 32,
                   ),
                 ),
               ),
@@ -276,55 +278,65 @@ class StudentHomeDashboard extends ConsumerWidget {
                     Text(
                       quiz.title,
                       style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
+                        letterSpacing: -0.5,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if (quiz.metaLine.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        quiz.metaLine,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                    const SizedBox(height: 4),
+                    Text(
+                      quiz.metaLine.isNotEmpty ? quiz.metaLine : "${quiz.questionCount} Questions • ${quiz.durationMinutes} min",
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade500,
+                        fontWeight: FontWeight.w500,
                       ),
-                    ],
+                    ),
                   ],
+                ),
+              ),
+              if (isCompleted)
+                const Icon(Icons.check_circle, color: Color(0xFF4AA678), size: 24),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Progress",
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              Text(
+                "${(progress * 100).toInt()}%",
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.primaryMid,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              const Text(
-                "0%",
-                style: TextStyle(fontSize: 11, color: AppColors.primaryMid),
-              ),
-              const Spacer(),
-              Text(
-                "${(progress * 100).toInt()}%",
-                style: TextStyle(fontSize: 11, color: AppColors.primaryMid),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(10),
             child: LinearProgressIndicator(
               value: progress,
               backgroundColor: Colors.grey.shade100,
-              valueColor: AlwaysStoppedAnimation<Color>(color),
-              minHeight: 6,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                isCompleted ? const Color(0xFF4AA678) : AppColors.primaryMid,
+              ),
+              minHeight: 8,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -335,16 +347,17 @@ class StudentHomeDashboard extends ConsumerWidget {
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryMid,
-                foregroundColor: Colors.white,
+                backgroundColor: isCompleted ? Colors.grey.shade100 : AppColors.primaryMid,
+                foregroundColor: isCompleted ? Colors.grey.shade700 : Colors.white,
+                elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
-              child: const Text(
-                "Start Learning",
-                style: TextStyle(fontWeight: FontWeight.bold),
+              child: Text(
+                isCompleted ? "Retake Quiz" : "Start Learning",
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
               ),
             ),
           ),

@@ -33,36 +33,38 @@ final studentHomeworkProvider = FutureProvider<List<HomeworkModel>>((
   try {
     debugPrint('studentHomeworkProvider: Starting fetch for user ${user.id}');
 
-    // 1. Get enrolled classes (watching the provider generally, but avoiding .future wait if possible)
-    final classesAsync = ref.watch(studentClassesProvider);
-    final classes = classesAsync.value ?? [];
+    // 1. WAIT for classes to finish loading before fetching homework.
+    //    Previously used .value ?? [] which returned empty during loading (race condition).
+    final classes = await ref.watch(studentClassesProvider.future);
 
-    final List<HomeworkModel> allHomework = [];
-
-    // 2. Prepare fetches
-    final List<Future<List<HomeworkModel>>> fetches = [];
-    fetches.add(service.getHomework(user.id));
-
-    for (final cls in classes) {
-      if (cls.id.isNotEmpty) {
-        fetches.add(service.getHomeworkByClass(cls.id));
-      }
+    if (classes.isEmpty) {
+      debugPrint('studentHomeworkProvider: No classes found, returning empty');
+      return [];
     }
+
+    // 2. Fetch homework for every class the student is enrolled in.
+    //    Note: homework.userId refers to the TEACHER who created it, not the student,
+    //    so we must query by classId, NOT by student userId.
+    final List<Future<List<HomeworkModel>>> fetches = classes
+        .where((cls) => cls.id.isNotEmpty)
+        .map((cls) => service.getHomeworkByClass(cls.id))
+        .toList();
 
     // 3. Execute concurrently with timeout protection
     final results = await Future.wait(fetches).timeout(
       const Duration(seconds: 15),
       onTimeout: () {
         debugPrint('studentHomeworkProvider: Fetch timed out');
-        return [];
+        return <List<HomeworkModel>>[];
       },
     );
 
+    final List<HomeworkModel> allHomework = [];
     for (var list in results) {
       allHomework.addAll(list);
     }
 
-    // 4. Deduplicate
+    // 4. Deduplicate by id
     final Map<String, HomeworkModel> uniqueHomework = {};
     for (final h in allHomework) {
       if (h.id.isNotEmpty) uniqueHomework[h.id] = h;
@@ -86,7 +88,7 @@ final studentHomeworkProvider = FutureProvider<List<HomeworkModel>>((
   } catch (e, stack) {
     debugPrint('studentHomeworkProvider ERROR: $e');
     debugPrint(stack.toString());
-    return [];
+    rethrow;
   }
 });
 
@@ -99,9 +101,8 @@ final studentGroupWorkProvider = FutureProvider<List<GroupWorkModel>>((
   final service = ref.read(studentServiceProvider);
 
   try {
-    // 1. Fetch enrolled classes
-    final classesAsync = ref.watch(studentClassesProvider);
-    final classes = classesAsync.value ?? [];
+    // 1. Wait for enrolled classes to finish loading (fixes race condition)
+    final classes = await ref.watch(studentClassesProvider.future);
     if (classes.isEmpty) return [];
 
     final List<GroupWorkModel> allGroupWork = [];
@@ -139,7 +140,7 @@ final studentGroupWorkProvider = FutureProvider<List<GroupWorkModel>>((
     return resultList;
   } catch (e) {
     debugPrint('studentGroupWorkProvider error: $e');
-    return [];
+    rethrow;
   }
 });
 
@@ -153,7 +154,12 @@ final studentClassesProvider = FutureProvider<List<StudentClassModel>>((
 ) async {
   final studentId = ref.watch(authStateProvider)?.id;
   if (studentId == null) return [];
-  return await ref.watch(studentServiceProvider).getStudentClasses(studentId);
+  try {
+    return await ref.watch(studentServiceProvider).getStudentClasses(studentId);
+  } catch (e) {
+    debugPrint('studentClassesProvider error: $e');
+    rethrow;
+  }
 });
 
 final studentAttendanceProvider = FutureProvider<List<AttendanceRecord>>((
@@ -202,4 +208,23 @@ final studentBehaviorsProvider = FutureProvider<List<BehaviorRecord>>((
   final user = ref.watch(authStateProvider);
   if (user == null) return [];
   return await ref.watch(studentServiceProvider).getStudentBehaviors();
+});
+
+final studentClassAttendanceProvider =
+    FutureProvider.family<List<AttendanceRecord>, String>((
+  ref,
+  classId,
+) async {
+  final user = ref.watch(authStateProvider);
+  if (user == null) return [];
+  return await ref.watch(studentServiceProvider).getAttendance(user.id, classId);
+});
+
+final studentClassQuizResultsProvider =
+    FutureProvider.family<List<QuizResultModel>, String>((
+  ref,
+  classId,
+) async {
+  final allResults = await ref.watch(studentQuizResultsProvider.future);
+  return allResults.where((r) => r.classId == classId).toList();
 });
