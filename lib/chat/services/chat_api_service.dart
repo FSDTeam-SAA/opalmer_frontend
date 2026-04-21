@@ -10,11 +10,11 @@ class ChatApiService {
   final ApiClient _apiClient = ApiClient();
 
   /// Fetch all rooms for the current user
-  Future<List<ChatSessionModel>> getRooms() async {
+  Future<List<ChatSessionModel>> getRooms(String currentUserId) async {
     final response = await _apiClient.get(ApiConstants.myRooms);
     if (response.data['success'] == true) {
       final List data = response.data['data'] ?? [];
-      return data.map((json) => ChatSessionModel.fromJson(json)).toList();
+      return data.map((json) => ChatSessionModel.fromJson(json, currentUserId)).toList();
     }
     return [];
   }
@@ -33,7 +33,7 @@ class ChatApiService {
   }
 
   /// Create a new room
-  Future<ChatSessionModel?> createRoom(List<String> participants, {String? name, File? avatar}) async {
+  Future<ChatSessionModel?> createRoom(List<String> participants, String currentUserId, {String? name, File? avatar}) async {
     FormData formData = FormData.fromMap({
       'participants': jsonEncode(participants),
       if (name != null) 'name': name,
@@ -48,7 +48,7 @@ class ChatApiService {
 
     final response = await _apiClient.post(ApiConstants.rooms, data: formData);
     if (response.data['success'] == true) {
-      return ChatSessionModel.fromJson(response.data['data']);
+      return ChatSessionModel.fromJson(response.data['data'], currentUserId);
     }
     return null;
   }

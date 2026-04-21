@@ -102,7 +102,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
 
     state = state.copyWith(isLoading: true);
     try {
-      final rooms = await _apiService.getRooms();
+      final rooms = await _apiService.getRooms(user.id);
       state = state.copyWith(rooms: rooms, isLoading: false);
       
       // Auto-join all rooms via socket
@@ -154,9 +154,12 @@ class ChatNotifier extends StateNotifier<ChatState> {
   }
 
   Future<ChatSessionModel?> getOrCreateDirectRoom(String otherUserId) async {
+    final user = _ref.read(authStateProvider);
+    if (user == null) return null;
+
     state = state.copyWith(isLoading: true);
     try {
-      final room = await _apiService.createRoom([otherUserId]);
+      final room = await _apiService.createRoom([otherUserId], user.id);
       if (room != null) {
         addRoom(room);
         state = state.copyWith(isLoading: false);

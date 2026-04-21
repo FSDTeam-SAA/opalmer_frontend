@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/chat/providers/chat_provider.dart';
 import 'package:opalmer_education/chat/services/chat_api_service.dart';
+import 'package:opalmer_education/core/providers/auth_provider.dart';
 
 import '../models/chat_role.dart';
 import 'chat_screen.dart';
@@ -134,9 +135,15 @@ class _SendToScreenState extends ConsumerState<SendToScreen> {
                 onPressed: _selectedIds.isEmpty
                     ? null
                     : () async {
+                        final user = ref.read(authStateProvider);
+                        if (user == null) return;
+
                         // Create room or go to existing
                         final participants = _selectedIds.toList();
-                        final room = await _apiService.createRoom(participants);
+                        final room = await _apiService.createRoom(
+                          participants,
+                          user.id,
+                        );
                         if (room != null && mounted) {
                           // Register room with notifier
                           ref.read(chatNotifierProvider.notifier).addRoom(room);
@@ -237,10 +244,7 @@ class _SendToScreenState extends ConsumerState<SendToScreen> {
                     (contact['type'] ?? contact['role'] ?? 'USER')
                         .toString()
                         .toUpperCase(),
-                    style: TextStyle(
-                      color: Colors.grey.shade500,
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
                   ),
                 ],
               ),
@@ -259,11 +263,7 @@ class _SendToScreenState extends ConsumerState<SendToScreen> {
         color: const Color(0xFF871DAD).withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
-      child: const Icon(
-        Icons.person,
-        color: Color(0xFF871DAD),
-        size: 28,
-      ),
+      child: const Icon(Icons.person, color: Color(0xFF871DAD), size: 28),
     );
   }
 }

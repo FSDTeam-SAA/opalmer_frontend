@@ -7,6 +7,7 @@ import 'package:opalmer_education/chat/models/chat_role.dart';
 import 'package:opalmer_education/chat/screens/call.dart';
 import 'package:opalmer_education/chat/screens/chat_screen.dart';
 import 'package:opalmer_education/chat/services/chat_api_service.dart';
+import 'package:opalmer_education/core/providers/auth_provider.dart';
 
 import 'behavior_record.dart';
 import 'academic_documents.dart';
@@ -518,9 +519,12 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
     String name,
     String? avatar,
   ) async {
+    final user = ref.read(authStateProvider);
+    if (user == null) return;
+
     final chatApi = ChatApiService();
     // Create or get room
-    final room = await chatApi.createRoom([otherUserId]);
+    final room = await chatApi.createRoom([otherUserId], user.id);
     if (room != null && mounted) {
       // Register room with notifier to ensure socket join and local list update
       ref.read(chatNotifierProvider.notifier).addRoom(room);
