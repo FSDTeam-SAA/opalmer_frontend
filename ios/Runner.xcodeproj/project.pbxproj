@@ -314,11 +314,7 @@
 			shellPath = /bin/sh;
 			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin";
 		};
-<<<<<<< HEAD
 		6CF7B8D2FCCFA8FE2F538E5D /* [CP] Copy Pods Resources */ = {
-=======
-		3CE61B2A72D96EFF270149C7 /* [CP] Copy Pods Resources */ = {
->>>>>>> fbbab4edb15c625e884ac34b98a65a4bb1773062
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -335,11 +331,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-<<<<<<< HEAD
 		84135430540EACD8B1EABE9C /* [CP] Embed Pods Frameworks */ = {
-=======
-		85F528856964FACCF649F7FF /* [CP] Embed Pods Frameworks */ = {
->>>>>>> fbbab4edb15c625e884ac34b98a65a4bb1773062
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
