@@ -1,4 +1,5 @@
 import 'package:opalmer_education/core/models/user_model.dart';
+import 'package:intl/intl.dart';
 
 class LessonModel {
   final String id;
@@ -46,6 +47,8 @@ class HomeworkModel {
   final String classId;
   final String userId;
   final String title;
+  final String? description;
+  final DateTime? dueDate;
   final List<String> fileUrls;
   final bool archived;
   final DateTime? createdAt;
@@ -55,6 +58,8 @@ class HomeworkModel {
     required this.classId,
     required this.userId,
     required this.title,
+    this.description,
+    this.dueDate,
     required this.fileUrls,
     required this.archived,
     this.createdAt,
@@ -62,16 +67,27 @@ class HomeworkModel {
 
   factory HomeworkModel.fromJson(Map<String, dynamic> json) {
     var files = json['file'] as List? ?? [];
-    List<String> urls = files.map((f) => f['url']?.toString() ?? '').where((url) => url.isNotEmpty).toList();
+    List<String> urls = files
+        .map((f) => f is Map ? (f['url']?.toString() ?? '') : f.toString())
+        .where((url) => url.isNotEmpty)
+        .toList();
 
     return HomeworkModel(
       id: json['_id'] ?? '',
-      classId: json['classId'] is Map ? json['classId']['_id'] : json['classId'],
-      userId: json['userId'] is Map ? json['userId']['_id'] : (json['userId'] ?? ''),
+      classId: json['classId'] is Map
+          ? json['classId']['_id']
+          : (json['classId']?.toString() ?? ''),
+      userId: json['userId'] is Map
+          ? json['userId']['_id']
+          : (json['userId']?.toString() ?? ''),
       title: json['title'] ?? '',
+      description: json['description'],
+      dueDate: json['dueDate'] != null ? DateTime.tryParse(json['dueDate']) : null,
       fileUrls: urls,
       archived: json['archived'] ?? false,
-      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'])
+          : null,
     );
   }
 }
@@ -106,13 +122,21 @@ class QuizModel {
       return int.tryParse(v?.toString() ?? '') ?? 0;
     }
 
+    // Handle nested teacher object from aggregation or student results
+    String? tName;
+    if (json['teacher'] != null && json['teacher'] is Map) {
+      tName = json['teacher']['username'];
+    } else if (json['teacherId'] != null && json['teacherId'] is Map) {
+      tName = json['teacherId']['username'];
+    }
+
     return QuizModel(
       id: json['_id'] ?? '',
       title: json['title'] ?? '',
       description: json['description'],
       classId: json['classId'] is Map ? json['classId']['_id'] : json['classId'],
       teacherId: json['teacherId'] is Map ? json['teacherId']['_id'] : json['teacherId'],
-      teacherName: json['teacherId'] is Map ? json['teacherId']['username'] : null,
+      teacherName: tName,
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
       questionCount: parseInt(json['questionCount']),
       durationMinutes: parseInt(json['time']),
@@ -265,6 +289,181 @@ class QuizResultModel {
       percentage: (json['percentage'] ?? 0).toDouble() / 100.0, // Scale to 0.0-1.0 for progress bar
       status: json['progress']?['status'] ?? 'completed',
       createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+    );
+  }
+}
+
+class StudentClassModel {
+  final String id;
+  final String subject;
+  final int grade;
+  final String? section;
+  final String? schedule;
+  final String? teacherId;
+  final String? teacherName;
+  final String? teacherAvatar;
+  final int? attendancePercentage;
+  final int? performancePercentage;
+  final DateTime? lastActivityDate;
+  final List<WeeklyProgress> weeklyProgress;
+
+  StudentClassModel({
+    required this.id,
+    required this.subject,
+    required this.grade,
+    this.section,
+    this.schedule,
+    this.teacherId,
+    this.teacherName,
+    this.teacherAvatar,
+    this.attendancePercentage,
+    this.performancePercentage,
+    this.lastActivityDate,
+    this.weeklyProgress = const [],
+  });
+
+  factory StudentClassModel.fromJson(Map<String, dynamic> json) {
+    // Handle teacher population
+    String? tName;
+    String? tId;
+    if (json['teacherId'] is Map) {
+      tName = json['teacherId']['username'];
+      tId = json['teacherId']['_id']?.toString();
+    } else {
+      tId = json['teacherId']?.toString();
+    }
+
+    var wp = json['weeklyProgress'] as List? ?? [];
+
+    return StudentClassModel(
+      id: json['_id'] ?? '',
+      subject: json['subject'] ?? 'Unknown',
+      grade: json['grade'] ?? 0,
+      section: json['section'],
+      schedule: json['schedule'],
+      teacherId: tId,
+      teacherName: tName,
+      teacherAvatar: json['teacherAvatar'],
+      attendancePercentage: json['attendancePercentage'],
+      performancePercentage: json['performancePercentage'],
+      lastActivityDate: json['lastActivityDate'] != null
+          ? DateTime.tryParse(json['lastActivityDate'])
+          : null,
+      weeklyProgress: wp.map((e) => WeeklyProgress.fromJson(e)).toList(),
+    );
+  }
+
+  String get formattedLastActivity {
+    if (lastActivityDate == null) return "N/A";
+    return DateFormat('dd-MM-yy').format(lastActivityDate!);
+  }
+}
+
+class WeeklyProgress {
+  final String dayLabel;
+  final int? percentage;
+
+  WeeklyProgress({required this.dayLabel, this.percentage});
+
+  factory WeeklyProgress.fromJson(Map<String, dynamic> json) {
+    return WeeklyProgress(
+      dayLabel: json['dayLabel'] ?? '',
+      percentage: json['percentage'],
+    );
+  }
+}
+
+class AcademicDocumentModel {
+  final String id;
+  final String? studentId;
+  final String? teacherId;
+  final String? url;
+  final DateTime? createdAt;
+
+  AcademicDocumentModel({
+    required this.id,
+    this.studentId,
+    this.teacherId,
+    this.url,
+    this.createdAt,
+  });
+
+  factory AcademicDocumentModel.fromJson(Map<String, dynamic> json) {
+    return AcademicDocumentModel(
+      id: json['_id'] ?? '',
+      studentId: json['studentId'] is Map ? json['studentId']['_id'] : json['studentId']?.toString(),
+      teacherId: json['teacherId'] is Map ? json['teacherId']['_id'] : json['teacherId']?.toString(),
+      url: json['document']?['url'] ?? json['url'], // Handle both structures
+      createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at']) : null,
+    );
+  }
+}
+
+class GroupMemberModel {
+  final String id;
+  final String username;
+  final String? avatar;
+
+  GroupMemberModel({
+    required this.id,
+    required this.username,
+    this.avatar,
+  });
+
+  factory GroupMemberModel.fromJson(Map<String, dynamic> json) {
+    return GroupMemberModel(
+      id: json['_id'] ?? '',
+      username: json['username'] ?? '',
+      avatar: json['avatar'],
+    );
+  }
+}
+
+class GroupWorkModel {
+  final String id;
+  final String classId;
+  final List<GroupMemberModel> members;
+  final String title;
+  final String? description;
+  final DateTime? dueDate;
+  final List<String> fileUrls;
+  final bool archived;
+  final DateTime? createdAt;
+
+  GroupWorkModel({
+    required this.id,
+    required this.classId,
+    required this.members,
+    required this.title,
+    this.description,
+    this.dueDate,
+    required this.fileUrls,
+    required this.archived,
+    this.createdAt,
+  });
+
+  factory GroupWorkModel.fromJson(Map<String, dynamic> json) {
+    var memberList = json['userId'] as List? ?? [];
+    var files = json['file'] as List? ?? [];
+
+    return GroupWorkModel(
+      id: json['_id'] ?? '',
+      classId: json['classId'] is Map ? json['classId']['_id'] : (json['classId']?.toString() ?? ''),
+      members: memberList
+          .map((e) => e is Map<String, dynamic>
+              ? GroupMemberModel.fromJson(e)
+              : GroupMemberModel(id: e.toString(), username: 'Member'))
+          .toList(),
+      title: json['title'] ?? '',
+      description: json['description'],
+      dueDate: json['dueDate'] != null ? DateTime.tryParse(json['dueDate']) : null,
+      fileUrls: files
+          .map((f) => f is Map ? (f['url']?.toString() ?? '') : f.toString())
+          .where((url) => url.isNotEmpty)
+          .toList(),
+      archived: json['archived'] ?? false,
+      createdAt:
+          json['created_at'] != null ? DateTime.tryParse(json['created_at']) : null,
     );
   }
 }

@@ -10,13 +10,13 @@ class AddBehaviorScreen extends ConsumerStatefulWidget {
   final String? initialState;
 
   const AddBehaviorScreen({
-    Key? key,
+    super.key,
     required this.studentId,
     this.student,
     this.behaviorId,
     this.initialMessage,
     this.initialState,
-  }) : super(key: key);
+  }) : super();
 
   @override
   ConsumerState<AddBehaviorScreen> createState() => _AddBehaviorScreenState();
