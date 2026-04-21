@@ -32,8 +32,15 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final attendanceAsync = ref.watch(studentAttendanceProvider);
-    final quizResultsAsync = ref.watch(studentQuizResultsProvider);
+    final classId = widget.studentClass?.id ?? widget.lesson?.classId;
+
+    final attendanceAsync = classId != null
+        ? ref.watch(studentClassAttendanceProvider(classId))
+        : const AsyncData(<AttendanceRecord>[]);
+
+    final quizResultsAsync = classId != null
+        ? ref.watch(studentClassQuizResultsProvider(classId))
+        : const AsyncData(<QuizResultModel>[]);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -67,47 +74,17 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      leading: Padding(
-        padding: const EdgeInsets.only(left: 16),
-        child: Center(
-          child: GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(
-                color: AppColors.primaryMid,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.arrow_back,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
-          ),
-        ),
-      ),
-      title: Text(
-        widget.studentClass?.subject ?? widget.lesson?.objective ?? widget.subjectName,
-        style: const TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textPrimary,
-        ),
-      ),
-    );
-  }
 
   Widget _buildStatCards(
     AsyncValue<List<AttendanceRecord>> attendanceAsync,
     AsyncValue<List<QuizResultModel>> quizResultsAsync,
   ) {
-    String attendanceVal = "0%";
-    String progressVal = "0%";
+    String attendanceVal = widget.studentClass?.attendancePercentage != null
+        ? "${widget.studentClass!.attendancePercentage}%"
+        : "0%";
+    String progressVal = widget.studentClass?.performancePercentage != null
+        ? "${widget.studentClass!.performancePercentage}%"
+        : "0%";
 
     attendanceAsync.whenData((records) {
       if (records.isNotEmpty) {
@@ -129,15 +106,16 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
           child: _buildStatCard(
             label: "Attendance",
             value: attendanceVal,
-            emoji: "😊",
+            icon: Icons.calendar_today_rounded,
             color: const Color(0xFF4AA678),
           ),
         ),
         const SizedBox(width: 16),
         Expanded(
           child: _buildStatCard(
-            label: "Progress",
+            label: "Performance",
             value: progressVal,
+            icon: Icons.insights_rounded,
             color: const Color(0xFFFEBD43),
           ),
         ),
@@ -148,41 +126,51 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
   Widget _buildStatCard({
     required String label,
     required String value,
-    String? emoji,
+    required IconData icon,
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: Colors.white, size: 16),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -1,
+            ),
+          ),
+          const SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.9),
-              fontSize: 14,
+              color: Colors.white.withValues(alpha: 0.8),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
             ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                value,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              if (emoji != null) ...[
-                const SizedBox(width: 4),
-                Text(emoji, style: const TextStyle(fontSize: 20)),
-              ],
-            ],
           ),
         ],
       ),
@@ -193,33 +181,32 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
     final teacherName = widget.studentClass?.teacherName ?? widget.lesson?.teacher?.username;
     final teacherAvatar = widget.studentClass?.teacherAvatar ?? widget.lesson?.teacher?.avatar;
 
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 28,
-          backgroundColor: AppColors.primaryMid.withValues(alpha: 0.1),
-          backgroundImage: teacherAvatar != null && teacherAvatar.isNotEmpty
-              ? NetworkImage(teacherAvatar) as ImageProvider
-              : null,
-          child: teacherAvatar == null || teacherAvatar.isEmpty
-              ? const Icon(Icons.person, color: AppColors.primaryMid)
-              : null,
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                teacherName ?? "No Teacher Assigned",
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ],
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade100),
+      ),
+      child: Row(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.primaryMid.withValues(alpha: 0.2), width: 2),
+            ),
+            child: CircleAvatar(
+              radius: 26,
+              backgroundColor: AppColors.primaryMid.withValues(alpha: 0.1),
+              backgroundImage: teacherAvatar != null && teacherAvatar.isNotEmpty
+                  ? NetworkImage(teacherAvatar) as ImageProvider
+                  : null,
+              child: teacherAvatar == null || teacherAvatar.isEmpty
+                  ? const Icon(Icons.person, color: AppColors.primaryMid)
+                  : null,
+            ),
           ),
+<<<<<<< HEAD
         ),
         GestureDetector(
           onTap: () async {
@@ -244,21 +231,74 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
         GestureDetector(
           onTap: () => ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Calling ${teacherName ?? 'Teacher'}...")),
+=======
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  teacherName ?? "No Teacher Assigned",
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                Text(
+                  "Subject Instructor",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade500,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+>>>>>>> fbbab4edb15c625e884ac34b98a65a4bb1773062
           ),
-          child: _buildCircleActionIcon(Icons.call_outlined),
-        ),
-      ],
+          Row(
+            children: [
+              _buildCircleActionIcon(Icons.chat_bubble_rounded, () {
+                if (teacherName != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChatScreen(
+                        name: teacherName,
+                        imageUrl: teacherAvatar ?? '',
+                      ),
+                    ),
+                  );
+                }
+              }),
+              const SizedBox(width: 8),
+              _buildCircleActionIcon(Icons.call_rounded, () {}),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildCircleActionIcon(IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: const BoxDecoration(
-        color: AppColors.primaryMid,
-        shape: BoxShape.circle,
+  Widget _buildCircleActionIcon(IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Icon(icon, color: AppColors.primaryMid, size: 18),
       ),
-      child: Icon(icon, color: Colors.white, size: 20),
     );
   }
 
@@ -327,23 +367,63 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
           ),
           child: quizResultsAsync.when(
             data: (results) {
-              // Map weekly data (0 = Sun, 6 = Sat)
-              Map<int, double> weeklySpots = {};
-              for (var res in results) {
-                if (res.createdAt != null) {
-                  // Only include results from the last 7 days for "Weekly"
-                  if (_filterPeriod == "Weekly" &&
-                      DateTime.now().difference(res.createdAt!).inDays > 7) continue;
-                  
-                  int weekday = res.createdAt!.weekday % 7; // Sunday = 0
-                  // Keep the highest score for that day or average? Let's take latest.
-                  weeklySpots[weekday] = res.percentage * 100;
-                }
-              }
-
               List<FlSpot> spots = [];
-              for (int i = 0; i < 7; i++) {
-                spots.add(FlSpot(i.toDouble(), weeklySpots[i] ?? 0));
+              double maxX = 6;
+              final now = DateTime.now();
+
+              // Check if we should use individual results or pre-calculated weekly progress
+              if (results.isEmpty && widget.studentClass?.weeklyProgress != null && widget.studentClass!.weeklyProgress.isNotEmpty) {
+                maxX = 6;
+                final wp = widget.studentClass!.weeklyProgress;
+                const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                for (int i = 0; i < 7; i++) {
+                  final label = days[i];
+                  final progress = wp.firstWhere(
+                    (p) => p.dayLabel.startsWith(label),
+                    orElse: () => WeeklyProgress(dayLabel: label, percentage: 0),
+                  );
+                  spots.add(FlSpot(i.toDouble(), (progress.percentage ?? 0).toDouble()));
+                }
+              } else if (_filterPeriod == "Weekly") {
+                maxX = 6;
+                Map<int, List<double>> dayScores = {};
+                for (var res in results) {
+                  if (res.createdAt != null) {
+                    final diff = now.difference(res.createdAt!).inDays;
+                    if (diff <= 7) {
+                      int weekday = res.createdAt!.weekday % 7; // Sun=0
+                      dayScores.putIfAbsent(weekday, () => []).add(res.percentage * 100);
+                    }
+                  }
+                }
+                for (int i = 0; i <= 6; i++) {
+                  final scores = dayScores[i];
+                  double val = scores == null || scores.isEmpty 
+                      ? 0 
+                      : scores.reduce((a, b) => a + b) / scores.length;
+                  spots.add(FlSpot(i.toDouble(), val));
+                }
+              } else {
+                // Monthly view: last 30 days grouped into 4-5 weeks
+                maxX = 4;
+                Map<int, List<double>> weekScores = {};
+                for (var res in results) {
+                  if (res.createdAt != null) {
+                    final diff = now.difference(res.createdAt!).inDays;
+                    if (diff <= 30) {
+                      int weekIndex = (diff / 7).floor();
+                      if (weekIndex > 4) weekIndex = 4;
+                      weekScores.putIfAbsent(4 - weekIndex, () => []).add(res.percentage * 100);
+                    }
+                  }
+                }
+                for (int i = 0; i <= 4; i++) {
+                  final scores = weekScores[i];
+                  double val = scores == null || scores.isEmpty 
+                      ? 0 
+                      : scores.reduce((a, b) => a + b) / scores.length;
+                  spots.add(FlSpot(i.toDouble(), val));
+                }
               }
 
               return LineChart(
@@ -365,15 +445,28 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
                         showTitles: true,
                         reservedSize: 30,
                         getTitlesWidget: (value, meta) {
-                          const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                          if (value >= 0 && value < days.length) {
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 8.0),
-                              child: Text(
-                                days[value.toInt()],
-                                style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
-                              ),
-                            );
+                          if (_filterPeriod == "Weekly") {
+                            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                            if (value >= 0 && value < days.length) {
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Text(
+                                  days[value.toInt()],
+                                  style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
+                                ),
+                              );
+                            }
+                          } else {
+                            const weeks = ['W1', 'W2', 'W3', 'W4', 'W5'];
+                            if (value >= 0 && value < weeks.length) {
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Text(
+                                  weeks[value.toInt()],
+                                  style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
+                                ),
+                              );
+                            }
                           }
                           return const SizedBox.shrink();
                         },
@@ -397,7 +490,7 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
                   ),
                   borderData: FlBorderData(show: false),
                   minX: 0,
-                  maxX: 6,
+                  maxX: maxX,
                   minY: 0,
                   maxY: 100,
                   lineBarsData: [
@@ -407,22 +500,7 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
                       color: AppColors.primaryMid,
                       barWidth: 4,
                       isStrokeCapRound: true,
-                      dotData: FlDotData(
-                        show: true,
-                        getDotPainter: (spot, percent, barData, index) {
-                          // Highlight latest result day
-                          if (results.isNotEmpty && 
-                              spot.x == (results.first.createdAt?.weekday ?? -1) % 7) {
-                            return FlDotCirclePainter(
-                              radius: 6,
-                              color: Colors.white,
-                              strokeWidth: 3,
-                              strokeColor: Colors.orange,
-                            );
-                          }
-                          return FlDotCirclePainter(radius: 0);
-                        },
-                      ),
+                      dotData: const FlDotData(show: true),
                       belowBarData: BarAreaData(
                         show: true,
                         gradient: LinearGradient(
@@ -447,87 +525,110 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
     );
   }
 
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      centerTitle: true,
+      title: Text(
+        widget.subjectName,
+        style: const TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.5,
+        ),
+      ),
+      leading: Padding(
+        padding: const EdgeInsets.all(10),
+        child: GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.primaryMid.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: AppColors.primaryMid,
+              size: 16,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildOptionsList(BuildContext context) {
     final options = [
-      {"title": "Home Work", "icon": Icons.home_work_outlined},
-      {"title": "Attendance", "icon": Icons.calendar_today_outlined},
-      {"title": "Lessons", "icon": Icons.book_outlined},
-      {"title": "Academic Notes", "icon": Icons.note_alt_outlined},
-      {"title": "Grading Progress", "icon": Icons.grade_outlined},
+      {"title": "Home Work", "icon": Icons.home_work_rounded, "color": const Color(0xFF6C5CE7)},
+      {"title": "Attendance", "icon": Icons.calendar_month_rounded, "color": const Color(0xFF00B894)},
+      {"title": "Lessons", "icon": Icons.auto_stories_rounded, "color": const Color(0xFF0984E3)},
+      {"title": "Academic Notes", "icon": Icons.description_rounded, "color": const Color(0xFFE17055)},
+      {"title": "Grading Progress", "icon": Icons.analytics_rounded, "color": const Color(0xFFD63031)},
     ];
 
     return Column(
       children: options
-          .map((opt) => _buildOptionTile(context, opt["title"] as String))
+          .map((opt) => _buildOptionTile(
+                context,
+                opt["title"] as String,
+                opt["icon"] as IconData,
+                opt["color"] as Color,
+              ))
           .toList(),
     );
   }
 
-  Widget _buildOptionTile(BuildContext context, String title) {
+  Widget _buildOptionTile(BuildContext context, String title, IconData icon, Color color) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
           ),
         ],
+        border: Border.all(color: Colors.grey.shade50),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: color, size: 22),
+        ),
         title: Text(
           title,
           style: const TextStyle(
             fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF333333),
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
           ),
         ),
-        trailing: const Icon(
-          Icons.arrow_forward_ios_rounded,
-          size: 16,
-          color: Colors.grey,
+        trailing: Icon(
+          Icons.chevron_right_rounded,
+          size: 24,
+          color: Colors.grey.shade400,
         ),
         onTap: () {
           if (title == "Home Work") {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const StudentHomeworkScreen(),
-              ),
-            );
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentHomeworkScreen()));
           } else if (title == "Attendance") {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const StudentAttendanceScreen(),
-              ),
-            );
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentAttendanceScreen()));
           } else if (title == "Lessons") {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const StudentLessonsScreen(),
-              ),
-            );
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentLessonsScreen()));
           } else if (title == "Academic Notes") {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const StudentAcademicNotesScreen(),
-              ),
-            );
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentAcademicNotesScreen()));
           } else if (title == "Grading Progress") {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const StudentGradingProgressScreen(),
-              ),
-            );
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentGradingProgressScreen()));
           }
         },
       ),

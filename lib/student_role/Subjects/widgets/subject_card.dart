@@ -22,10 +22,9 @@ class SubjectCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    String attendanceVal = "${studentClass?.attendancePercentage ?? 0}%";
-    String progressVal = "${studentClass?.performancePercentage ?? 0}%";
-    String dateStr = studentClass?.formattedLastActivity ?? "N/A";
-
+    final int perf = studentClass?.performancePercentage ?? 0;
+    final int att = studentClass?.attendancePercentage ?? 0;
+    
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -33,23 +32,22 @@ class SubjectCard extends ConsumerWidget {
           MaterialPageRoute(
             builder: (context) => SubjectDetailScreen(
               subjectName: studentClass?.subject ?? subjectName,
-              // Note: SubjectDetailScreen might need update if it uses LessonModel
               studentClass: studentClass,
             ),
           ),
         );
       },
       child: Container(
-        width: width ?? 280,
-        padding: const EdgeInsets.all(16),
+        width: width ?? 300,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
             ),
           ],
         ),
@@ -61,96 +59,99 @@ class SubjectCard extends ConsumerWidget {
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(
-                    color: AppColors.primaryMid,
-                    shape: BoxShape.circle,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryMid.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
-                    Icons.monitor_heart_rounded,
-                    color: Colors.white,
+                    Icons.auto_stories_rounded,
+                    color: AppColors.primaryMid,
                     size: 20,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    studentClass?.subject ?? subjectName,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const Icon(
-                  Icons.calendar_today_outlined,
-                  color: Colors.green,
-                  size: 14,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  attendanceVal,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-                const SizedBox(width: 8),
-                const Icon(
-                  Icons.bar_chart_rounded,
-                  color: Colors.orange,
-                  size: 14,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  progressVal,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ],
-            ),
-            const Divider(height: 24),
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 18,
-                  backgroundColor: AppColors.primaryMid.withValues(alpha: 0.1),
-                  backgroundImage:
-                      studentClass?.teacherAvatar != null &&
-                          studentClass!.teacherAvatar!.isNotEmpty
-                      ? NetworkImage(studentClass!.teacherAvatar!)
-                            as ImageProvider
-                      : null,
-                  child:
-                      studentClass?.teacherAvatar == null ||
-                          studentClass!.teacherAvatar!.isEmpty
-                      ? const Icon(
-                          Icons.person,
-                          color: AppColors.primaryMid,
-                          size: 20,
-                        )
-                      : null,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        studentClass?.teacherName ?? "N/A",
+                        studentClass?.subject ?? subjectName,
                         style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                          letterSpacing: -0.5,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        dateStr,
-                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                        "Grade ${studentClass?.grade ?? ''}",
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade500,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                _buildCompactStat(
+                  icon: Icons.calendar_today_rounded,
+                  label: "Attendance",
+                  value: "$att%",
+                  color: const Color(0xFF4AA678),
+                ),
+                const SizedBox(width: 20),
+                _buildCompactStat(
+                  icon: Icons.insights_rounded,
+                  label: "Performance",
+                  value: "$perf%",
+                  color: const Color(0xFFFEBD43),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.grey.shade200, width: 1.5),
+                  ),
+                  child: CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Colors.grey.shade100,
+                    backgroundImage: studentClass?.teacherAvatar != null &&
+                            studentClass!.teacherAvatar!.isNotEmpty
+                        ? NetworkImage(studentClass!.teacherAvatar!) as ImageProvider
+                        : null,
+                    child: studentClass?.teacherAvatar == null ||
+                            studentClass!.teacherAvatar!.isEmpty
+                        ? const Icon(Icons.person, color: Colors.grey, size: 18)
+                        : null,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    studentClass?.teacherName ?? "N/A",
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade700,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.push(
@@ -166,23 +167,58 @@ class SubjectCard extends ConsumerWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryMid,
                     foregroundColor: Colors.white,
+                    elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  child: const Text("View", style: TextStyle(fontSize: 12)),
+                  child: const Text(
+                    "View",
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildCompactStat({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Row(
+      children: [
+        Icon(icon, color: color, size: 16),
+        const SizedBox(width: 8),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.grey.shade500,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

@@ -31,9 +31,17 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async {
-                ref.invalidate(studentHomeworkProvider);
-                ref.invalidate(studentGroupWorkProvider);
-                await ref.read(studentHomeworkProvider.future);
+                if (isClassSelected) {
+                  ref.invalidate(studentHomeworkProvider);
+                  try {
+                    await ref.read(studentHomeworkProvider.future);
+                  } catch (_) {}
+                } else {
+                  ref.invalidate(studentGroupWorkProvider);
+                  try {
+                    await ref.read(studentGroupWorkProvider.future);
+                  } catch (_) {}
+                }
               },
               child: isClassSelected
                   ? homeworkAsync.when(
@@ -41,9 +49,16 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
                         key: const ValueKey('class_list'),
                         padding: const EdgeInsets.symmetric(horizontal: 24),
                         physics: const AlwaysScrollableScrollPhysics(),
+<<<<<<< HEAD
                         children: _buildClassHomeworkItems(homework),
                       ),
                       loading: () => const _LoadingList(key: ValueKey('class_loading')),
+=======
+                        children: [_buildClassHomework(homework)],
+                      ),
+                      loading: () =>
+                          const _LoadingList(key: ValueKey('class_loading')),
+>>>>>>> fbbab4edb15c625e884ac34b98a65a4bb1773062
                       error: (err, stack) => _ErrorList(
                         key: const ValueKey('class_error'),
                         error: err,
@@ -54,9 +69,16 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
                         key: const ValueKey('group_list'),
                         padding: const EdgeInsets.symmetric(horizontal: 24),
                         physics: const AlwaysScrollableScrollPhysics(),
+<<<<<<< HEAD
                         children: _buildGroupsHomeworkItems(groupWork),
                       ),
                       loading: () => const _LoadingList(key: ValueKey('group_loading')),
+=======
+                        children: [_buildGroupsHomework(groupWork)],
+                      ),
+                      loading: () =>
+                          const _LoadingList(key: ValueKey('group_loading')),
+>>>>>>> fbbab4edb15c625e884ac34b98a65a4bb1773062
                       error: (err, stack) => _ErrorList(
                         key: const ValueKey('group_error'),
                         error: err,
@@ -294,6 +316,7 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
             color: AppColors.textPrimary,
           ),
         ),
+<<<<<<< HEAD
       );
       items.add(const SizedBox(height: 8));
       if (gw.description != null) {
@@ -302,6 +325,153 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
             gw.description!,
             style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
           ),
+=======
+        const SizedBox(height: 16),
+        if (activeHomework.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 40),
+            child: Center(
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.assignment_outlined,
+                    size: 48,
+                    color: Colors.grey.shade300,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "No active homework found for your classes.",
+                    style: TextStyle(color: Colors.grey, fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          ...activeHomework.map(
+            (h) => _buildHomeworkCard(
+              title: h.title,
+              description: h.description ??
+                  (h.fileUrls.isNotEmpty
+                      ? "${h.fileUrls.length} file(s) attached"
+                      : "No additional description."),
+              dueDate: h.dueDate != null
+                  ? "Due: ${_formatDate(h.dueDate!)}"
+                  : (h.createdAt != null
+                      ? "Assigned: ${_formatDate(h.createdAt!)}"
+                      : "Assigned: N/A"),
+            ),
+          ),
+        const SizedBox(height: 32),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: const [
+            Text(
+              "Archived Homework",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            Icon(
+              Icons.calendar_month_outlined,
+              color: AppColors.primaryMid,
+              size: 24,
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        if (archivedHomework.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Text(
+              "No archived homework",
+              style: TextStyle(color: Colors.grey),
+            ),
+          )
+        else
+          ...archivedHomework.map(
+            (h) => _buildHomeworkCard(
+              title: h.title,
+              description: h.description ?? "Archived assignment",
+              dueDate: h.dueDate != null
+                  ? "Due: ${_formatDate(h.dueDate!)}"
+                  : (h.createdAt != null
+                      ? "Assigned: ${_formatDate(h.createdAt!)}"
+                      : "N/A"),
+            ),
+          ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  Widget _buildGroupsHomework(List<GroupWorkModel> groupWork) {
+    if (groupWork.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: const [
+          SizedBox(height: 40),
+          Icon(Icons.group_outlined, size: 48, color: Color(0xFFCCCCCC)),
+          SizedBox(height: 16),
+          Text(
+            "No group assignments found.",
+            style: TextStyle(color: Colors.grey, fontSize: 14),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: groupWork.map((gw) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              gw.title,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            if (gw.description != null)
+              Text(
+                gw.description ?? '',
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+              ),
+            const SizedBox(height: 16),
+            const Text(
+              "Group Members",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...gw.members.map(
+              (m) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _buildMemberCard(m.username, m.avatar),
+              ),
+            ),
+            const SizedBox(height: 20),
+            _buildHomeworkCard(
+              title: "Assignment Details",
+              description: gw.description ?? "No additional description.",
+              dueDate: gw.dueDate != null
+                  ? "Due: ${gw.dueDate.toString().split(' ')[0]}"
+                  : (gw.createdAt != null
+                      ? "Created: ${gw.createdAt.toString().split(' ')[0]}"
+                      : "Assigned: N/A"),
+            ),
+            const Divider(height: 40),
+          ],
+>>>>>>> fbbab4edb15c625e884ac34b98a65a4bb1773062
         );
       }
       items.add(const SizedBox(height: 16));
@@ -360,7 +530,7 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
           CircleAvatar(
             radius: 20,
             backgroundColor: Colors.grey.shade200,
-            backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty
+            backgroundImage: (avatarUrl != null && avatarUrl.isNotEmpty)
                 ? NetworkImage(avatarUrl)
                 : const AssetImage('assets/images/classes/student_image.png')
                     as ImageProvider,

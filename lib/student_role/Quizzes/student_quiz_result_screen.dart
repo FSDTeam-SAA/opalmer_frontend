@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 
 class StudentQuizResultScreen extends StatelessWidget {
-  const StudentQuizResultScreen({Key? key}) : super(key: key);
+  final QuizSubmissionResult result;
+  const StudentQuizResultScreen({Key? key, required this.result})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -24,15 +27,32 @@ class StudentQuizResultScreen extends StatelessWidget {
               // Celebratory Header
               const Text(
                 "Quiz Completed🏆",
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
               const SizedBox(height: 12),
-              const Text(
-                "You answered 1 out of 2 questions correctly",
-                style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.w400),
+              Text(
+                "You answered ${result.correctCount} out of ${result.totalQuestions} questions correctly",
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Score: ${result.percentage.toInt()}%",
+                style: const TextStyle(
+                  fontSize: 24,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 40),
-              
+
               // Answer Summary
               Expanded(
                 child: ListView(
@@ -40,26 +60,30 @@ class StudentQuizResultScreen extends StatelessWidget {
                   children: [
                     const Text(
                       "Summary of answers:",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                     const SizedBox(height: 16),
-                    _buildResultCard(
-                      "1. Convert the fraction to a decimal: 3/4",
-                      "0.25",
-                      "0.75",
-                      false,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildResultCard(
-                      "2. Which of these is the smallest?",
-                      "0.4",
-                      "0.4",
-                      true,
-                    ),
+                    ...result.answers
+                        .map(
+                          (ans) => Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: _buildResultCard(
+                              ans.question,
+                              ans.selectedAnswer,
+                              ans.correctAnswer ?? "N/A",
+                              ans.isCorrect,
+                            ),
+                          ),
+                        )
+                        .toList(),
                   ],
                 ),
               ),
-              
+
               // Footer Button
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
@@ -70,12 +94,18 @@ class StudentQuizResultScreen extends StatelessWidget {
                     onPressed: () => Navigator.pop(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       elevation: 4,
                     ),
                     child: const Text(
                       "Back To Quizzes",
-                      style: TextStyle(color: Color(0xFF871DAD), fontWeight: FontWeight.bold, fontSize: 16),
+                      style: TextStyle(
+                        color: Color(0xFF871DAD),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                 ),
@@ -87,7 +117,12 @@ class StudentQuizResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildResultCard(String question, String userAnswer, String correctAnswer, bool isCorrect) {
+  Widget _buildResultCard(
+    String question,
+    String userAnswer,
+    String correctAnswer,
+    bool isCorrect,
+  ) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -99,7 +134,12 @@ class StudentQuizResultScreen extends StatelessWidget {
         children: [
           Text(
             question,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary, height: 1.4),
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+              height: 1.4,
+            ),
           ),
           const SizedBox(height: 16),
           Row(
@@ -112,7 +152,11 @@ class StudentQuizResultScreen extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 "Your answer: $userAnswer",
-                style: TextStyle(fontSize: 13, color: isCorrect ? const Color(0xFF4AA678) : Colors.red, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: isCorrect ? const Color(0xFF4AA678) : Colors.red,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),
@@ -124,7 +168,11 @@ class StudentQuizResultScreen extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   "Correct answer: $correctAnswer",
-                  style: const TextStyle(fontSize: 13, color: Color(0xFF4AA678), fontWeight: FontWeight.w500),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF4AA678),
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),
