@@ -4,6 +4,7 @@ import 'package:opalmer_education/core/constants/api_constants.dart';
 class ChatScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final String? avatarUrl;
+  final bool showActions;
   final VoidCallback onBack;
   final VoidCallback onOpenProfile;
   final VoidCallback onOpenLanguage;
@@ -14,6 +15,7 @@ class ChatScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
     super.key,
     required this.title,
     required this.avatarUrl,
+    this.showActions = true,
     required this.onBack,
     required this.onOpenProfile,
     required this.onOpenLanguage,
@@ -87,12 +89,14 @@ class ChatScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
       ),
       actions: [
-        _ActionIcon(icon: Icons.translate, onTap: onOpenLanguage),
-        const SizedBox(width: 4),
-        _ActionIcon(icon: Icons.phone_outlined, onTap: onStartAudioCall),
-        const SizedBox(width: 4),
-        _ActionIcon(icon: Icons.videocam_outlined, onTap: onStartVideoCall),
-        const SizedBox(width: 20),
+        if (showActions) ...[
+          _ActionIcon(icon: Icons.translate, onTap: onOpenLanguage),
+          const SizedBox(width: 4),
+          _ActionIcon(icon: Icons.phone_outlined, onTap: onStartAudioCall),
+          const SizedBox(width: 4),
+          _ActionIcon(icon: Icons.videocam_outlined, onTap: onStartVideoCall),
+          const SizedBox(width: 20),
+        ],
       ],
     );
   }

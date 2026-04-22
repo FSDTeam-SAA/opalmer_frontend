@@ -127,6 +127,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       appBar: ChatScreenAppBar(
         title: widget.session.title,
         avatarUrl: widget.session.avatarUrl,
+        showActions: widget.session.type == ChatSessionType.direct,
         onBack: () => Navigator.pop(context),
         onOpenProfile: () {
           Navigator.push(
