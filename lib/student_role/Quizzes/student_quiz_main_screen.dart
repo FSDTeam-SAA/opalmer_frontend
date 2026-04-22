@@ -316,8 +316,8 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
                 bestSubject = results
                     .reduce((a, b) => a.percentage > b.percentage ? a : b)
                     .quizTitle;
-                if (bestSubject.length > 10) {
-                  bestSubject = '${bestSubject.substring(0, 10)}...';
+                if (bestSubject.length > 20) {
+                  bestSubject = '${bestSubject.substring(0, 20)}...';
                 }
               }
 
@@ -372,19 +372,25 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
         children: [
           Text(
             label,
+            textAlign: TextAlign.center,
             style: const TextStyle(
               color: Colors.white,
               fontSize: 11,
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+          const SizedBox(height: 4),
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                value,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
         ],
