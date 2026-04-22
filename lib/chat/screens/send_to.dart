@@ -115,16 +115,10 @@ class _SendToScreenState extends ConsumerState<SendToScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _contacts.isEmpty
-                ? const Center(child: Text("No contacts found"))
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: _contacts.length,
-                    itemBuilder: (context, index) {
-                      final contact = _contacts[index];
-                      return _buildListTile(contact);
-                    },
-                  ),
+                    ? const Center(child: Text("No contacts found"))
+                    : _buildGroupedListView(),
           ),
+
           // Bottom Button
           Padding(
             padding: const EdgeInsets.all(20),
@@ -135,26 +129,49 @@ class _SendToScreenState extends ConsumerState<SendToScreen> {
                 onPressed: _selectedIds.isEmpty
                     ? null
                     : () async {
-                        final user = ref.read(authStateProvider);
-                        if (user == null) return;
+                        try {
+                          final user = ref.read(authStateProvider);
+                          if (user == null) return;
 
-                        // Create room or go to existing
-                        final participants = _selectedIds.toList();
-                        final room = await _apiService.createRoom(
-                          participants,
-                          user.id,
-                        );
-                        if (room != null && mounted) {
-                          // Register room with notifier
-                          ref.read(chatNotifierProvider.notifier).addRoom(room);
-
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  ChatScreen(session: room, role: widget.role),
-                            ),
+                          // Create room or go to existing
+                          final participants = _selectedIds.toList();
+                          final room = await _apiService.createRoom(
+                            participants,
+                            user.id,
                           );
+                          if (room != null && mounted) {
+                            // Register room with notifier
+                            ref
+                                .read(chatNotifierProvider.notifier)
+                                .addRoom(room);
+
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChatScreen(
+                                    session: room, role: widget.role),
+                              ),
+                            );
+                          } else {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text(
+                                        "Failed to create chat room. You may not have permission.")),
+                              );
+                            }
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            String message = e.toString();
+                            if (message.contains("403")) {
+                              message =
+                                  "Access denied. You can only message students in your classes.";
+                            }
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(message)),
+                            );
+                          }
                         }
                       },
                 style: ElevatedButton.styleFrom(
@@ -175,6 +192,54 @@ class _SendToScreenState extends ConsumerState<SendToScreen> {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGroupedListView() {
+    // Group contacts by type
+    final teachers = _contacts
+        .where((c) => c['type'] == 'teacher' || c['role'] == 'administrator')
+        .toList();
+    final students = _contacts.where((c) => c['type'] == 'student').toList();
+    final parents = _contacts.where((c) => c['type'] == 'parent').toList();
+
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      children: [
+        if (teachers.isNotEmpty) ...[
+          _buildSectionHeader("Teachers"),
+          ...teachers.map((c) => _buildListTile(c)),
+        ],
+        if (students.isNotEmpty) ...[
+          _buildSectionHeader("Students"),
+          ...students.map((c) => _buildListTile(c)),
+        ],
+        if (parents.isNotEmpty) ...[
+          _buildSectionHeader("Parents"),
+          ...parents.map((c) => _buildListTile(c)),
+        ],
+        const SizedBox(height: 80), // Space for button
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Row(
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF871DAD),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(child: Divider(color: Colors.grey.shade300)),
         ],
       ),
     );
@@ -216,7 +281,7 @@ class _SendToScreenState extends ConsumerState<SendToScreen> {
                       width: 56,
                       height: 56,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF871DAD).withValues(alpha: 0.4),
+                        color: const Color(0xFF871DAD).withOpacity(0.4),
                         shape: BoxShape.circle,
                       ),
                       child: const Center(
@@ -239,13 +304,26 @@ class _SendToScreenState extends ConsumerState<SendToScreen> {
                       color: Color(0xFF222222),
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    (contact['type'] ?? contact['role'] ?? 'USER')
-                        .toString()
-                        .toUpperCase(),
-                    style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
-                  ),
+                  if (contact['subtitle'] != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      contact['subtitle'].toString(),
+                      style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ] else ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      (contact['type'] ?? contact['role'] ?? 'USER')
+                          .toString()
+                          .toUpperCase(),
+                      style:
+                          TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -260,7 +338,7 @@ class _SendToScreenState extends ConsumerState<SendToScreen> {
       width: 56,
       height: 56,
       decoration: BoxDecoration(
-        color: const Color(0xFF871DAD).withValues(alpha: 0.1),
+        color: const Color(0xFF871DAD).withOpacity(0.1),
         shape: BoxShape.circle,
       ),
       child: const Icon(Icons.person, color: Color(0xFF871DAD), size: 28),
