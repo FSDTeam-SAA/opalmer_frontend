@@ -114,10 +114,16 @@ class _IncomingCallScreenState extends ConsumerState<IncomingCallScreen> {
     _actionInProgress = false;
   }
 
-  void _acceptCall() {
+  Future<void> _acceptCall() async {
     _actionInProgress = true;
+    if (widget.call.callLogId != null) {
+      await ref
+          .read(callNotifierProvider.notifier)
+          .markCallAnswered(widget.call.callLogId!);
+    }
     ref.read(callNotifierProvider.notifier).acceptIncomingCall(widget.call);
 
+    if (!mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) => CallScreen(

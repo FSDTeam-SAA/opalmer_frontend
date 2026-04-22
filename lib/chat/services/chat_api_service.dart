@@ -152,6 +152,11 @@ class ChatApiService {
   }
 
   /// Mark a call log as completed or missed.
+  Future<void> answerCallLog({required String callLogId}) async {
+    await _apiClient.patch('${ApiConstants.callLogs}/$callLogId/answer');
+  }
+
+  /// Mark a call log as completed or missed.
   Future<void> endCallLog({
     required String callLogId,
     required String status,

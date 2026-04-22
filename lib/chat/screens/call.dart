@@ -41,6 +41,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
 
   CallSessionController? _sessionController;
   Timer? _durationTimer;
+  Timer? _ringTimeoutTimer;
   String? _callLogId;
   DateTime? _connectedAt;
   String _statusText = 'Preparing call...';
@@ -107,6 +108,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
             receiverId: widget.peerId!,
             callType: widget.callType,
           );
+      _startOutgoingTimeout();
       _sessionController!.joinCallRoom();
     } catch (_) {
       if (!mounted) return;
@@ -150,6 +152,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
 
     _connected = true;
     _connectedAt = DateTime.now();
+    _ringTimeoutTimer?.cancel();
     _durationTimer?.cancel();
     _durationTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) {
@@ -163,6 +166,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
 
     _isEnding = true;
     _updateStatus(message);
+    _ringTimeoutTimer?.cancel();
     _durationTimer?.cancel();
     _sessionController?.leaveCallRoom();
     ref.read(callNotifierProvider.notifier).clearActiveCall();
@@ -180,15 +184,21 @@ class _CallScreenState extends ConsumerState<CallScreen> {
   Future<void> _endCall() async {
     if (_isEnding) return;
     _isEnding = true;
+    _ringTimeoutTimer?.cancel();
 
     if (_isLiveCall) {
+      final durationSeconds = _connectedAt == null
+          ? null
+          : DateTime.now().difference(_connectedAt!).inSeconds;
       await ref
           .read(callNotifierProvider.notifier)
           .finishCall(
             roomId: widget.roomId!,
             connected: _connected,
+            status: _connected ? 'completed' : 'cancelled',
             targetUserId: widget.peerId,
             callLogId: _callLogId,
+            durationSeconds: durationSeconds,
           );
       _sessionController?.leaveCallRoom();
     }
@@ -201,10 +211,35 @@ class _CallScreenState extends ConsumerState<CallScreen> {
   }
 
   Future<void> _disposeCallResources() async {
+    _ringTimeoutTimer?.cancel();
     _durationTimer?.cancel();
     await _sessionController?.dispose();
     _localRenderer.srcObject = null;
     _remoteRenderer.srcObject = null;
+  }
+
+  void _startOutgoingTimeout() {
+    _ringTimeoutTimer?.cancel();
+    _ringTimeoutTimer = Timer(const Duration(seconds: 35), () async {
+      if (!mounted || _connected || _isEnding) return;
+
+      _isEnding = true;
+      _updateStatus('${widget.name} did not answer.');
+      await ref
+          .read(callNotifierProvider.notifier)
+          .finishCall(
+            roomId: widget.roomId!,
+            connected: false,
+            status: 'missed',
+            targetUserId: widget.peerId,
+            callLogId: _callLogId,
+          );
+      _sessionController?.leaveCallRoom();
+      await _disposeCallResources();
+      if (mounted) {
+        Navigator.of(context).maybePop();
+      }
+    });
   }
 
   void _toggleMute() {
@@ -237,6 +272,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
 
   @override
   void dispose() {
+    _ringTimeoutTimer?.cancel();
     _durationTimer?.cancel();
     _sessionController?.leaveCallRoom();
     unawaited(_disposeCallResources());

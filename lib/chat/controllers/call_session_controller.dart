@@ -81,7 +81,11 @@ class CallSessionController {
 
     _callDeclinedSubscription = _callSocketService.callDeclined.listen((event) {
       if (event.roomId != _roomId) return;
-      unawaited(_handleRemoteEnd('${event.declinedByName} declined the call.'));
+      final message = switch (event.reason) {
+        'busy' => '$_peerName is busy right now.',
+        _ => '${event.declinedByName} declined the call.',
+      };
+      unawaited(_handleRemoteEnd(message));
     });
 
     _callEndedSubscription = _callSocketService.callEnded.listen((event) {

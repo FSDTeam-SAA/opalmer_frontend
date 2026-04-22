@@ -186,19 +186,33 @@ class CallNotifier extends StateNotifier<CallState> {
     );
 
     if (call.callLogId != null) {
-      await _safeEndCallLog(call.callLogId!, status: 'missed');
+      await _safeEndCallLog(
+        call.callLogId!,
+        status: reason == 'busy' ? 'busy' : 'declined',
+      );
     }
 
     state = state.copyWith(clearIncomingCall: true);
   }
 
+  Future<void> markCallAnswered(String callLogId) async {
+    try {
+      await _apiService.answerCallLog(callLogId: callLogId);
+    } catch (_) {
+      // Best effort only: answering the call should not be blocked by log sync.
+    }
+  }
+
   Future<void> finishCall({
     required String roomId,
     required bool connected,
+    String? status,
     String? targetUserId,
     String? callLogId,
+    int? durationSeconds,
   }) async {
     final effectiveCallLogId = callLogId ?? state.activeCallLogId;
+    final effectiveStatus = status ?? (connected ? 'completed' : 'cancelled');
 
     _socketService.endCall(
       roomId: roomId,
@@ -209,7 +223,8 @@ class CallNotifier extends StateNotifier<CallState> {
     if (effectiveCallLogId != null) {
       await _safeEndCallLog(
         effectiveCallLogId,
-        status: connected ? 'completed' : 'missed',
+        status: effectiveStatus,
+        duration: durationSeconds,
       );
     }
 
@@ -240,9 +255,14 @@ class CallNotifier extends StateNotifier<CallState> {
   Future<void> _safeEndCallLog(
     String callLogId, {
     required String status,
+    int? duration,
   }) async {
     try {
-      await _apiService.endCallLog(callLogId: callLogId, status: status);
+      await _apiService.endCallLog(
+        callLogId: callLogId,
+        status: status,
+        duration: duration,
+      );
     } catch (_) {
       // Best effort only: the call UI should still recover even if logging fails.
     }
