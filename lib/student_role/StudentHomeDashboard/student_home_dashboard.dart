@@ -180,7 +180,37 @@ class StudentHomeDashboard extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+        error: (err, stack) {
+          if (err.toString().contains('401')) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.red, size: 28),
+                  const SizedBox(height: 8),
+                  const Text('Session expired. Please log in again.', style: TextStyle(color: Colors.red)),
+                  TextButton(
+                    onPressed: () {
+                      ref.read(authServiceProvider).logout();
+                      ref.read(authStateProvider.notifier).state = null;
+                    },
+                    child: const Text('Log Out'),
+                  )
+                ],
+              ),
+            );
+          }
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'Failed to load classes. Please try again later.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey.shade600),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -226,7 +256,40 @@ class StudentHomeDashboard extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, stack) => Center(child: Text('Error: $err')),
+      error: (err, stack) {
+        if (err.toString().contains('401')) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.red, size: 28),
+                  const SizedBox(height: 8),
+                  const Text('Session expired. Please log in again.', style: TextStyle(color: Colors.red)),
+                  TextButton(
+                    onPressed: () {
+                      ref.read(authServiceProvider).logout();
+                      ref.read(authStateProvider.notifier).state = null;
+                    },
+                    child: const Text('Log Out'),
+                  )
+                ],
+              ),
+            ),
+          );
+        }
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Text(
+              'Failed to load quizzes. Please try again later.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey.shade600),
+            ),
+          ),
+        );
+      },
     );
   }
 

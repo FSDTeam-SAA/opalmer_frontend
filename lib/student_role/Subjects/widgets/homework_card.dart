@@ -5,14 +5,11 @@ class HomeworkCard extends StatelessWidget {
   final String title;
   final String description;
   final String dueDate;
-  final VoidCallback? onSubmit;
-
   const HomeworkCard({
     super.key,
     required this.title,
     required this.description,
     required this.dueDate,
-    this.onSubmit,
   });
 
   @override
