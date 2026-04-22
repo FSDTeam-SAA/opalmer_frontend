@@ -231,6 +231,22 @@ class CallNotifier extends StateNotifier<CallState> {
     clearActiveCall();
   }
 
+  Future<void> finalizeCallLog({
+    required bool connected,
+    String? status,
+    String? callLogId,
+    int? durationSeconds,
+  }) async {
+    final effectiveCallLogId = callLogId ?? state.activeCallLogId;
+    if (effectiveCallLogId == null) return;
+
+    await _safeEndCallLog(
+      effectiveCallLogId,
+      status: status ?? (connected ? 'completed' : 'cancelled'),
+      duration: durationSeconds,
+    );
+  }
+
   void registerIncomingCallHandled() {
     state = state.copyWith(clearIncomingCall: true);
   }

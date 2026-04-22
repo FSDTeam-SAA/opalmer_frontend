@@ -169,6 +169,18 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     _ringTimeoutTimer?.cancel();
     _durationTimer?.cancel();
     _sessionController?.leaveCallRoom();
+
+    await ref
+        .read(callNotifierProvider.notifier)
+        .finalizeCallLog(
+          connected: _connected,
+          status: _connected ? 'completed' : 'cancelled',
+          callLogId: _callLogId,
+          durationSeconds: _connectedAt == null
+              ? null
+              : DateTime.now().difference(_connectedAt!).inSeconds,
+        );
+
     ref.read(callNotifierProvider.notifier).clearActiveCall();
 
     await _disposeCallResources();
