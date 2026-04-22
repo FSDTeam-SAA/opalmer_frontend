@@ -432,6 +432,7 @@ class AcademicDocumentModel {
   final String id;
   final String? studentId;
   final String? teacherId;
+  final String? teacherName;
   final String? url;
   final DateTime? createdAt;
 
@@ -439,6 +440,7 @@ class AcademicDocumentModel {
     required this.id,
     this.studentId,
     this.teacherId,
+    this.teacherName,
     this.url,
     this.createdAt,
   });
@@ -446,11 +448,23 @@ class AcademicDocumentModel {
   factory AcademicDocumentModel.fromJson(Map<String, dynamic> json) {
     return AcademicDocumentModel(
       id: json['_id'] ?? '',
-      studentId: json['studentId'] is Map ? json['studentId']['_id'] : json['studentId']?.toString(),
-      teacherId: json['teacherId'] is Map ? json['teacherId']['_id'] : json['teacherId']?.toString(),
-      url: (json['document'] is Map ? json['document']['url']?.toString() : null) ?? 
-           (json['url'] is Map ? json['url']['url']?.toString() : json['url']?.toString()),
-      createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at']) : null,
+      studentId: json['studentId'] is Map
+          ? json['studentId']['_id']
+          : json['studentId']?.toString(),
+      teacherId: json['teacherId'] is Map
+          ? json['teacherId']['_id']
+          : json['teacherId']?.toString(),
+      teacherName:
+          json['teacherId'] is Map ? json['teacherId']['username'] : null,
+      url: (json['document'] is Map
+              ? json['document']['url']?.toString()
+              : null) ??
+          (json['url'] is Map
+              ? json['url']['url']?.toString()
+              : json['url']?.toString()),
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'])
+          : null,
     );
   }
 }

@@ -155,10 +155,17 @@ class StudentService {
 
   Future<List<AcademicDocumentModel>> getAcademicDocuments() async {
     try {
+      debugPrint('StudentService: Fetching academic documents');
       final response = await _apiClient.get(ApiConstants.academicDocument);
+      debugPrint(
+        'StudentService: getAcademicDocuments response status: ${response.statusCode}',
+      );
+
       final List<dynamic> data = response.data['data'] ?? [];
+      debugPrint('StudentService: Found ${data.length} academic documents');
       return data.map((json) => AcademicDocumentModel.fromJson(json)).toList();
     } catch (e) {
+      debugPrint('StudentService: Error in getAcademicDocuments: $e');
       rethrow;
     }
   }

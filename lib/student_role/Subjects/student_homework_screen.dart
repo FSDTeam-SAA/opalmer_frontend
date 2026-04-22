@@ -309,61 +309,135 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
       ];
     }
 
-    final List<Widget> items = [];
-    for (final gw in groupWork) {
-      items.add(
-        Text(
-          gw.title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-          ),
-        ),
-      );
-      items.add(const SizedBox(height: 8));
-      if (gw.description != null) {
-        items.add(
-          Text(
-            gw.description!,
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-          ),
-        );
+    // Extract unique members from all group works
+    final Map<String, GroupMemberModel> uniqueMembers = {};
+    for (var gw in groupWork) {
+      for (var m in gw.members) {
+        if (m.id.isNotEmpty) uniqueMembers[m.id] = m;
       }
-      items.add(const SizedBox(height: 16));
-      items.add(
-        const Text(
-          "Group Members",
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Colors.grey,
-          ),
-        ),
-      );
-      items.add(const SizedBox(height: 12));
-      items.addAll(
-        gw.members.map(
-          (m) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: GroupMemberCard(name: m.username, avatarUrl: m.avatar),
-          ),
-        ),
-      );
-      items.add(const SizedBox(height: 20));
-      items.add(
-        HomeworkCard(
-          title: "Assignment Details",
-          description: gw.description ?? "No additional description.",
-          dueDate: gw.dueDate != null
-              ? "Due: ${gw.dueDate.toString().split(' ')[0]}"
-              : (gw.createdAt != null
-                  ? "Created: ${gw.createdAt.toString().split(' ')[0]}"
-                  : "Assigned: N/A"),
-        ),
-      );
-      items.add(const Divider(height: 40));
     }
+    final membersList = uniqueMembers.values.toList();
+
+    final activeHomework = groupWork.where((h) => h.archived == false).toList();
+    final archivedHomework = groupWork.where((h) => h.archived == true).toList();
+
+    final List<Widget> items = [];
+
+    // 1. Group Name and Members
+    items.add(
+      Text(
+        "Study Group (${membersList.length})",
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: AppColors.textPrimary,
+        ),
+      ),
+    );
+    items.add(const SizedBox(height: 16));
+    items.addAll(
+      membersList.map(
+        (m) => Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: GroupMemberCard(name: m.username, avatarUrl: m.avatar),
+        ),
+      ),
+    );
+    items.add(const SizedBox(height: 24));
+
+    // 2. Today's Homework (Active)
+    items.add(
+      const Text(
+        "Today's Homework",
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: AppColors.textPrimary,
+        ),
+      ),
+    );
+    items.add(const SizedBox(height: 16));
+    if (activeHomework.isEmpty) {
+      items.add(
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 20),
+          child: Center(
+            child: Text(
+              "No active group homework.",
+              style: TextStyle(color: Colors.grey, fontSize: 14),
+            ),
+          ),
+        ),
+      );
+    } else {
+      items.addAll(
+        activeHomework.map(
+          (gw) => HomeworkCard(
+            title: gw.title,
+            description: gw.description ??
+                (gw.fileUrls.isNotEmpty
+                    ? "${gw.fileUrls.length} file(s) attached"
+                    : "No additional description."),
+            dueDate: gw.dueDate != null
+                ? "Due: ${_formatDate(gw.dueDate!)}"
+                : (gw.createdAt != null
+                    ? "Assigned: ${_formatDate(gw.createdAt!)}"
+                    : "Assigned: N/A"),
+          ),
+        ),
+      );
+    }
+    items.add(const SizedBox(height: 32));
+
+    // 3. Archived Homework
+    items.add(
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: const [
+          Text(
+            "Archived Homework",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          Icon(
+            Icons.calendar_month_outlined,
+            color: AppColors.primaryMid,
+            size: 24,
+          ),
+        ],
+      ),
+    );
+    items.add(const SizedBox(height: 16));
+    if (archivedHomework.isEmpty) {
+      items.add(
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 20),
+          child: Text(
+            "No archived group homework.",
+            style: TextStyle(color: Colors.grey),
+          ),
+        ),
+      );
+    } else {
+      items.addAll(
+        archivedHomework.map(
+          (gw) => HomeworkCard(
+            title: gw.title,
+            description: gw.description ?? "Archived assignment",
+            dueDate: gw.dueDate != null
+                ? "Due: ${_formatDate(gw.dueDate!)}"
+                : (gw.createdAt != null
+                    ? "Assigned: ${_formatDate(gw.createdAt!)}"
+                    : "N/A"),
+          ),
+        ),
+      );
+    }
+    items.add(const SizedBox(height: 20));
+
     return items;
   }
 

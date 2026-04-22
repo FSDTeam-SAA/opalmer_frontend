@@ -73,51 +73,65 @@ class _StudentAcademicNotesScreenState extends ConsumerState<StudentAcademicNote
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
-      body: documentsAsync.when(
-        data: (documents) {
-          if (documents.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.article_rounded, size: 64, color: Colors.grey.shade200),
-                  const SizedBox(height: 16),
-                  Text(
-                    "No academic notes found",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey.shade500,
-                      fontWeight: FontWeight.w500,
+      body: RefreshIndicator(
+        onRefresh: () => ref.refresh(studentAcademicDocumentsProvider.future),
+        color: AppColors.primaryMid,
+        child: documentsAsync.when(
+          data: (documents) {
+            if (documents.isEmpty) {
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.7,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.article_rounded,
+                            size: 64, color: Colors.grey.shade200),
+                        const SizedBox(height: 16),
+                        Text(
+                          "No academic notes found",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey.shade500,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            );
-          }
-          return ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-            itemCount: documents.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 16),
-            itemBuilder: (context, index) {
-              final doc = documents[index];
-              final dateStr = doc.createdAt != null 
-                ? "${doc.createdAt!.day}_${doc.createdAt!.month}_${doc.createdAt!.year}" 
-                : "Unknown";
-              
-              final isDownloading = _downloadingId == doc.id;
-
-              return _buildDocumentCard(
-                context,
-                doc,
-                "Academic Note - ${dateStr.replaceAll('_', '/')}",
-                dateStr,
-                isDownloading,
+                ),
               );
-            },
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+            }
+            return ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: documents.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 16),
+              itemBuilder: (context, index) {
+                final doc = documents[index];
+                final dateStr = doc.createdAt != null
+                    ? "${doc.createdAt!.day}_${doc.createdAt!.month}_${doc.createdAt!.year}"
+                    : "Unknown";
+
+                final isDownloading = _downloadingId == doc.id;
+
+                return _buildDocumentCard(
+                  context,
+                  doc,
+                  doc.teacherName != null
+                      ? "Note from ${doc.teacherName}"
+                      : "Academic Note - ${dateStr.replaceAll('_', '/')}",
+                  dateStr,
+                  isDownloading,
+                );
+              },
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, stack) => Center(child: Text('Error: $err')),
+        ),
       ),
     );
   }
@@ -192,13 +206,29 @@ class _StudentAcademicNotesScreenState extends ConsumerState<StudentAcademicNote
             color: AppColors.textPrimary,
           ),
         ),
-        subtitle: Text(
-          isDownloading ? "Downloading... ${(_progress * 100).toInt()}%" : "Available to download",
-          style: TextStyle(
-            fontSize: 12,
-            color: isDownloading ? AppColors.primaryMid : Colors.grey.shade500,
-            fontWeight: FontWeight.w500,
-          ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (doc.createdAt != null)
+              Text(
+                "Uploaded: ${doc.createdAt!.day}/${doc.createdAt!.month}/${doc.createdAt!.year}",
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey.shade400,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            Text(
+              isDownloading
+                  ? "Downloading... ${(_progress * 100).toInt()}%"
+                  : "Tap to download & open",
+              style: TextStyle(
+                fontSize: 12,
+                color: isDownloading ? AppColors.primaryMid : Colors.grey.shade500,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
         trailing: isDownloading
           ? SizedBox(
