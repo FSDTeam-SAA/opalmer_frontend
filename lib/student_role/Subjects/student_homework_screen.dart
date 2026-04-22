@@ -326,7 +326,7 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
     // 1. Group Name and Members
     items.add(
       Text(
-        "Study Group (${membersList.length})",
+        "Alpha Group (${membersList.length})",
         style: const TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
