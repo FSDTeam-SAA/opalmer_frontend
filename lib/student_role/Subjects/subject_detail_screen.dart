@@ -82,30 +82,48 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
     AsyncValue<List<AttendanceRecord>> attendanceAsync,
     AsyncValue<List<QuizResultModel>> quizResultsAsync,
   ) {
-    String attendanceVal = widget.studentClass?.attendancePercentage != null
-        ? "${widget.studentClass!.attendancePercentage}%"
-        : "0%";
-    String progressVal = widget.studentClass?.performancePercentage != null
-        ? "${widget.studentClass!.performancePercentage}%"
-        : "0%";
+    final String attendanceVal = attendanceAsync.maybeWhen(
+      data: (records) {
+        if (records.isEmpty) {
+          return widget.studentClass?.attendancePercentage != null
+              ? "${widget.studentClass!.attendancePercentage}%"
+              : "0%";
+        }
+        // Match backend logic: Filter out holidays
+        final relevantRecords = records.where((r) => r.status.toLowerCase() != "holiday").toList();
+        if (relevantRecords.isEmpty) return "0%";
+        
+        final presentCount =
+            relevantRecords.where((r) => r.status.toLowerCase() == "present").length;
+        return "${((presentCount / relevantRecords.length) * 100).toInt()}%";
+      },
+      loading: () => widget.studentClass?.attendancePercentage != null
+          ? "${widget.studentClass!.attendancePercentage}%"
+          : "...",
+      orElse: () => widget.studentClass?.attendancePercentage != null
+          ? "${widget.studentClass!.attendancePercentage}%"
+          : "0%",
+    );
 
-    attendanceAsync.whenData((records) {
-      if (records.isNotEmpty) {
-        final presentCount = records
-            .where((r) => r.status.toLowerCase() == "present")
-            .length;
-        attendanceVal = "${((presentCount / records.length) * 100).toInt()}%";
-      }
-    });
-
-    quizResultsAsync.whenData((results) {
-      if (results.isNotEmpty) {
+    final String progressVal = quizResultsAsync.maybeWhen(
+      data: (results) {
+        if (results.isEmpty) {
+          return widget.studentClass?.performancePercentage != null
+              ? "${widget.studentClass!.performancePercentage}%"
+              : "0%";
+        }
         final avg =
             results.fold<double>(0, (sum, res) => sum + res.percentage) /
             results.length;
-        progressVal = "${(avg * 100).toInt()}%";
-      }
-    });
+        return "${(avg * 100).toInt()}%";
+      },
+      loading: () => widget.studentClass?.performancePercentage != null
+          ? "${widget.studentClass!.performancePercentage}%"
+          : "...",
+      orElse: () => widget.studentClass?.performancePercentage != null
+          ? "${widget.studentClass!.performancePercentage}%"
+          : "0%",
+    );
 
     return Row(
       children: [
