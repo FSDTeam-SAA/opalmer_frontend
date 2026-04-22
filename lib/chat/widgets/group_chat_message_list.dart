@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/teacher_role/profile_screen/language.dart';
+import 'package:opalmer_education/core/constants/api_constants.dart';
 
 class GroupChatMessageList extends StatelessWidget {
   const GroupChatMessageList({super.key});
@@ -76,7 +77,7 @@ class _GroupChatMessageBubble extends StatelessWidget {
               if (!message.isMe && message.imageUrl != null) ...[
                 CircleAvatar(
                   radius: 20,
-                  backgroundImage: NetworkImage(message.imageUrl!),
+                  backgroundImage: NetworkImage(ApiConstants.buildImageUrl(message.imageUrl!)),
                 ),
                 const SizedBox(width: 8),
               ],

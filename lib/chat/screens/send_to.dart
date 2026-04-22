@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/chat/providers/chat_provider.dart';
@@ -6,6 +7,7 @@ import 'package:opalmer_education/chat/widgets/chat_simple_app_bar.dart';
 import 'package:opalmer_education/chat/widgets/send_to_action_button.dart';
 import 'package:opalmer_education/chat/widgets/send_to_contact_list.dart';
 import 'package:opalmer_education/chat/widgets/send_to_search_bar.dart';
+import 'package:opalmer_education/chat/widgets/group_details_bottom_sheet.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
 
 import '../models/chat_role.dart';
@@ -26,6 +28,8 @@ class _SendToScreenState extends ConsumerState<SendToScreen> {
 
   List<Map<String, dynamic>> _contacts = [];
   bool _isLoading = true;
+
+  bool get _isTeacher => widget.role == ChatRole.teacher;
 
   @override
   void initState() {
@@ -48,8 +52,16 @@ class _SendToScreenState extends ConsumerState<SendToScreen> {
     }
   }
 
-  void _toggleSelection(String id) {
+  void _handleContactTap(String id) {
     if (id.isEmpty) return;
+
+    if (!_isTeacher) {
+      // Parents/Students immediately start chat with selected contact
+      _selectedIds.clear();
+      _selectedIds.add(id);
+      _createOrOpenRoom();
+      return;
+    }
 
     setState(() {
       if (_selectedIds.contains(id)) {
@@ -65,7 +77,23 @@ class _SendToScreenState extends ConsumerState<SendToScreen> {
       final user = ref.read(authStateProvider);
       if (user == null) return;
 
-      final room = await _apiService.createRoom(_selectedIds.toList(), user.id);
+      String? groupName;
+      File? groupAvatar;
+
+      if (_isTeacher && _selectedIds.length > 1) {
+        final result = await GroupDetailsBottomSheet.show(context);
+        if (result == null) return; // User cancelled
+        groupName = result.name;
+        groupAvatar = result.avatar;
+      }
+
+      final room = await _apiService.createRoom(
+        _selectedIds.toList(),
+        user.id,
+        name: groupName,
+        avatar: groupAvatar,
+      );
+      
       if (!mounted) return;
 
       if (room != null) {
@@ -117,13 +145,18 @@ class _SendToScreenState extends ConsumerState<SendToScreen> {
                 : SendToContactList(
                     contacts: _contacts,
                     selectedIds: _selectedIds,
-                    onToggleSelection: _toggleSelection,
+                    isMultiSelect: _isTeacher,
+                    onToggleSelection: _handleContactTap,
                   ),
           ),
-          SendToActionButton(
-            selectedCount: _selectedIds.length,
-            onPressed: _selectedIds.isEmpty ? null : _createOrOpenRoom,
-          ),
+          if (_isTeacher)
+            SendToActionButton(
+              selectedCount: _selectedIds.length,
+              label: _selectedIds.length > 1 
+                  ? 'CREATE GROUP (${_selectedIds.length})' 
+                  : 'START CHAT',
+              onPressed: _selectedIds.isEmpty ? null : _createOrOpenRoom,
+            ),
         ],
       ),
     );

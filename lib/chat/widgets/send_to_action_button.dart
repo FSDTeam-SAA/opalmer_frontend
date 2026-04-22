@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 
 class SendToActionButton extends StatelessWidget {
   final int selectedCount;
+  final String label;
   final Future<void> Function()? onPressed;
 
   const SendToActionButton({
     super.key,
     required this.selectedCount,
+    required this.label,
     required this.onPressed,
   });
 
@@ -27,7 +29,7 @@ class SendToActionButton extends StatelessWidget {
             elevation: 0,
           ),
           child: Text(
-            '($selectedCount) SEND',
+            label,
             style: const TextStyle(
               color: Colors.white,
               fontSize: 16,

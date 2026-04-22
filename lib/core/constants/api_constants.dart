@@ -77,4 +77,13 @@ class ApiConstants {
   // Call Logs
   static const String callLogs = '/call-logs';
   static const String myCallLogs = '/call-logs/my-logs';
+
+  static String buildImageUrl(String? path) {
+    if (path == null || path.isEmpty) return '';
+    if (path.startsWith('http')) return path;
+    if (path.startsWith('/')) {
+      return '$socketBaseUrl$path';
+    }
+    return '$socketBaseUrl/$path';
+  }
 }

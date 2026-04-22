@@ -12,6 +12,7 @@ import 'package:opalmer_education/teacher_role/profile_screen/language.dart';
 import '../models/chat_role.dart';
 import '../models/chat_session_model.dart';
 import '../providers/chat_provider.dart';
+import '../services/call_permission_service.dart';
 import 'block_user.dart';
 import 'call.dart';
 
@@ -64,11 +65,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     });
   }
 
-  void _startCall({
+  Future<void> _startCall({
     required BuildContext context,
     required String? currentUserId,
     required CallMediaType callType,
-  }) {
+  }) async {
     if (widget.session.type != ChatSessionType.direct) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -89,6 +90,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           content: Text('Unable to determine who to call in this room.'),
         ),
       );
+      return;
+    }
+
+    final permissionsGranted =
+        await CallPermissionService.ensureCallPermissions(
+          context,
+          callType: callType,
+        );
+    if (!permissionsGranted || !context.mounted) {
       return;
     }
 

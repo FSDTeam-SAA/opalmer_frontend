@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:opalmer_education/core/constants/api_constants.dart';
 
 class CallScreenBody extends StatelessWidget {
   final String name;
@@ -239,7 +240,7 @@ class _CallFallbackBody extends StatelessWidget {
             radius: 90,
             backgroundColor: Colors.white10,
             backgroundImage: imageUrl.isNotEmpty
-                ? NetworkImage(imageUrl)
+                ? NetworkImage(ApiConstants.buildImageUrl(imageUrl))
                 : null,
             child: imageUrl.isEmpty
                 ? const Icon(Icons.person, color: Colors.white70, size: 72)

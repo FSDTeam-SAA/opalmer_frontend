@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/chat/models/call_models.dart';
 import 'package:opalmer_education/chat/providers/call_provider.dart';
 import 'package:opalmer_education/chat/screens/call.dart';
+import 'package:opalmer_education/chat/services/call_permission_service.dart';
+import 'package:opalmer_education/core/constants/api_constants.dart';
 
 class IncomingCallScreen extends ConsumerStatefulWidget {
   final IncomingCall call;
@@ -45,7 +47,7 @@ class _IncomingCallScreenState extends ConsumerState<IncomingCallScreen> {
                   backgroundImage:
                       widget.call.callerAvatar != null &&
                           widget.call.callerAvatar!.isNotEmpty
-                      ? NetworkImage(widget.call.callerAvatar!)
+                      ? NetworkImage(ApiConstants.buildImageUrl(widget.call.callerAvatar!))
                       : null,
                   child:
                       (widget.call.callerAvatar == null ||
@@ -116,6 +118,16 @@ class _IncomingCallScreenState extends ConsumerState<IncomingCallScreen> {
 
   Future<void> _acceptCall() async {
     _actionInProgress = true;
+    final permissionsGranted =
+        await CallPermissionService.ensureCallPermissions(
+          context,
+          callType: widget.call.callType,
+        );
+    if (!permissionsGranted || !mounted) {
+      _actionInProgress = false;
+      return;
+    }
+
     if (widget.call.callLogId != null) {
       await ref
           .read(callNotifierProvider.notifier)
@@ -137,6 +149,7 @@ class _IncomingCallScreenState extends ConsumerState<IncomingCallScreen> {
         ),
       ),
     );
+    _actionInProgress = false;
   }
 }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:opalmer_education/core/constants/api_constants.dart';
 
 class ChatScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -58,7 +59,7 @@ class ChatScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
             if (avatarUrl != null && avatarUrl!.isNotEmpty)
               CircleAvatar(
                 radius: 20,
-                backgroundImage: NetworkImage(avatarUrl!),
+                backgroundImage: NetworkImage(ApiConstants.buildImageUrl(avatarUrl)),
               )
             else
               Container(

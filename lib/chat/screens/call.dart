@@ -6,9 +6,9 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:opalmer_education/chat/controllers/call_session_controller.dart';
 import 'package:opalmer_education/chat/models/call_models.dart';
 import 'package:opalmer_education/chat/providers/call_provider.dart';
+import 'package:opalmer_education/chat/services/call_permission_service.dart';
 import 'package:opalmer_education/chat/services/call_socket_service.dart';
 import 'package:opalmer_education/chat/widgets/call_screen_body.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class CallScreen extends ConsumerStatefulWidget {
   final String name;
@@ -77,7 +77,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     if (!permissionsGranted || !mounted) {
       setState(() {
         _isLoading = false;
-        _statusText = 'Camera or microphone permission was denied.';
+        _statusText = 'Camera or microphone permission is required.';
       });
       return;
     }
@@ -132,19 +132,10 @@ class _CallScreenState extends ConsumerState<CallScreen> {
   }
 
   Future<bool> _requestPermissions() async {
-    final microphoneStatus = await Permission.microphone.request();
-    if (!microphoneStatus.isGranted) {
-      return false;
-    }
-
-    if (_isVideoCall) {
-      final cameraStatus = await Permission.camera.request();
-      if (!cameraStatus.isGranted) {
-        return false;
-      }
-    }
-
-    return true;
+    return CallPermissionService.ensureCallPermissions(
+      context,
+      callType: widget.callType,
+    );
   }
 
   void _markConnected() {

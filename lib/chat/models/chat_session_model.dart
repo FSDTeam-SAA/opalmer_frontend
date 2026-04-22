@@ -37,35 +37,46 @@ class ChatSessionModel {
     this.mutedBy = const [],
   });
 
-  factory ChatSessionModel.fromJson(Map<String, dynamic> json, [String? currentUserId]) {
+  factory ChatSessionModel.fromJson(
+    Map<String, dynamic> json, [
+    String? currentUserId,
+  ]) {
     final type = _parseType(json['type']);
     String title = json['name'] ?? '';
     String? avatar = json['avatar'];
 
+    if (avatar != null && avatar.isEmpty) {
+      avatar = null;
+    }
+
     final List rawParticipants = json['participants'] as List? ?? [];
-    final List<String> participantIds = rawParticipants.map((p) {
-      final userData = p['userId'];
-      if (userData is Map) {
-        return userData['_id']?.toString() ?? '';
-      }
-      return userData?.toString() ?? '';
-    }).where((id) => id.isNotEmpty).toList();
+    final List<String> participantIds = rawParticipants
+        .map((p) {
+          final userData = p['userId'];
+          if (userData is Map) {
+            return userData['_id']?.toString() ?? '';
+          }
+          return userData?.toString() ?? '';
+        })
+        .where((id) => id.isNotEmpty)
+        .toList();
 
     // If it's a direct room and title/avatar are missing, try to find the other participant's info
     if (type == ChatSessionType.direct && (title.isEmpty || avatar == null)) {
-      final otherParticipant = rawParticipants.firstWhere(
-        (p) {
-          final userData = p['userId'];
-          final id = userData is Map ? userData['_id']?.toString() : userData?.toString();
-          return id != null && id != currentUserId;
-        },
-        orElse: () => null,
-      );
+      final otherParticipant = rawParticipants.firstWhere((p) {
+        final userData = p['userId'];
+        final id = userData is Map
+            ? userData['_id']?.toString()
+            : userData?.toString();
+        return id != null && id != currentUserId;
+      }, orElse: () => null);
 
       if (otherParticipant != null && otherParticipant['userId'] is Map) {
         final userData = otherParticipant['userId'] as Map;
         if (title.isEmpty) title = userData['username'] ?? '';
-        if (avatar == null) avatar = userData['avatar'] is Map ? userData['avatar']['url'] : userData['avatar'];
+        avatar ??= userData['avatar'] is Map
+            ? userData['avatar']['url']
+            : userData['avatar'];
       }
     }
 
@@ -74,14 +85,16 @@ class ChatSessionModel {
       type: type,
       title: title,
       subtitle: json['lastMessage'] ?? '',
-      updatedAt: json['updated_at'] != null 
-          ? DateTime.parse(json['updated_at'].toString()) 
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'].toString())
           : DateTime.now(),
       participantIds: participantIds,
       avatarUrl: avatar,
-      lastMessageId: json['lastMessageId'] is Map ? json['lastMessageId']['_id'] : json['lastMessageId'],
-      lastMessageAt: json['lastMessageAt'] != null 
-          ? DateTime.tryParse(json['lastMessageAt'].toString()) 
+      lastMessageId: json['lastMessageId'] is Map
+          ? json['lastMessageId']['_id']
+          : json['lastMessageId'],
+      lastMessageAt: json['lastMessageAt'] != null
+          ? DateTime.tryParse(json['lastMessageAt'].toString())
           : null,
       createdBy: json['createdBy'],
       isBlocked: json['isBlocked'] ?? false,

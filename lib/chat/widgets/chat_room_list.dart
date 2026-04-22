@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:opalmer_education/chat/models/chat_role.dart';
+import 'package:opalmer_education/chat/models/chat_session_model.dart';
 
-import '../models/chat_role.dart';
-import '../models/chat_session_model.dart';
 import 'chat_session_slidable_item.dart';
 
 class ChatRoomList extends StatelessWidget {
@@ -10,6 +10,10 @@ class ChatRoomList extends StatelessWidget {
   final ChatRole role;
   final int? openedIndex;
   final void Function(int tab, int index) onSlide;
+  final String? emptyLabel;
+  final void Function(ChatSessionModel session)? onSessionTap;
+  final List<ChatSessionAction> Function(ChatSessionModel session)?
+  actionsBuilder;
 
   const ChatRoomList({
     super.key,
@@ -18,13 +22,19 @@ class ChatRoomList extends StatelessWidget {
     required this.role,
     required this.openedIndex,
     required this.onSlide,
+    this.emptyLabel,
+    this.onSessionTap,
+    this.actionsBuilder,
   });
 
   @override
   Widget build(BuildContext context) {
     if (sessions.isEmpty) {
       return Center(
-        child: Text(_emptyLabel, style: TextStyle(color: Colors.grey.shade400)),
+        child: Text(
+          emptyLabel ?? _emptyLabel,
+          style: TextStyle(color: Colors.grey.shade400),
+        ),
       );
     }
 
@@ -38,7 +48,12 @@ class ChatRoomList extends StatelessWidget {
         onSlide: onSlide,
         session: sessions[index],
         role: role,
-        actions: _actionsForSession(sessions[index]),
+        onTap: onSessionTap == null
+            ? null
+            : () => onSessionTap!(sessions[index]),
+        actions:
+            actionsBuilder?.call(sessions[index]) ??
+            _actionsForSession(sessions[index]),
       ),
     );
   }
@@ -50,7 +65,9 @@ class ChatRoomList extends StatelessWidget {
       case 1:
         return 'No drafts found';
       default:
-        return 'No groups found';
+        return role == ChatRole.parent
+            ? 'No teachers found'
+            : 'No groups found';
     }
   }
 

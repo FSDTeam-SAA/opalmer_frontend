@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/chat/screens/chat_screen.dart';
 
+import 'package:opalmer_education/core/constants/api_constants.dart';
+
 import '../models/chat_role.dart';
 import '../models/chat_session_model.dart';
 
@@ -24,6 +26,7 @@ class ChatSessionSlidableItem extends StatefulWidget {
   final ChatSessionModel session;
   final ChatRole role;
   final List<ChatSessionAction> actions;
+  final VoidCallback? onTap;
 
   const ChatSessionSlidableItem({
     super.key,
@@ -34,6 +37,7 @@ class ChatSessionSlidableItem extends StatefulWidget {
     required this.session,
     required this.role,
     required this.actions,
+    this.onTap,
   });
 
   @override
@@ -79,8 +83,10 @@ class _ChatSessionSlidableItemState extends State<ChatSessionSlidableItem>
   }
 
   double get _maxExtent => -(_actionWidth * widget.actions.length);
+  bool get _canSlide => widget.actions.isNotEmpty;
 
   void _onHorizontalDragUpdate(DragUpdateDetails details) {
+    if (!_canSlide) return;
     if (details.primaryDelta! < 0 && _dragExtent == 0) {
       widget.onSlide(widget.tab, widget.index);
     }
@@ -92,6 +98,7 @@ class _ChatSessionSlidableItemState extends State<ChatSessionSlidableItem>
   }
 
   void _onHorizontalDragEnd(DragEndDetails details) {
+    if (!_canSlide) return;
     if (_dragExtent < _maxExtent / 2) {
       _animateTo(_maxExtent);
     } else {
@@ -143,17 +150,19 @@ class _ChatSessionSlidableItemState extends State<ChatSessionSlidableItem>
             ),
           ),
           GestureDetector(
-            onHorizontalDragUpdate: _onHorizontalDragUpdate,
-            onHorizontalDragEnd: _onHorizontalDragEnd,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      ChatScreen(session: session, role: widget.role),
-                ),
-              );
-            },
+            onHorizontalDragUpdate: _canSlide ? _onHorizontalDragUpdate : null,
+            onHorizontalDragEnd: _canSlide ? _onHorizontalDragEnd : null,
+            onTap:
+                widget.onTap ??
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          ChatScreen(session: session, role: widget.role),
+                    ),
+                  );
+                },
             child: Transform.translate(
               offset: Offset(_dragExtent, 0),
               child: Container(
@@ -164,7 +173,8 @@ class _ChatSessionSlidableItemState extends State<ChatSessionSlidableItem>
                         session.avatarUrl!.isNotEmpty)
                       CircleAvatar(
                         radius: 28,
-                        backgroundImage: NetworkImage(session.avatarUrl!),
+                        backgroundImage: NetworkImage(
+                            ApiConstants.buildImageUrl(session.avatarUrl!)),
                       )
                     else
                       Container(
