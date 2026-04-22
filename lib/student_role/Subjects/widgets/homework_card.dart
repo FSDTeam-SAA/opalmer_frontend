@@ -71,33 +71,6 @@ class HomeworkCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(width: 12),
-              ElevatedButton(
-                onPressed: onSubmit ??
-                    () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Submission feature coming soon!'),
-                          backgroundColor: AppColors.primaryMid,
-                        ),
-                      );
-                    },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryMid,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(80, 36),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  elevation: 0,
-                  textStyle: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                child: const Text("SUBMIT"),
-              ),
             ],
           ),
         ],
