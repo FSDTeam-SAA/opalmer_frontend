@@ -8,6 +8,7 @@ import '../Classes_Screen/class_details.dart';
 import '../Classes_Screen/classes_screen.dart';
 import '../../notification/notification.dart';
 import 'package:opalmer_education/core/providers/navigation_provider.dart';
+import 'package:opalmer_education/core/providers/auth_provider.dart';
 
 class HomeDashboard extends ConsumerStatefulWidget {
   const HomeDashboard({Key? key}) : super(key: key);
@@ -172,6 +173,7 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
   @override
   Widget build(BuildContext context) {
     final classesAsync = ref.watch(teacherClassesProvider);
+    final user = ref.watch(authStateProvider);
 
     return Scaffold(
       backgroundColor: AppColors.scaffoldBg,
@@ -206,9 +208,9 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
-                                      "Hi, Teacher 👋",
-                                      style: TextStyle(
+                                    Text(
+                                      "Hi, ${user?.username ?? 'Teacher'} 👋",
+                                      style: const TextStyle(
                                         fontSize: 24,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white,

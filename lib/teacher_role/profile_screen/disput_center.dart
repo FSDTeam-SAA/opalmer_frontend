@@ -84,36 +84,36 @@ class _DisputCenterScreenState extends State<DisputCenterScreen> {
             color: Colors.black87,
           ),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 20),
-            child: Center(
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SupportScreen(),
-                    ),
-                  );
-                },
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF871DAD),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.chat_bubble_outline,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
+        // actions: [
+        //           Padding(
+        //             padding: const EdgeInsets.only(right: 20),
+        //             child: Center(
+        //               child: GestureDetector(
+        //                 onTap: () {
+        //                   Navigator.push(
+        //                     context,
+        //                     MaterialPageRoute(
+        //                       builder: (context) => const SupportScreen(),
+        //                     ),
+        //                   );
+        //                 },
+        //                 child: Container(
+        //                   width: 40,
+        //                   height: 40,
+        //                   decoration: const BoxDecoration(
+        //                     color: Color(0xFF871DAD),
+        //                     shape: BoxShape.circle,
+        //                   ),
+        //                   child: const Icon(
+        //                     Icons.chat_bubble_outline,
+        //                     color: Colors.white,
+        //                     size: 20,
+        //                   ),
+        //                 ),
+        //               ),
+        //             ),
+        //           ),
+        //         ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(

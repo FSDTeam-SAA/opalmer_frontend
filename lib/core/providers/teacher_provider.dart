@@ -130,6 +130,27 @@ final studentAttendanceStatsProvider =
   return 0;
 });
 
+final studentAnalysisProvider =
+    FutureProvider.family<Map<String, dynamic>, String>((ref, paramString) async {
+  final apiClient = ref.read(apiClientProvider);
+  final parts = paramString.split('|');
+  if (parts.length < 2) return {};
+  
+  final classId = parts[0];
+  final studentId = parts[1];
+  final filter = parts.length > 2 ? parts[2] : 'weekly';
+
+  final response = await apiClient.get(
+    '/analysis/$classId/$studentId',
+    queryParameters: {'filter': filter},
+  );
+
+  if (response.statusCode == 200 && response.data['success'] == true) {
+    return response.data['data'];
+  }
+  return {};
+});
+
 final classAttendanceProvider = FutureProvider.family<List<dynamic>, String>((ref, classId) async {
   final apiClient = ref.read(apiClientProvider);
   final response = await apiClient.get('/attendances/class', queryParameters: {'classId': classId});

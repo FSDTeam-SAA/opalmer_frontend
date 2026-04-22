@@ -11,6 +11,8 @@ import 'disput_center.dart';
 import 'block_list.dart';
 import 'language.dart';
 import '../../authentication_screen/two_factor_auth_screen.dart';
+import 'package:opalmer_education/authentication_screen/login_screen.dart';
+import 'profile_setup.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -158,10 +160,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               child: Column(
                 children: [
                   _buildMenuTile(
-                    "Rewards/Badges",
-                    Icons
-                        .workspace_premium_outlined, // using a ribbon/badge icon
-                    const RewardsBadgesScreen(),
+                    "Edit profile",
+                    Icons.person_outline,
+                    const ProfileSetupScreen(),
                   ),
                   _buildMenuTile(
                     "Notifications Settings",
