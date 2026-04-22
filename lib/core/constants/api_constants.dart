@@ -3,7 +3,7 @@ class ApiConstants {
   // For Android Emulator, use http://10.0.2.2:5000/api/v1
   // For iOS Simulator, use http://127.0.0.1:5000/api/v1
   // For Physical Device, use your machine IP: http://10.10.5.53:5000/api/v1
-  static const String baseUrl = 'http://localhost:5000/api/v1';
+  static const String baseUrl = 'http://127.0.0.1:5000/api/v1';
 
   // Auth Endpoints
   static const String login = '/users/login';
@@ -42,7 +42,7 @@ class ApiConstants {
   static const String notificationsReadAll = '/notifications/read';
 
   // Socket
-  static const String socketBaseUrl = 'http://localhost:5000';
+  static const String socketBaseUrl = 'http://127.0.0.1:5000/';
 
   // Learning Tips Endpoints
   static const String learningTipsByParent = '/learning-tips/by-parent/me';

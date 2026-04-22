@@ -51,8 +51,12 @@ class ChatNotifier extends StateNotifier<ChatState> {
   bool _listenersBound = false;
 
   void _init() {
-    _ref.listen<UserModel?>(authStateProvider, (_, next) {
-      unawaited(_handleAuthChange(next));
+    _ref.listen<UserModel?>(authStateProvider, (previous, next) {
+      if (previous != null && next == null) {
+        _socketService.disconnect();
+      } else if (next != null) {
+        unawaited(_handleAuthChange(next));
+      }
     }, fireImmediately: true);
   }
 

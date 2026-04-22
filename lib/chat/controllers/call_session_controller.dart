@@ -196,7 +196,9 @@ class CallSessionController {
 
     peerConnection.onTrack = (event) {
       if (event.streams.isEmpty) return;
-      _remoteRenderer.srcObject = event.streams.first;
+      if (_isVideoCall) {
+        _remoteRenderer.srcObject = event.streams.first;
+      }
       _markConnected();
     };
 

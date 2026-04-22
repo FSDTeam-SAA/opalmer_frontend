@@ -60,8 +60,12 @@ class CallNotifier extends StateNotifier<CallState> {
   bool _listenersBound = false;
 
   CallNotifier(this._ref) : super(const CallState()) {
-    _ref.listen<UserModel?>(authStateProvider, (_, next) {
-      unawaited(_handleAuthChange(next));
+    _ref.listen<UserModel?>(authStateProvider, (previous, next) {
+      if (previous != null && next == null) {
+        _socketService.disconnect();
+      } else if (next != null) {
+        unawaited(_handleAuthChange(next));
+      }
     }, fireImmediately: true);
   }
 

@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
+import 'package:opalmer_education/chat/services/chat_socket_service.dart';
+import 'package:opalmer_education/chat/services/call_socket_service.dart';
 import 'package:opalmer_education/core/constants/api_constants.dart';
 import 'package:opalmer_education/core/models/user_model.dart';
 import 'package:opalmer_education/core/services/api_client.dart';
@@ -53,6 +55,10 @@ class AuthService {
 
   Future<void> logout() async {
     try {
+      // Disconnect sockets first to ensure no more events are received
+      ChatSocketService().disconnect();
+      CallSocketService().disconnect();
+
       final token = await _storage.getToken();
       if (token != null && token.isNotEmpty) {
         await _apiClient.post(ApiConstants.logout);

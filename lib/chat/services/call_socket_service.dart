@@ -49,11 +49,14 @@ class CallSocketService {
   void connect({required String token}) {
     if (_socket?.connected == true) return;
 
+    debugPrint('CallSocket: Attempting connection to ${ApiConstants.socketBaseUrl}');
+
     _socket ??= io.io(
       ApiConstants.socketBaseUrl,
       io.OptionBuilder()
           .setTransports(['websocket'])
           .setAuth({'token': token})
+          .enableForceNew() // Add forceNew
           .enableAutoConnect()
           .enableReconnection()
           .build(),
@@ -177,11 +180,22 @@ class CallSocketService {
     required CallMediaType callType,
     String? callLogId,
   }) {
-    _socket?.emit('call-user', {
+    if (_socket?.connected != true) {
+      debugPrint('CallSocket: Cannot place call, socket is NOT connected');
+      return;
+    }
+
+    final payload = {
       'roomId': roomId,
       'calleeId': calleeId,
       'callType': callMediaTypeValue(callType),
       ...?callLogId != null ? {'callLogId': callLogId} : null,
+    };
+
+    debugPrint('CallSocket: Placing call with payload: $payload');
+
+    _socket?.emitWithAck('call-user', payload, ack: (data) {
+      debugPrint('CallSocket: placeCall server ack: $data');
     });
   }
 
@@ -252,6 +266,7 @@ class CallSocketService {
   }
 
   void disconnect() {
+    debugPrint('CallSocket: disconnect() called from:\n${StackTrace.current}');
     _socket?.disconnect();
   }
 

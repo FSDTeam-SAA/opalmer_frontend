@@ -217,8 +217,8 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     _ringTimeoutTimer?.cancel();
     _durationTimer?.cancel();
     await _sessionController?.dispose();
-    _localRenderer.srcObject = null;
-    _remoteRenderer.srcObject = null;
+    // _localRenderer.srcObject = null;
+    // _remoteRenderer.srcObject = null;
   }
 
   void _startOutgoingTimeout() {

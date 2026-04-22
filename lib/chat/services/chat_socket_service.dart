@@ -27,15 +27,20 @@ class ChatSocketService {
     _status = ChatSocketConnectionStatus.connecting;
     _statusController.add(_status);
 
+    debugPrint('ChatSocket: Attempting connection to ${ApiConstants.socketBaseUrl}');
+    
     _socket = io.io(
       ApiConstants.socketBaseUrl,
       io.OptionBuilder()
           .setTransports(['websocket'])
           .setAuth({'token': token})
+          .enableForceNew() // Add forceNew
           .enableAutoConnect()
           .enableReconnection()
           .build(),
     );
+
+    _socket!.connect(); // Explicitly call connect
 
     _socket!.onConnect((_) {
       debugPrint('ChatSocket: connected');
@@ -79,6 +84,7 @@ class ChatSocketService {
   }
 
   void disconnect() {
+    debugPrint('ChatSocket: disconnect() called from:\n${StackTrace.current}');
     _socket?.disconnect();
     _socket?.dispose();
     _socket = null;

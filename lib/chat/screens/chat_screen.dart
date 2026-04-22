@@ -151,14 +151,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             callType: CallMediaType.audio,
           );
         },
-        // onStartVideoCall: () {
-        //   _startCall(
-        //     context: context,
-        //     currentUserId: currentUser?.id,
-        //     callType: CallMediaType.video,
-        //   );
-        // },
-        onStartVideoCall: () {},
+        onStartVideoCall: () {
+          _startCall(
+            context: context,
+            currentUserId: currentUser?.id,
+            callType: CallMediaType.video,
+          );
+        },
+        // onStartVideoCall: () {},
       ),
       body: Column(
         children: [
