@@ -71,9 +71,10 @@ class _IncomingCallScreenState extends ConsumerState<IncomingCallScreen> {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  widget.call.callType == CallMediaType.video
-                      ? 'Incoming video call'
-                      : 'Incoming audio call',
+                  // widget.call.callType == CallMediaType.video
+                  //     ? 'Incoming video call'
+                  //     : 'Incoming audio call',
+                  'Incoming audio call',
                   style: const TextStyle(color: Colors.white70, fontSize: 16),
                 ),
                 const SizedBox(height: 40),
@@ -89,9 +90,10 @@ class _IncomingCallScreenState extends ConsumerState<IncomingCallScreen> {
                     const SizedBox(width: 24),
                     _ActionButton(
                       color: const Color(0xFF34A853),
-                      icon: widget.call.callType == CallMediaType.video
-                          ? Icons.videocam
-                          : Icons.call,
+                      // icon: widget.call.callType == CallMediaType.video
+                      //     ? Icons.videocam
+                      //     : Icons.call,
+                      icon: Icons.call,
                       label: 'Accept',
                       onTap: _acceptCall,
                     ),

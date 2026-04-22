@@ -94,8 +94,8 @@ class ChatScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
           const SizedBox(width: 4),
           _ActionIcon(icon: Icons.phone_outlined, onTap: onStartAudioCall),
           const SizedBox(width: 4),
-          _ActionIcon(icon: Icons.videocam_outlined, onTap: onStartVideoCall),
-          const SizedBox(width: 20),
+          // _ActionIcon(icon: Icons.videocam_outlined, onTap: onStartVideoCall),
+          // const SizedBox(width: 20),
         ],
       ],
     );
