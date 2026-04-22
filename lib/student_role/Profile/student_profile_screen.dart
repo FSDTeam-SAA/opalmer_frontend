@@ -17,7 +17,8 @@ class StudentProfileScreen extends ConsumerStatefulWidget {
   const StudentProfileScreen({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<StudentProfileScreen> createState() => _StudentProfileScreenState();
+  ConsumerState<StudentProfileScreen> createState() =>
+      _StudentProfileScreenState();
 }
 
 class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
@@ -97,7 +98,7 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
 
                 // Avatar Picture
                 Positioned(
-                  top: 130, 
+                  top: 130,
                   child: Container(
                     width: 100,
                     height: 100,
@@ -117,7 +118,7 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                       borderRadius: BorderRadius.circular(50),
                       child:
                           user?.avatar != null &&
-                                  user!.avatar!.startsWith('http')
+                              user!.avatar!.startsWith('http')
                           ? Image.network(
                               user.avatar!,
                               fit: BoxFit.cover,
@@ -137,7 +138,7 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
             ),
 
             // Name and Email
-            const SizedBox(height: 60), 
+            const SizedBox(height: 60),
             Text(
               user?.username ?? "Student",
               style: const TextStyle(
@@ -206,14 +207,14 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                       onTap: () async {
                         await ref.read(authServiceProvider).logout();
                         ref.read(authStateProvider.notifier).state = null;
-                        if (mounted) {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const UserRoleScreen(),
-                            ),
-                          );
-                        }
+                        if (!context.mounted) return;
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const UserRoleScreen(),
+                          ),
+                          (route) => false,
+                        );
                       },
                       borderRadius: BorderRadius.circular(12),
                       child: Padding(
@@ -239,7 +240,7 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 60), 
+                  const SizedBox(height: 60),
                 ],
               ),
             ),

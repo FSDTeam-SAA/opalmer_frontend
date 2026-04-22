@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
-import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/notification/notification.dart';
 import 'package:opalmer_education/teacher_role/profile_screen/rewards_badges.dart';
 import 'package:opalmer_education/user_role_screen/user_role_screen.dart';
@@ -12,7 +11,6 @@ import 'disput_center.dart';
 import 'block_list.dart';
 import 'language.dart';
 import '../../authentication_screen/two_factor_auth_screen.dart';
-import 'package:opalmer_education/authentication_screen/login_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -153,7 +151,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               style: TextStyle(fontSize: 15, color: Colors.grey.shade500),
             ),
             const SizedBox(height: 32),
-            
+
             // Menu Items List
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -209,14 +207,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         // Logout action
                         await ref.read(authServiceProvider).logout();
                         ref.read(authStateProvider.notifier).state = null;
-                        if (mounted) {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const UserRoleScreen(),
-                            ),
-                          );
-                        }
+                        if (!context.mounted) return;
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const UserRoleScreen(),
+                          ),
+                          (route) => false,
+                        );
                       },
                       borderRadius: BorderRadius.circular(12),
                       child: Padding(

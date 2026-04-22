@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/models/user_model.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
 import 'package:opalmer_education/core/services/secure_storage_service.dart';
 import '../models/chat_session_model.dart';
@@ -47,21 +48,38 @@ class ChatNotifier extends StateNotifier<ChatState> {
 
   StreamSubscription? _messageSubscription;
   StreamSubscription? _statusSubscription;
+  bool _listenersBound = false;
 
-  Future<void> _init() async {
-    final user = _ref.read(authStateProvider);
-    if (user == null) return;
+  void _init() {
+    _ref.listen<UserModel?>(authStateProvider, (_, next) {
+      unawaited(_handleAuthChange(next));
+    }, fireImmediately: true);
+  }
 
-    final token = await _storage.getToken();
-    if (token != null) {
-      _socketService.connect(token: token);
-      _setupListeners();
+  Future<void> _handleAuthChange(UserModel? user) async {
+    if (user == null) {
+      _socketService.disconnect();
+      _messageSubscription?.cancel();
+      _messageSubscription = null;
+      _statusSubscription?.cancel();
+      _statusSubscription = null;
+      _listenersBound = false;
+      state = const ChatState();
+      return;
     }
 
-    loadRooms();
+    final token = await _storage.getToken();
+    if (token == null || token.isEmpty) return;
+
+    _socketService.connect(token: token);
+    _setupListeners();
+    await loadRooms();
   }
 
   void _setupListeners() {
+    if (_listenersBound) return;
+    _listenersBound = true;
+
     _messageSubscription?.cancel();
     _messageSubscription = _socketService.messages.listen((message) {
       _handleNewIncomingMessage(message);
@@ -81,14 +99,11 @@ class ChatNotifier extends StateNotifier<ChatState> {
     if (state.messages.any((m) => m.id == message.id)) return;
 
     final List<MessageModel> updatedMessages = [...state.messages, message];
-    
+
     // Update rooms list with last message snippet
     final updatedRooms = state.rooms.map((room) {
       if (room.id == message.chatSessionId) {
-        return room.copyWith(
-          subtitle: message.text,
-          updatedAt: DateTime.now(),
-        );
+        return room.copyWith(subtitle: message.text, updatedAt: DateTime.now());
       }
       return room;
     }).toList();
@@ -104,7 +119,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
     try {
       final rooms = await _apiService.getRooms(user.id);
       state = state.copyWith(rooms: rooms, isLoading: false);
-      
+
       // Auto-join all rooms via socket
       for (var room in rooms) {
         _socketService.joinRoom(room.id);
@@ -127,14 +142,16 @@ class ChatNotifier extends StateNotifier<ChatState> {
     try {
       final messages = await _apiService.getMessages(roomId);
       final newMessages = messages.reversed.toList();
-      
+
       // Merge with existing messages, avoiding duplicates
       final existingIds = state.messages.map((m) => m.id).toSet();
-      final filteredNew = newMessages.where((m) => !existingIds.contains(m.id)).toList();
-      
+      final filteredNew = newMessages
+          .where((m) => !existingIds.contains(m.id))
+          .toList();
+
       state = state.copyWith(
         messages: [...state.messages, ...filteredNew],
-        isLoading: false
+        isLoading: false,
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -181,7 +198,9 @@ class ChatNotifier extends StateNotifier<ChatState> {
   }
 }
 
-final chatNotifierProvider = StateNotifierProvider<ChatNotifier, ChatState>((ref) {
+final chatNotifierProvider = StateNotifierProvider<ChatNotifier, ChatState>((
+  ref,
+) {
   return ChatNotifier(ref);
 });
 
@@ -191,9 +210,14 @@ final chatRoomsProvider = Provider<List<ChatSessionModel>>((ref) {
   return state.rooms;
 });
 
-final chatMessagesProvider = Provider.family<List<MessageModel>, String>((ref, roomId) {
+final chatMessagesProvider = Provider.family<List<MessageModel>, String>((
+  ref,
+  roomId,
+) {
   final state = ref.watch(chatNotifierProvider);
-  final roomMessages = state.messages.where((m) => m.chatSessionId == roomId).toList();
+  final roomMessages = state.messages
+      .where((m) => m.chatSessionId == roomId)
+      .toList();
   // Sort by timestamp to ensure correct order after merging history/new messages
   roomMessages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
   return roomMessages;

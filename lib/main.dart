@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'chat/widgets/app_call_listener.dart';
+import 'core/navigation/app_navigator.dart';
 import 'splash_screen/splash_screen.dart';
 import 'core/theme/app_theme.dart';
 
@@ -20,9 +22,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: appNavigatorKey,
       title: 'Class Pulse',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      builder: (context, child) {
+        return AppCallListener(child: child ?? const SizedBox.shrink());
+      },
       home: const SplashScreen(),
     );
   }

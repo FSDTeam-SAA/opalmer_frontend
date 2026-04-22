@@ -98,10 +98,8 @@ class _ParentProfileScreenState extends ConsumerState<ParentProfileScreen> {
                     radius: 65,
                     backgroundImage:
                         user?.avatar != null && user!.avatar!.isNotEmpty
-                            ? NetworkImage(user.avatar!)
-                            : const AssetImage(
-                                'assets/images/profile/parent.png',
-                              ),
+                        ? NetworkImage(user.avatar!)
+                        : const AssetImage('assets/images/profile/parent.png'),
                   ),
                 ),
               ),
@@ -303,10 +301,14 @@ class _ParentProfileScreenState extends ConsumerState<ParentProfileScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: InkWell(
-        onTap: () {
-          Navigator.pushReplacement(
+        onTap: () async {
+          await ref.read(authServiceProvider).logout();
+          ref.read(authStateProvider.notifier).state = null;
+          if (!context.mounted) return;
+          Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (context) => const UserRoleScreen()),
+            (route) => false,
           );
         },
         child: const Row(

@@ -1,137 +1,268 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
 
-class CallScreen extends StatefulWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:opalmer_education/chat/controllers/call_session_controller.dart';
+import 'package:opalmer_education/chat/models/call_models.dart';
+import 'package:opalmer_education/chat/providers/call_provider.dart';
+import 'package:opalmer_education/chat/services/call_socket_service.dart';
+import 'package:opalmer_education/chat/widgets/call_screen_body.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+class CallScreen extends ConsumerStatefulWidget {
   final String name;
   final String imageUrl;
+  final String? roomId;
+  final String? peerId;
+  final bool isIncoming;
+  final CallMediaType callType;
+  final String? callLogId;
 
-  const CallScreen({super.key, required this.name, required this.imageUrl});
+  const CallScreen({
+    super.key,
+    required this.name,
+    required this.imageUrl,
+    this.roomId,
+    this.peerId,
+    this.isIncoming = false,
+    this.callType = CallMediaType.audio,
+    this.callLogId,
+  });
 
   @override
-  State<CallScreen> createState() => _CallScreenState();
+  ConsumerState<CallScreen> createState() => _CallScreenState();
 }
 
-class _CallScreenState extends State<CallScreen> {
+class _CallScreenState extends ConsumerState<CallScreen> {
+  final RTCVideoRenderer _localRenderer = RTCVideoRenderer();
+  final RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
+  final CallSocketService _callSocketService = CallSocketService();
+
+  CallSessionController? _sessionController;
+  Timer? _durationTimer;
+  String? _callLogId;
+  DateTime? _connectedAt;
+  String _statusText = 'Preparing call...';
+  bool _isLoading = true;
+  bool _isMuted = false;
+  bool _connected = false;
+  bool _isEnding = false;
+
+  bool get _isVideoCall => widget.callType == CallMediaType.video;
+  bool get _isLiveCall => widget.roomId != null && widget.peerId != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    if (!_isLiveCall) {
+      setState(() {
+        _isLoading = false;
+        _statusText =
+            'This call shortcut is not connected to live calling yet.';
+      });
+      return;
+    }
+
+    await _localRenderer.initialize();
+    await _remoteRenderer.initialize();
+    _buildSessionController();
+
+    final permissionsGranted = await _requestPermissions();
+    if (!permissionsGranted || !mounted) {
+      setState(() {
+        _isLoading = false;
+        _statusText = 'Camera or microphone permission was denied.';
+      });
+      return;
+    }
+
+    await _sessionController!.prepareLocalMedia();
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (widget.isIncoming) {
+      _callLogId = widget.callLogId;
+      ref
+          .read(callNotifierProvider.notifier)
+          .registerActiveCall(roomId: widget.roomId!, callLogId: _callLogId);
+      _updateStatus('Connecting...');
+      _sessionController!.joinCallRoom();
+      return;
+    }
+
+    try {
+      _updateStatus('Calling ${widget.name}...');
+      _callLogId = await ref
+          .read(callNotifierProvider.notifier)
+          .startOutgoingCall(
+            roomId: widget.roomId!,
+            receiverId: widget.peerId!,
+            callType: widget.callType,
+          );
+      _sessionController!.joinCallRoom();
+    } catch (_) {
+      if (!mounted) return;
+      _updateStatus('Unable to start the call.');
+    }
+  }
+
+  void _buildSessionController() {
+    _sessionController = CallSessionController(
+      callSocketService: _callSocketService,
+      roomId: widget.roomId!,
+      peerName: widget.name,
+      isCaller: !widget.isIncoming,
+      isVideoCall: _isVideoCall,
+      localRenderer: _localRenderer,
+      remoteRenderer: _remoteRenderer,
+      onStatusChanged: _updateStatus,
+      onConnected: _markConnected,
+      onRemoteEnd: _handleRemoteEnd,
+    )..bindSocketListeners();
+  }
+
+  Future<bool> _requestPermissions() async {
+    final microphoneStatus = await Permission.microphone.request();
+    if (!microphoneStatus.isGranted) {
+      return false;
+    }
+
+    if (_isVideoCall) {
+      final cameraStatus = await Permission.camera.request();
+      if (!cameraStatus.isGranted) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  void _markConnected() {
+    if (_connected) return;
+
+    _connected = true;
+    _connectedAt = DateTime.now();
+    _durationTimer?.cancel();
+    _durationTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+  }
+
+  Future<void> _handleRemoteEnd(String message) async {
+    if (_isEnding) return;
+
+    _isEnding = true;
+    _updateStatus(message);
+    _durationTimer?.cancel();
+    _sessionController?.leaveCallRoom();
+    ref.read(callNotifierProvider.notifier).clearActiveCall();
+
+    await _disposeCallResources();
+
+    if (!mounted) return;
+    Future<void>.delayed(const Duration(milliseconds: 800), () {
+      if (mounted) {
+        Navigator.of(context).maybePop();
+      }
+    });
+  }
+
+  Future<void> _endCall() async {
+    if (_isEnding) return;
+    _isEnding = true;
+
+    if (_isLiveCall) {
+      await ref
+          .read(callNotifierProvider.notifier)
+          .finishCall(
+            roomId: widget.roomId!,
+            connected: _connected,
+            targetUserId: widget.peerId,
+            callLogId: _callLogId,
+          );
+      _sessionController?.leaveCallRoom();
+    }
+
+    await _disposeCallResources();
+
+    if (mounted) {
+      Navigator.of(context).maybePop();
+    }
+  }
+
+  Future<void> _disposeCallResources() async {
+    _durationTimer?.cancel();
+    await _sessionController?.dispose();
+    _localRenderer.srcObject = null;
+    _remoteRenderer.srcObject = null;
+  }
+
+  void _toggleMute() {
+    final nextMuted = !_isMuted;
+    _sessionController?.setMuted(nextMuted);
+    setState(() {
+      _isMuted = nextMuted;
+    });
+  }
+
+  Future<void> _switchCamera() async {
+    await _sessionController?.switchCamera();
+  }
+
+  void _updateStatus(String value) {
+    if (!mounted) return;
+    setState(() {
+      _statusText = value;
+    });
+  }
+
+  String get _statusLabel {
+    if (_connectedAt == null) return _statusText;
+
+    final elapsed = DateTime.now().difference(_connectedAt!);
+    final minutes = elapsed.inMinutes.toString().padLeft(2, '0');
+    final seconds = (elapsed.inSeconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+
+  @override
+  void dispose() {
+    _durationTimer?.cancel();
+    _sessionController?.leaveCallRoom();
+    unawaited(_disposeCallResources());
+    unawaited(_localRenderer.dispose());
+    unawaited(_remoteRenderer.dispose());
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0F0F0F),
-      body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            // Header Info
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.lock_outline, color: Colors.white70, size: 14),
-                const SizedBox(width: 8),
-                const Text(
-                  "End-to-end encrypted",
-                  style: TextStyle(color: Colors.white70, fontSize: 13),
-                ),
-              ],
-            ),
-            const SizedBox(height: 30),
-            Text(
-              widget.name,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              "02.32",
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+    final sessionController = _sessionController;
 
-            const Spacer(flex: 2),
-
-            // Central Avatar
-            Container(
-              width: 180,
-              height: 180,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  width: 8,
-                ),
-              ),
-              child: ClipOval(
-                child: Image.network(widget.imageUrl, fit: BoxFit.cover),
-              ),
-            ),
-
-            const Spacer(flex: 3),
-
-            // Bottom Controls
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildControlIconAsset('assets/images/call/message.png'),
-                  _buildControlIconAsset('assets/images/call/volume.png'),
-                  _buildControlIconAsset('assets/images/call/mute_unmute.png'),
-                  _buildEndCallButton(context),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildControlIconAsset(String assetPath) {
-    return Container(
-      width: 52,
-      height: 52,
-      decoration: const BoxDecoration(
-        color: Color(0xFF444444), // Darker charcoal grey
-        shape: BoxShape.circle,
-      ),
-      child: Center(
-        child: Image.asset(
-          assetPath,
-          width: 24,
-          height: 24,
-          fit: BoxFit.contain,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEndCallButton(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.pop(context),
-      child: Container(
-        width: 56,
-        height: 56,
-        decoration: const BoxDecoration(
-          color: Color(0xFFEA4335), // Red background
-          shape: BoxShape.circle,
-        ),
-        child: Center(
-          child: Image.asset(
-            'assets/images/call/end_call.png',
-            width: 28,
-            height: 28,
-            fit: BoxFit.contain,
-          ),
-        ),
-      ),
+    return CallScreenBody(
+      name: widget.name,
+      imageUrl: widget.imageUrl,
+      statusLabel: _statusLabel,
+      isLoading: _isLoading,
+      isMuted: _isMuted,
+      isVideoCall: _isVideoCall,
+      hasRemoteVideo: sessionController?.hasRemoteVideo ?? false,
+      hasLocalVideo: sessionController?.hasLocalVideo ?? false,
+      localRenderer: _localRenderer,
+      remoteRenderer: _remoteRenderer,
+      onToggleMute: _toggleMute,
+      onSwitchCamera: _switchCamera,
+      onEndCall: _endCall,
     );
   }
 }

@@ -37,6 +37,7 @@ dependencies:
   flutter_secure_storage: ^9.0.0
   printing: ^5.14.2
 
+  flutter_webrtc: ^1.4.1
   socket_io_client: ^2.0.3+1
 
   image_picker: ^1.2.1
