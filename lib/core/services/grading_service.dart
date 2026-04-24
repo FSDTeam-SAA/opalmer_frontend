@@ -1,4 +1,5 @@
 import 'package:opalmer_education/core/services/api_client.dart';
+import 'package:dio/dio.dart';
 
 class GradingService {
   final ApiClient _apiClient = ApiClient();
@@ -73,11 +74,48 @@ class GradingService {
     required String prompt,
     int count = 5,
   }) async {
-    final response = await _apiClient.post(
-      '/quiz/qa/generate',
-      data: {'prompt': prompt, 'count': count},
-    );
-    // Assuming the AI generator returns an array of questions directly or in a specific field
-    return response.data['data'] as List<dynamic>;
+    try {
+      final response = await _apiClient.post(
+        '/quiz/qa/generate',
+        data: {'prompt': prompt, 'count': count},
+      );
+      return _extractQuestions(response.data['data']);
+    } on DioException catch (e) {
+      final responseText = e.response?.data.toString().toLowerCase() ?? '';
+      final isLegacyContractError =
+          e.response?.statusCode == 400 &&
+          responseText.contains('quizid and topic are required');
+
+      if (!isLegacyContractError) {
+        rethrow;
+      }
+
+      // Backward-compat fallback for older backend contract.
+      final legacyResponse = await _apiClient.post(
+        '/quiz/qa/generate',
+        data: {
+          'quizId': _buildLegacyPreviewQuizId(),
+          'topic': prompt,
+          'count': count,
+        },
+      );
+      return _extractQuestions(legacyResponse.data['data']);
+    }
+  }
+
+  List<dynamic> _extractQuestions(dynamic data) {
+    if (data is List<dynamic>) {
+      return data;
+    }
+    if (data is Map<String, dynamic> && data['questions'] is List<dynamic>) {
+      return data['questions'] as List<dynamic>;
+    }
+    return <dynamic>[];
+  }
+
+  String _buildLegacyPreviewQuizId() {
+    final hexTime = DateTime.now().millisecondsSinceEpoch.toRadixString(16);
+    final buffer = (hexTime + hexTime).padLeft(24, '0');
+    return buffer.substring(buffer.length - 24);
   }
 }
