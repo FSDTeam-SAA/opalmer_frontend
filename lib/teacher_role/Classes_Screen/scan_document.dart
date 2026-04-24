@@ -69,6 +69,7 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
       final image = await _controller!.takePicture();
       await _processImage(image.path);
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Capture failed: $e")));
@@ -93,8 +94,7 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
     await Future.delayed(const Duration(milliseconds: 500));
 
     try {
-      // Use custom extensions to FORCE iOS to use the Files Browser (stable)
-      // instead of the Photos Picker (unstable on simulator)
+      // Use custom extensions to force iOS to use the Files Browser.
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['jpg', 'jpeg', 'png', 'heic'],
@@ -133,14 +133,6 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
       textRecognizer.close();
       if (mounted) setState(() => _isProcessing = false);
     }
-
-    // MOCK DELAY for testing
-    await Future.delayed(const Duration(seconds: 1));
-    _showResultSheet(
-      path,
-      "[SIMULATOR MODE] OCR is disabled on simulators because Google MLKit lacks arm64 support. Test on a physical device to see actual OCR results.",
-    );
-    setState(() => _isProcessing = false);
   }
 
   void _showResultSheet(String path, String text) {
