@@ -91,10 +91,7 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
     await Future.delayed(const Duration(milliseconds: 300));
 
     try {
-<<<<<<< Updated upstream
       // Use custom extensions to force iOS to use the Files Browser.
-=======
->>>>>>> Stashed changes
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['jpg', 'jpeg', 'png', 'heic'],
@@ -122,17 +119,15 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
     try {
       final inputImage = InputImage.fromFilePath(path);
       final recognizedText = await textRecognizer.processImage(inputImage);
-      
+
       if (mounted) {
         setState(() => _isProcessing = false);
         // Navigate to full screen result
         await Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => OCRResultScreen(
-              imagePath: path,
-              text: recognizedText.text,
-            ),
+            builder: (context) =>
+                OCRResultScreen(imagePath: path, text: recognizedText.text),
           ),
         );
       }
@@ -148,8 +143,6 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
       if (mounted) setState(() => _isProcessing = false);
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
