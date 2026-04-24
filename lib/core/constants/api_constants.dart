@@ -1,12 +1,5 @@
 class ApiConstants {
-<<<<<<< Updated upstream
-  // Replace this with your backend IP or domain
-  // For Android Emulator, use http://10.0.2.2:5000/api/v1
-  // For iOS Simulator, use http://127.0.0.1:5000/api/v1
-  // For Physical Device, use your machine IP: http://10.10.5.53:5000/api/v1
-=======
   // Production Server: http://187.77.187.56:5080/api/v1
->>>>>>> Stashed changes
   static const String baseUrl = 'http://187.77.187.56:5080/api/v1';
 
   // Auth Endpoints
