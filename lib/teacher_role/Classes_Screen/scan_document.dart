@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'ocr_result_screen.dart';
 
 class ScanDocumentScreen extends StatefulWidget {
   const ScanDocumentScreen({super.key});
@@ -81,20 +82,19 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
   Future<void> _onGallery() async {
     if (_isProcessing) return;
 
-    debugPrint(
-      "ScanDoc: _onGallery using FilePicker.custom to avoid PHPicker hang",
-    );
-
-    // 1. Fully release camera hardware
+    // 1. Fully release camera hardware before opening gallery
     setState(() => _isCameraInitialized = false);
     await _controller?.dispose();
     _controller = null;
 
-    // 2. Short safety delay
-    await Future.delayed(const Duration(milliseconds: 500));
+    // 2. Short safety delay to let hardware release
+    await Future.delayed(const Duration(milliseconds: 300));
 
     try {
+<<<<<<< Updated upstream
       // Use custom extensions to force iOS to use the Files Browser.
+=======
+>>>>>>> Stashed changes
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['jpg', 'jpeg', 'png', 'heic'],
@@ -107,8 +107,10 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
     } catch (e) {
       debugPrint("ScanDoc: Picker error: $e");
     } finally {
-      // 3. Re-init camera after picker closes
-      _initCameras();
+      // 3. Re-init camera only if we're still on this screen and it's not already on
+      if (mounted && _controller == null) {
+        await _initCameras();
+      }
     }
   }
 
@@ -120,11 +122,23 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
     try {
       final inputImage = InputImage.fromFilePath(path);
       final recognizedText = await textRecognizer.processImage(inputImage);
+      
       if (mounted) {
-        _showResultSheet(path, recognizedText.text);
+        setState(() => _isProcessing = false);
+        // Navigate to full screen result
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OCRResultScreen(
+              imagePath: path,
+              text: recognizedText.text,
+            ),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
+        setState(() => _isProcessing = false);
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text("OCR failed: $e")));
@@ -135,85 +149,7 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
     }
   }
 
-  void _showResultSheet(String path, String text) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              "Scan Results",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.file(
-                File(path),
-                height: 150,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              constraints: const BoxConstraints(maxHeight: 200),
-              child: SingleChildScrollView(
-                child: SelectableText(
-                  text.isEmpty ? "No text detected." : text,
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Clipboard.setData(ClipboardData(text: text));
-                      Navigator.pop(context);
-                    },
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFF871DAD)),
-                    ),
-                    child: const Text(
-                      "COPY",
-                      style: TextStyle(color: Color(0xFF871DAD)),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF871DAD),
-                    ),
-                    child: const Text(
-                      "DONE",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+
 
   @override
   Widget build(BuildContext context) {

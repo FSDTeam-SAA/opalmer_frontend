@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../core/models/teacher_class_model.dart';
 import '../../core/providers/teacher_provider.dart';
+import '../../core/constants/api_constants.dart';
 
 import 'student_attendence.dart';
 import 'student_profile.dart';
@@ -437,11 +438,7 @@ class StudentCard extends ConsumerWidget {
       avatarUrl = avatar;
     }
 
-    if (avatarUrl != null &&
-        avatarUrl.isNotEmpty &&
-        !avatarUrl.startsWith('http')) {
-      avatarUrl = 'http://localhost:5000$avatarUrl';
-    }
+    avatarUrl = ApiConstants.buildImageUrl(avatarUrl);
 
     // Handle PDF or invalid image formats in Cloudinary
     final bool isInvalidImage =

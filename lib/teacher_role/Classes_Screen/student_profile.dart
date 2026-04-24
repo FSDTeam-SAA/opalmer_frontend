@@ -8,6 +8,7 @@ import 'package:opalmer_education/chat/screens/call.dart';
 import 'package:opalmer_education/chat/screens/chat_screen.dart';
 import 'package:opalmer_education/chat/services/chat_api_service.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
+import 'package:opalmer_education/core/constants/api_constants.dart';
 
 import 'behavior_record.dart';
 import 'academic_documents.dart';
@@ -91,12 +92,8 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
       avatarUrl = avatar;
     }
 
-    // Fix relative URL if any (assuming localhost:5000)
-    if (avatarUrl != null &&
-        avatarUrl.isNotEmpty &&
-        !avatarUrl.startsWith('http')) {
-      avatarUrl = 'http://localhost:5000$avatarUrl';
-    }
+    // Fix relative URL using ApiConstants
+    avatarUrl = ApiConstants.buildImageUrl(avatarUrl);
 
     // Handle PDF or invalid image formats in Cloudinary
     if (avatarUrl != null && avatarUrl.toLowerCase().endsWith('.pdf')) {
@@ -299,9 +296,11 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
 
                         final parentName = parentUser['username'] ?? 'Parent';
                         final avatarData = parentUser['avatar'];
-                        final String? avatarUrl = (avatarData is Map)
-                            ? avatarData['url']
-                            : (avatarData is String ? avatarData : null);
+                        final String? avatarUrl = ApiConstants.buildImageUrl(
+                          (avatarData is Map)
+                              ? avatarData['url']
+                              : (avatarData is String ? avatarData : null),
+                        );
 
                         return Column(
                           children: [

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/authentication_screen/registration_successful_screen.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
+import 'package:opalmer_education/core/constants/api_constants.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
   final bool isRegistrationFlow;
@@ -98,12 +99,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   Widget build(BuildContext context) {
     final user = ref.watch(authStateProvider);
 
-    String? avatarUrl = user?.avatar;
-    if (avatarUrl != null &&
-        avatarUrl.isNotEmpty &&
-        !avatarUrl.startsWith('http')) {
-      avatarUrl = 'http://localhost:5000$avatarUrl';
-    }
+    String? avatarUrl = ApiConstants.buildImageUrl(user?.avatar);
 
     return Scaffold(
       backgroundColor: Colors.white,
