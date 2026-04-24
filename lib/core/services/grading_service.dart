@@ -87,7 +87,7 @@ class GradingService {
           responseText.contains('quizid and topic are required');
 
       if (!isLegacyContractError) {
-        rethrow;
+        throw Exception(_extractApiErrorMessage(e));
       }
 
       // Backward-compat fallback for older backend contract.
@@ -100,6 +100,12 @@ class GradingService {
         },
       );
       return _extractQuestions(legacyResponse.data['data']);
+    } on Exception {
+      rethrow;
+    } catch (_) {
+      throw Exception(
+        'Failed to generate questions. Please try again in a moment.',
+      );
     }
   }
 
@@ -117,5 +123,31 @@ class GradingService {
     final hexTime = DateTime.now().millisecondsSinceEpoch.toRadixString(16);
     final buffer = (hexTime + hexTime).padLeft(24, '0');
     return buffer.substring(buffer.length - 24);
+  }
+
+  String _extractApiErrorMessage(DioException e) {
+    final data = e.response?.data;
+    String message = 'Failed to generate questions.';
+
+    if (data is Map<String, dynamic>) {
+      final raw = data['message'];
+      if (raw is String && raw.trim().isNotEmpty) {
+        message = raw.trim();
+      }
+    } else if (e.message != null && e.message!.trim().isNotEmpty) {
+      message = e.message!.trim();
+    }
+
+    final lowered = message.toLowerCase();
+    if (lowered.contains('exceeded your current quota') ||
+        lowered.contains('insufficient_quota')) {
+      return 'AI quota exceeded. Add billing/credits to your OpenAI account or use a different API key.';
+    }
+
+    if (e.response?.statusCode == 429) {
+      return 'AI rate limit reached. Please wait a bit and try again.';
+    }
+
+    return message;
   }
 }

@@ -79,14 +79,8 @@ class GradingNotifier extends StateNotifier<AsyncValue<void>> {
     }
   }
 
-  Future<List<dynamic>?> generateAIQuestions(String prompt) async {
-    try {
-      return await _service.generateAIQuestions(prompt: prompt);
-    } catch (e) {
-      // We don't necessarily want to set the global state to error for AI generation failure
-      // so the UI can handle it locally
-      return null;
-    }
+  Future<List<dynamic>> generateAIQuestions(String prompt) async {
+    return _service.generateAIQuestions(prompt: prompt);
   }
 }
 

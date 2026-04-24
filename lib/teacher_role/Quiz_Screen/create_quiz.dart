@@ -22,47 +22,69 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
     if (_promptController.text.isEmpty) return;
 
     setState(() => _isGenerating = true);
-    final questions = await ref.read(gradingActionProvider.notifier).generateAIQuestions(_promptController.text);
-    setState(() {
-      if (questions != null) {
+    try {
+      final questions = await ref
+          .read(gradingActionProvider.notifier)
+          .generateAIQuestions(_promptController.text);
+      setState(() {
         _generatedQuestions = questions;
-      }
-      _isGenerating = false;
-    });
+        _isGenerating = false;
+      });
+    } catch (e) {
+      setState(() => _isGenerating = false);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
+      );
+    }
   }
 
   Future<void> _handleSave({bool publish = false}) async {
     if (_selectedClassId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please select a class")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please select a class")));
       return;
     }
     if (_titleController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please enter a quiz title")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter a quiz title")),
+      );
       return;
     }
     if (_generatedQuestions.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("No questions generated")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("No questions generated")));
       return;
     }
 
-    final questionsPayload = _generatedQuestions.map((q) => {
-      'question': q['question'],
-      'options': List<String>.from(q['options']),
-      'answer': q['answer'],
-    }).toList();
+    final questionsPayload = _generatedQuestions
+        .map(
+          (q) => {
+            'question': q['question'],
+            'options': List<String>.from(q['options']),
+            'answer': q['answer'],
+          },
+        )
+        .toList();
 
-    final success = await ref.read(gradingActionProvider.notifier).createAndSaveSession(
-      classId: _selectedClassId!,
-      title: _titleController.text,
-      questions: questionsPayload,
-      time: int.tryParse(_timeController.text),
-      publish: publish,
-    );
+    final success = await ref
+        .read(gradingActionProvider.notifier)
+        .createAndSaveSession(
+          classId: _selectedClassId!,
+          title: _titleController.text,
+          questions: questionsPayload,
+          time: int.tryParse(_timeController.text),
+          publish: publish,
+        );
 
     if (success != null && mounted) {
       Navigator.pop(context);
     } else if (mounted) {
-       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Failed to save quiz")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Failed to save quiz")));
     }
   }
 
@@ -127,11 +149,16 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                       value: _selectedClassId,
                       hint: const Text("Select Class"),
                       isExpanded: true,
-                      onChanged: (value) => setState(() => _selectedClassId = value),
-                      items: classes.map((cls) => DropdownMenuItem(
-                        value: cls.id,
-                        child: Text("${cls.subject} - ${cls.grade}"),
-                      )).toList(),
+                      onChanged: (value) =>
+                          setState(() => _selectedClassId = value),
+                      items: classes
+                          .map(
+                            (cls) => DropdownMenuItem(
+                              value: cls.id,
+                              child: Text("${cls.subject} - ${cls.grade}"),
+                            ),
+                          )
+                          .toList(),
                     ),
                   ),
                 ),
@@ -142,12 +169,19 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
               const SizedBox(height: 16),
               _buildInputLabel("Quiz Title"),
               const SizedBox(height: 8),
-              _buildTextField(hint: "Enter Title", controller: _titleController),
+              _buildTextField(
+                hint: "Enter Title",
+                controller: _titleController,
+              ),
 
               const SizedBox(height: 16),
               _buildInputLabel("Quiz Time (minutes)"),
               const SizedBox(height: 8),
-              _buildTextField(hint: "00 mint", controller: _timeController, keyboardType: TextInputType.number),
+              _buildTextField(
+                hint: "00 mint",
+                controller: _timeController,
+                keyboardType: TextInputType.number,
+              ),
 
               const SizedBox(height: 24),
               _buildInputLabel("Ai Prompt"),
@@ -155,12 +189,23 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
               _buildTextField(
                 hint: "Write a prompt to generate questions",
                 controller: _promptController,
-                suffixIcon: _isGenerating 
-                  ? const SizedBox(width: 20, height: 20, child: Padding(padding: EdgeInsets.all(10), child: CircularProgressIndicator(strokeWidth: 2)))
-                  : IconButton(
-                    icon: const Icon(Icons.auto_awesome, color: Color(0xFF871DAD), size: 20),
-                    onPressed: _generateQuestions,
-                  ),
+                suffixIcon: _isGenerating
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: Padding(
+                          padding: EdgeInsets.all(10),
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : IconButton(
+                        icon: const Icon(
+                          Icons.auto_awesome,
+                          color: Color(0xFF871DAD),
+                          size: 20,
+                        ),
+                        onPressed: _generateQuestions,
+                      ),
               ),
 
               const SizedBox(height: 32),
@@ -175,7 +220,16 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
               const SizedBox(height: 16),
 
               if (_generatedQuestions.isEmpty)
-                Center(child: Padding(padding: const EdgeInsets.all(20), child: Text("Enter a prompt and click the AI icon to generate questions", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey.shade500)))),
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Text(
+                      "Enter a prompt and click the AI icon to generate questions",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey.shade500),
+                    ),
+                  ),
+                ),
 
               ...List.generate(_generatedQuestions.length, (index) {
                 final q = _generatedQuestions[index];
@@ -190,7 +244,10 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
           ),
 
           if (gradingState.isLoading)
-             Container(color: Colors.black26, child: const Center(child: CircularProgressIndicator())),
+            Container(
+              color: Colors.black26,
+              child: const Center(child: CircularProgressIndicator()),
+            ),
 
           // Bottom Buttons
           Positioned(
@@ -263,7 +320,12 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
     );
   }
 
-  Widget _buildTextField({required String hint, TextEditingController? controller, TextInputType? keyboardType, Widget? suffixIcon}) {
+  Widget _buildTextField({
+    required String hint,
+    TextEditingController? controller,
+    TextInputType? keyboardType,
+    Widget? suffixIcon,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -370,4 +432,3 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
     );
   }
 }
-
