@@ -1,6 +1,6 @@
 class ApiConstants {
   // Production Server: http://187.77.187.56:5080/api/v1
-  static const String baseUrl = 'http://187.77.187.56:5080/api/v1';
+  static const String baseUrl = 'http://10.0.2.2:5000/api/v1';
 
   // Auth Endpoints
   static const String login = '/users/login';
@@ -21,6 +21,7 @@ class ApiConstants {
 
   // Quizzes Endpoints
   static const String quizzes = '/quizzes';
+  static String quizzesByStudent(String studentId) => '/quizzes/student/$studentId';
   static const String quizQA = '/quiz/qa';
   static const String submitQuiz = '/test/quizzes';
   static const String quizResults = '/test/quizzes/answers';

@@ -19,7 +19,9 @@ final studentLessonsProvider = FutureProvider<List<LessonModel>>((ref) async {
 });
 
 final studentQuizzesProvider = FutureProvider<List<QuizModel>>((ref) async {
-  return await ref.watch(studentServiceProvider).getQuizzes();
+  final studentId = ref.watch(authStateProvider)?.id;
+  if (studentId == null) return [];
+  return await ref.watch(studentServiceProvider).getQuizzes(studentId);
 });
 
 final studentHomeworkProvider = FutureProvider<List<HomeworkModel>>((

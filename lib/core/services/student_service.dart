@@ -131,12 +131,31 @@ class StudentService {
     }
   }
 
-  Future<List<QuizModel>> getQuizzes() async {
+  Future<List<QuizModel>> getQuizzes(String studentId) async {
     try {
-      final response = await _apiClient.get(ApiConstants.quizzes);
-      final List<dynamic> data = response.data['data'] ?? [];
-      return data.map((json) => QuizModel.fromJson(json)).toList();
-    } catch (e) {
+      debugPrint('StudentService: Fetching quizzes for student: $studentId');
+      final response = await _apiClient.get(
+        ApiConstants.quizzesByStudent(studentId),
+      );
+      debugPrint(
+        'StudentService: getQuizzes response status: ${response.statusCode}',
+      );
+
+      final dynamic rawData = response.data['data'];
+      List<dynamic> data = [];
+      if (rawData is Map && rawData['quizzes'] is List) {
+        data = rawData['quizzes'] as List<dynamic>;
+      } else if (rawData is List) {
+        data = rawData;
+      }
+
+      return data
+          .whereType<Map<String, dynamic>>()
+          .map((json) => QuizModel.fromJson(json))
+          .toList();
+    } catch (e, stack) {
+      debugPrint('StudentService: Error in getQuizzes($studentId): $e');
+      debugPrint(stack.toString());
       return [];
     }
   }

@@ -100,6 +100,8 @@ class QuizModel {
   final String title;
   final String? description;
   final String? classId;
+  final String? classSubject;
+  final int? classGrade;
   final String? teacherId;
   final DateTime? createdAt;
   final String? teacherName;
@@ -111,6 +113,8 @@ class QuizModel {
     required this.title,
     this.description,
     this.classId,
+    this.classSubject,
+    this.classGrade,
     this.teacherId,
     this.createdAt,
     this.teacherName,
@@ -133,11 +137,42 @@ class QuizModel {
       tName = json['teacherId']['username'];
     }
 
+    String? resolvedClassId;
+    String? resolvedClassSubject;
+    int? resolvedClassGrade;
+    if (json['class'] is Map) {
+      resolvedClassId = json['class']['_id']?.toString();
+      resolvedClassSubject = json['class']['subject']?.toString();
+      final grade = json['class']['grade'];
+      if (grade is int) {
+        resolvedClassGrade = grade;
+      } else if (grade is num) {
+        resolvedClassGrade = grade.toInt();
+      } else {
+        resolvedClassGrade = int.tryParse(grade?.toString() ?? '');
+      }
+    } else if (json['classId'] is Map) {
+      resolvedClassId = json['classId']['_id']?.toString();
+      resolvedClassSubject = json['classId']['subject']?.toString();
+      final grade = json['classId']['grade'];
+      if (grade is int) {
+        resolvedClassGrade = grade;
+      } else if (grade is num) {
+        resolvedClassGrade = grade.toInt();
+      } else {
+        resolvedClassGrade = int.tryParse(grade?.toString() ?? '');
+      }
+    } else {
+      resolvedClassId = json['classId']?.toString();
+    }
+
     return QuizModel(
       id: json['_id'] ?? '',
       title: json['title'] ?? '',
       description: json['description'],
-      classId: json['classId'] is Map ? json['classId']['_id'] : json['classId'],
+      classId: resolvedClassId,
+      classSubject: resolvedClassSubject,
+      classGrade: resolvedClassGrade,
       teacherId: json['teacherId'] is Map ? json['teacherId']['_id'] : json['teacherId'],
       teacherName: tName,
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
@@ -150,6 +185,9 @@ class QuizModel {
   /// when the backend hasn't populated counts yet.
   String get metaLine {
     final parts = <String>[];
+    if ((classSubject ?? '').trim().isNotEmpty) {
+      parts.add(classSubject!.trim());
+    }
     if (questionCount > 0) {
       parts.add('$questionCount ${questionCount == 1 ? 'Question' : 'Questions'}');
     }
