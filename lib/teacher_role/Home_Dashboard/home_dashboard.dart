@@ -9,6 +9,7 @@ import '../Classes_Screen/classes_screen.dart';
 import '../../notification/notification.dart';
 import 'package:opalmer_education/core/providers/navigation_provider.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
+import 'package:opalmer_education/core/providers/grading_provider.dart';
 
 class HomeDashboard extends ConsumerStatefulWidget {
   const HomeDashboard({Key? key}) : super(key: key);
@@ -82,7 +83,20 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
       duration: const Duration(milliseconds: 900),
     );
 
-    for (int i = 0; i < 4; i++) {
+    _startAnimations();
+  }
+
+  void _setupQuizAnimations(int count) {
+    if (_quizCardControllers.length == count) return;
+    
+    for (var c in _quizCardControllers) {
+      c.dispose();
+    }
+    _quizCardControllers.clear();
+    _quizCardFades.clear();
+    _quizCardSlides.clear();
+
+    for (int i = 0; i < count; i++) {
       final controller = AnimationController(
         vsync: this,
         duration: const Duration(milliseconds: 450),
@@ -98,8 +112,15 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
         ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut)),
       );
     }
+    
+    _triggerQuizAnimations();
+  }
 
-    _startAnimations();
+  Future<void> _triggerQuizAnimations() async {
+    for (int i = 0; i < _quizCardControllers.length; i++) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (mounted) _quizCardControllers[i].forward();
+    }
   }
 
   void _setupCardAnimations(int count) {
@@ -146,13 +167,6 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
     // Bell shakes after header appears
     await Future.delayed(const Duration(milliseconds: 600));
     _bellController.forward();
-
-    // Quiz cards slide in staggered
-    await Future.delayed(const Duration(milliseconds: 100));
-    for (int i = 0; i < _quizCardControllers.length; i++) {
-      await Future.delayed(const Duration(milliseconds: 100));
-      _quizCardControllers[i].forward();
-    }
   }
 
   @override
@@ -174,6 +188,7 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
   Widget build(BuildContext context) {
     final classesAsync = ref.watch(teacherClassesProvider);
     final user = ref.watch(authStateProvider);
+    final sessionsAsync = ref.watch(teacherSessionsProvider(null));
 
     return Scaffold(
       backgroundColor: AppColors.scaffoldBg,
@@ -399,65 +414,72 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
                   // Quiz list items
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      children: [
-                        FadeTransition(
-                          opacity: _quizCardFades[0],
-                          child: SlideTransition(
-                            position: _quizCardSlides[0],
-                            child: _buildQuizCard(
-                              title: "Fractions and Decimals",
-                              questions: "10 Questions",
-                              duration: "5 min",
-                              status: "Draft",
-                              statusColor: AppColors.warning,
-                            ),
-                          ),
+                    child: sessionsAsync.when(
+                      data: (sessions) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          _setupQuizAnimations(sessions.length);
+                        });
+
+                        if (sessions.isEmpty) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 20),
+                            child: Center(child: Text("No quizzes found.")),
+                          );
+                        }
+
+                        return Column(
+                          children: [
+                            ...sessions.asMap().entries.map((entry) {
+                              final index = entry.key;
+                              final session = entry.value;
+
+                              final title = session['title'] ?? 'Untitled';
+                              final questions = "${session['questionCount'] ?? 0} Questions";
+                              final time = "${session['time'] ?? 0} min";
+                              final isDraft = session['status']?.toString().toLowerCase() == 'draft';
+                              final status = isDraft ? 'Draft' : 'Published';
+                              final statusColor = isDraft ? AppColors.warning : AppColors.success;
+
+                              // Safely get animation if it exists, otherwise use a completed state
+                              final hasAnimation = index < _quizCardFades.length;
+
+                              final child = _buildQuizCard(
+                                title: title.toString(),
+                                questions: questions,
+                                duration: time,
+                                status: status,
+                                statusColor: statusColor,
+                              );
+
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 12.0),
+                                child: hasAnimation
+                                    ? FadeTransition(
+                                        opacity: _quizCardFades[index],
+                                        child: SlideTransition(
+                                          position: _quizCardSlides[index],
+                                          child: child,
+                                        ),
+                                      )
+                                    : child,
+                              );
+                            }).toList(),
+                            const SizedBox(height: 100), // Space for bottom nav
+                          ],
+                        );
+                      },
+                      loading: () => const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(20.0),
+                          child: CircularProgressIndicator(),
                         ),
-                        const SizedBox(height: 12),
-                        FadeTransition(
-                          opacity: _quizCardFades[1],
-                          child: SlideTransition(
-                            position: _quizCardSlides[1],
-                            child: _buildQuizCard(
-                              title: "Mean and Median",
-                              questions: "10 Questions",
-                              duration: "5 min",
-                              status: "Published",
-                              statusColor: AppColors.success,
-                            ),
-                          ),
+                      ),
+                      error: (err, _) => Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Text("Error: $err"),
                         ),
-                        const SizedBox(height: 12),
-                        FadeTransition(
-                          opacity: _quizCardFades[2],
-                          child: SlideTransition(
-                            position: _quizCardSlides[2],
-                            child: _buildQuizCard(
-                              title: "Fractions and Decimals",
-                              questions: "10 Questions",
-                              duration: "5 min",
-                              status: "Draft",
-                              statusColor: AppColors.warning,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        FadeTransition(
-                          opacity: _quizCardFades[3],
-                          child: SlideTransition(
-                            position: _quizCardSlides[3],
-                            child: _buildQuizCard(
-                              title: "Fractions and Decimals",
-                              questions: "10 Questions",
-                              duration: "5 min",
-                              status: "Draft",
-                              statusColor: AppColors.warning,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 100), // Space for bottom nav
-                      ],
+                      ),
                     ),
                   ),
                 ],

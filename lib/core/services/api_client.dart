@@ -10,8 +10,8 @@ class ApiClient {
   ApiClient() {
     debugPrint('ApiClient: Initializing with baseUrl: ${ApiConstants.baseUrl}');
     _dio.options.baseUrl = ApiConstants.baseUrl;
-    _dio.options.connectTimeout = const Duration(seconds: 10);
-    _dio.options.receiveTimeout = const Duration(seconds: 10);
+    _dio.options.connectTimeout = const Duration(seconds: 60);
+    _dio.options.receiveTimeout = const Duration(seconds: 60);
 
     _dio.interceptors.add(
       InterceptorsWrapper(

@@ -59,15 +59,27 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
       return;
     }
 
-    final questionsPayload = _generatedQuestions
-        .map(
-          (q) => {
-            'question': q['question'],
-            'options': List<String>.from(q['options']),
-            'answer': q['answer'],
-          },
-        )
-        .toList();
+    final questionsPayload = _generatedQuestions.map((q) {
+      final options = (q['options'] as List).map((o) => o.toString()).toList();
+      String answer = q['answer']?.toString() ?? '';
+
+      // If the answer text doesn't exactly match any option, check if it's an index
+      if (!options.contains(answer)) {
+        final index = int.tryParse(answer);
+        if (index != null && index >= 0 && index < options.length) {
+          answer = options[index];
+        }
+      }
+
+      return {
+        'question': q['question']?.toString() ?? '',
+        'options': options,
+        'answer': answer,
+      };
+    }).toList();
+
+    debugPrint('Creating session with classId: $_selectedClassId');
+    debugPrint('Questions Payload: $questionsPayload');
 
     final success = await ref
         .read(gradingActionProvider.notifier)
