@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/constants/api_constants.dart';
 import 'package:opalmer_education/core/providers/grading_provider.dart';
 import 'package:opalmer_education/teacher_role/Quiz_Screen/attended_students.dart';
-import 'package:opalmer_education/teacher_role/Quiz_Screen/create_quiz.dart';
+import 'package:opalmer_education/teacher_role/Quiz_Screen/edit_quiz.dart';
 
 class QuizDetailScreen extends ConsumerWidget {
   final String sessionId;
@@ -90,13 +91,18 @@ class QuizDetailScreen extends ConsumerWidget {
             padding: const EdgeInsets.only(right: 20),
             child: Center(
               child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
+                onTap: () async {
+                  final updated = await Navigator.push<bool>(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const CreateQuizScreen(),
+                      builder: (context) =>
+                          EditQuizScreen(sessionId: sessionId),
                     ),
                   );
+                  if (updated == true) {
+                    ref.invalidate(sessionDetailsProvider(sessionId));
+                    ref.invalidate(sessionQuestionsProvider(sessionId));
+                  }
                 },
                 child: Container(
                   width: 40,
@@ -180,6 +186,10 @@ class QuizDetailScreen extends ConsumerWidget {
                           question: q['question'] ?? '',
                           options: List<String>.from(q['options'] ?? []),
                           answer: q['answer'] ?? '',
+                          explanation: q['explanation']?.toString() ?? '',
+                          type: q['type']?.toString() ?? 'normal',
+                          difficulty: q['difficulty']?.toString() ?? 'medium',
+                          imageUrl: q['imageUrl']?.toString() ?? '',
                           initiallyExpanded: index == 0,
                         );
                       },
@@ -380,8 +390,14 @@ class QuizDetailScreen extends ConsumerWidget {
     required String question,
     required List<String> options,
     required String answer,
+    String explanation = '',
+    String type = 'normal',
+    String difficulty = 'medium',
+    String imageUrl = '',
     bool initiallyExpanded = false,
   }) {
+    final resolvedImageUrl = ApiConstants.buildImageUrl(imageUrl);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -413,10 +429,40 @@ class QuizDetailScreen extends ConsumerWidget {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ...List.generate(options.length, (i) {
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _buildQuestionChip(type),
+                        _buildQuestionChip(difficulty),
+                      ],
+                    ),
+                    if (resolvedImageUrl.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          resolvedImageUrl,
+                          width: double.infinity,
+                          height: 180,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            height: 120,
+                            alignment: Alignment.center,
+                            color: Colors.grey.shade100,
+                            child: Text(
+                              'Image preview unavailable',
+                              style: TextStyle(color: Colors.grey.shade500),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+                    ...List.generate(options.length, (i) {
                     final char = String.fromCharCode(65 + i); // A, B, C, D
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 4),
@@ -434,6 +480,7 @@ class QuizDetailScreen extends ConsumerWidget {
                     child: Divider(height: 1),
                   ),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
                         "Answer: ",
@@ -443,19 +490,53 @@ class QuizDetailScreen extends ConsumerWidget {
                           color: Color(0xFF222222),
                         ),
                       ),
-                      Text(
-                        answer,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade400,
+                      Expanded(
+                        child: Text(
+                          answer,
+                          softWrap: true,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade400,
+                          ),
                         ),
                       ),
                     ],
                   ),
+                  if (explanation.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      explanation,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuestionChip(String label) {
+    final normalizedLabel = label.trim().isEmpty ? 'normal' : label.trim();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: const Color(0xFF871DAD).withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        normalizedLabel.toUpperCase(),
+        style: const TextStyle(
+          fontSize: 11,
+          color: Color(0xFF871DAD),
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

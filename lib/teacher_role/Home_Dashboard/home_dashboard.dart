@@ -3,9 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/core/widgets/pressable_card.dart';
 import 'package:opalmer_education/core/providers/teacher_provider.dart';
-import 'package:opalmer_education/core/models/teacher_class_model.dart';
-import '../Classes_Screen/class_details.dart';
-import '../Classes_Screen/classes_screen.dart';
+import 'package:opalmer_education/core/models/student_models.dart';
+import '../Classes_Screen/widgets/teacher_class_card.dart';
 import '../../notification/notification.dart';
 import 'package:opalmer_education/core/providers/navigation_provider.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
@@ -82,23 +81,6 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
       duration: const Duration(milliseconds: 900),
     );
 
-    for (int i = 0; i < 4; i++) {
-      final controller = AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 450),
-      );
-      _quizCardControllers.add(controller);
-      _quizCardFades.add(
-        CurvedAnimation(parent: controller, curve: Curves.easeOut),
-      );
-      _quizCardSlides.add(
-        Tween<Offset>(
-          begin: const Offset(0, 0.25),
-          end: Offset.zero,
-        ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut)),
-      );
-    }
-
     _startAnimations();
   }
 
@@ -132,10 +114,47 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
     _triggerCardAnimations();
   }
 
+  void _setupQuizCardAnimations(int count) {
+    if (_quizCardControllers.length == count) return;
+
+    for (final c in _quizCardControllers) {
+      c.dispose();
+    }
+    _quizCardControllers.clear();
+    _quizCardFades.clear();
+    _quizCardSlides.clear();
+
+    for (int i = 0; i < count; i++) {
+      final controller = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 450),
+      );
+      _quizCardControllers.add(controller);
+      _quizCardFades.add(
+        CurvedAnimation(parent: controller, curve: Curves.easeOut),
+      );
+      _quizCardSlides.add(
+        Tween<Offset>(
+          begin: const Offset(0, 0.25),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut)),
+      );
+    }
+
+    _triggerQuizCardAnimations();
+  }
+
   Future<void> _triggerCardAnimations() async {
     for (int i = 0; i < _cardControllers.length; i++) {
       await Future.delayed(const Duration(milliseconds: 120));
       if (mounted) _cardControllers[i].forward();
+    }
+  }
+
+  Future<void> _triggerQuizCardAnimations() async {
+    for (int i = 0; i < _quizCardControllers.length; i++) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (mounted) _quizCardControllers[i].forward();
     }
   }
 
@@ -147,12 +166,7 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
     await Future.delayed(const Duration(milliseconds: 600));
     _bellController.forward();
 
-    // Quiz cards slide in staggered
     await Future.delayed(const Duration(milliseconds: 100));
-    for (int i = 0; i < _quizCardControllers.length; i++) {
-      await Future.delayed(const Duration(milliseconds: 100));
-      _quizCardControllers[i].forward();
-    }
   }
 
   @override
@@ -173,6 +187,7 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
   @override
   Widget build(BuildContext context) {
     final classesAsync = ref.watch(teacherClassesProvider);
+    final quizzesAsync = ref.watch(teacherQuizzesProvider);
     final user = ref.watch(authStateProvider);
 
     return Scaffold(
@@ -318,7 +333,7 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
 
                   // Horizontal scrollable Class Stats cards
                   SizedBox(
-                    height: 160,
+                    height: 205,
                     child: classesAsync.when(
                       data: (classes) {
                         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -349,7 +364,9 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
                                     position: index < _cardSlides.length 
                                         ? _cardSlides[index] 
                                         : const AlwaysStoppedAnimation(Offset.zero),
-                                    child: _HomeClassCard(
+                                    child: TeacherClassCard(
+                                      width: 280,
+                                      margin: EdgeInsets.zero,
                                       classData: cls,
                                       color: cardColor,
                                     ),
@@ -399,65 +416,54 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
                   // Quiz list items
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      children: [
-                        FadeTransition(
-                          opacity: _quizCardFades[0],
-                          child: SlideTransition(
-                            position: _quizCardSlides[0],
-                            child: _buildQuizCard(
-                              title: "Fractions and Decimals",
-                              questions: "10 Questions",
-                              duration: "5 min",
-                              status: "Draft",
-                              statusColor: AppColors.warning,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        FadeTransition(
-                          opacity: _quizCardFades[1],
-                          child: SlideTransition(
-                            position: _quizCardSlides[1],
-                            child: _buildQuizCard(
-                              title: "Mean and Median",
-                              questions: "10 Questions",
-                              duration: "5 min",
-                              status: "Published",
-                              statusColor: AppColors.success,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        FadeTransition(
-                          opacity: _quizCardFades[2],
-                          child: SlideTransition(
-                            position: _quizCardSlides[2],
-                            child: _buildQuizCard(
-                              title: "Fractions and Decimals",
-                              questions: "10 Questions",
-                              duration: "5 min",
-                              status: "Draft",
-                              statusColor: AppColors.warning,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        FadeTransition(
-                          opacity: _quizCardFades[3],
-                          child: SlideTransition(
-                            position: _quizCardSlides[3],
-                            child: _buildQuizCard(
-                              title: "Fractions and Decimals",
-                              questions: "10 Questions",
-                              duration: "5 min",
-                              status: "Draft",
-                              statusColor: AppColors.warning,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 100), // Space for bottom nav
-                      ],
+                    child: quizzesAsync.when(
+                      data: (quizzes) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          _setupQuizCardAnimations(quizzes.length);
+                        });
+
+                        if (quizzes.isEmpty) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 24),
+                            child: Center(child: Text("No quizzes found.")),
+                          );
+                        }
+
+                        return Column(
+                          children: [
+                            ...List.generate(quizzes.length, (index) {
+                              final quiz = quizzes[index];
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  bottom: index == quizzes.length - 1 ? 0 : 12,
+                                ),
+                                child: FadeTransition(
+                                  opacity: index < _quizCardFades.length
+                                      ? _quizCardFades[index]
+                                      : const AlwaysStoppedAnimation(1),
+                                  child: SlideTransition(
+                                    position: index < _quizCardSlides.length
+                                        ? _quizCardSlides[index]
+                                        : const AlwaysStoppedAnimation(
+                                            Offset.zero,
+                                          ),
+                                    child: _buildQuizCardFromModel(quiz),
+                                  ),
+                                ),
+                              );
+                            }),
+                            const SizedBox(height: 100), // Space for bottom nav
+                          ],
+                        );
+                      },
+                      loading: () => const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24),
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                      error: (err, _) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        child: Center(child: Text("Error: $err")),
+                      ),
                     ),
                   ),
                 ],
@@ -467,6 +473,28 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
         ),
       ),
     );
+  }
+
+  Widget _buildQuizCardFromModel(QuizModel quiz) {
+    final status = quiz.status.trim().isEmpty ? 'Draft' : quiz.status.trim();
+    final normalizedStatus = status.toLowerCase();
+    final statusColor = normalizedStatus == 'published'
+        ? AppColors.success
+        : AppColors.warning;
+
+    return _buildQuizCard(
+      title: quiz.title.isNotEmpty ? quiz.title : 'Untitled Quiz',
+      questions:
+          "${quiz.questionCount} ${quiz.questionCount == 1 ? 'Question' : 'Questions'}",
+      duration: "${quiz.durationMinutes} min",
+      status: _formatQuizStatus(status),
+      statusColor: statusColor,
+    );
+  }
+
+  String _formatQuizStatus(String status) {
+    if (status.isEmpty) return 'Draft';
+    return status[0].toUpperCase() + status.substring(1).toLowerCase();
   }
 
   Widget _buildQuizCard({
@@ -542,169 +570,6 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
                   color: Colors.white,
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _HomeClassCard extends ConsumerWidget {
-  final TeacherClassModel classData;
-  final Color color;
-
-  const _HomeClassCard({
-    Key? key,
-    required this.classData,
-    required this.color,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final attendanceAsync = ref.watch(classAttendanceStatsProvider(classData.id));
-
-    return PressableCard(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ClassDetailsScreen(classData: classData),
-          ),
-        );
-      },
-      child: Container(
-        width: 280,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.school_rounded,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    "Grade ${classData.grade} - ${classData.subject}",
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                const Icon(Icons.access_time, color: Colors.white70, size: 14),
-                const SizedBox(width: 4),
-                const Text(
-                  "Mon, Wed", // Mock schedule
-                  style: TextStyle(fontSize: 12, color: Colors.white70),
-                ),
-                const SizedBox(width: 12),
-                const Icon(
-                  Icons.people_outline,
-                  color: Colors.white70,
-                  size: 14,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  "${classData.studentCount} Students",
-                  style: const TextStyle(fontSize: 12, color: Colors.white70),
-                ),
-                const SizedBox(width: 12),
-                const Icon(
-                  Icons.location_on_outlined,
-                  color: Colors.white70,
-                  size: 14,
-                ),
-                const SizedBox(width: 4),
-                const Text(
-                  "6B", // Mock room
-                  style: TextStyle(fontSize: 12, color: Colors.white70),
-                ),
-              ],
-            ),
-            const Spacer(),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Attendance",
-                        style: TextStyle(fontSize: 11, color: Colors.white70),
-                      ),
-                      attendanceAsync.when(
-                        data: (percentage) => Text(
-                          "$percentage%",
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        loading: () => const Text(
-                          "...%",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        error: (_, __) => const Text(
-                          "N/A",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Performance",
-                        style: TextStyle(fontSize: 11, color: Colors.white70),
-                      ),
-                      Text(
-                        classData.performance,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
             ),
           ],
         ),

@@ -10,6 +10,8 @@ import 'student_profile.dart';
 import 'lessons_screen.dart';
 import 'homework_screen.dart';
 import 'lesson_overview_screen.dart';
+import 'assign_students_screen.dart';
+import 'add_class.dart';
 
 class ClassDetailsScreen extends ConsumerStatefulWidget {
   final TeacherClassModel classData;
@@ -21,12 +23,21 @@ class ClassDetailsScreen extends ConsumerStatefulWidget {
 }
 
 class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
+  late TeacherClassModel _classData;
+
+  @override
+  void initState() {
+    super.initState();
+    _classData = widget.classData;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final studentsAsync = ref.watch(classStudentsProvider(widget.classData.id));
-    final lessonsAsync = ref.watch(classLessonsProvider(widget.classData.id));
+    final classData = _classData;
+    final studentsAsync = ref.watch(classStudentsProvider(classData.id));
+    final lessonsAsync = ref.watch(classLessonsProvider(classData.id));
     final attendanceStatsAsync = ref.watch(
-      classAttendanceStatsProvider(widget.classData.id),
+      classAttendanceStatsProvider(classData.id),
     );
     final String todayDate = DateFormat('dd-MM-yy').format(DateTime.now());
 
@@ -71,12 +82,40 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                     ),
                     const Spacer(),
                     GestureDetector(
+                      onTap: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => AssignStudentsScreen(
+                              classData: classData,
+                            ),
+                          ),
+                        );
+                        ref.invalidate(classStudentsProvider(classData.id));
+                        ref.invalidate(teacherClassesProvider);
+                      },
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF904BBB),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.group_add,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    GestureDetector(
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (_) =>
-                                HomeworkScreen(classId: widget.classData.id),
+                                HomeworkScreen(classId: classData.id),
                           ),
                         );
                       },
@@ -96,17 +135,41 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF904BBB),
-                        shape: BoxShape.circle,
-                      ),
-                      padding: const EdgeInsets.all(8),
-                      child: Image.asset(
-                        'assets/images/classes/calender.png',
-                        fit: BoxFit.contain,
+                    GestureDetector(
+                      onTap: () async {
+                        final updatedClass = await Navigator.push<TeacherClassModel>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => AddClassScreen(
+                              classToEdit: classData,
+                            ),
+                          ),
+                        );
+
+                        if (updatedClass == null || !mounted) return;
+
+                        setState(() {
+                          _classData = updatedClass.copyWith(
+                            studentCount: classData.studentCount,
+                            attendance: classData.attendance,
+                            performance: classData.performance,
+                          );
+                        });
+                        ref.invalidate(teacherClassesProvider);
+                        ref.invalidate(classStudentsProvider(classData.id));
+                      },
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF904BBB),
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        child: Image.asset(
+                          'assets/images/classes/calender.png',
+                          fit: BoxFit.contain,
+                        ),
                       ),
                     ),
                   ],
@@ -120,7 +183,7 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                   children: [
                     // ── Subtitle ──
                     Text(
-                      "Grade ${widget.classData.grade} - ${widget.classData.subject}",
+                      "Grade ${classData.grade} - ${classData.subject}",
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -135,7 +198,7 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                         Expanded(
                           child: _buildStatBox(
                             "Students",
-                            "${widget.classData.studentCount}",
+                            "${classData.studentCount}",
                             const Color(0xFF3F99B4),
                           ),
                         ),
@@ -175,7 +238,7 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                         Expanded(
                           child: _buildStatBox(
                             "Performance",
-                            widget.classData.performance,
+                            classData.performance,
                             const Color(0xFFFEBD43),
                           ),
                         ),
@@ -201,7 +264,7 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => LessonsScreen(classId: widget.classData.id),
+                                builder: (_) => LessonsScreen(classId: classData.id),
                               ),
                             );
                           },
@@ -292,7 +355,7 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
 
                             return StudentCard(
                               studentData: student,
-                              classData: widget.classData,
+                              classData: classData,
                             );
                           },
                         );

@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/constants/api_constants.dart';
 import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/models/teacher_class_model.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
@@ -5,6 +6,24 @@ import 'package:opalmer_education/core/services/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
+
+final teacherQuizzesProvider = FutureProvider<List<QuizModel>>((ref) async {
+  final user = ref.watch(authStateProvider);
+  if (user == null) return [];
+
+  final apiClient = ref.read(apiClientProvider);
+  final response = await apiClient.get(ApiConstants.quizzesByTeacher(user.id));
+
+  if (response.statusCode == 200 && response.data['success'] == true) {
+    final List<dynamic> quizData = response.data['data'] ?? [];
+    return quizData
+        .whereType<Map<String, dynamic>>()
+        .map((json) => QuizModel.fromJson(json))
+        .toList();
+  }
+
+  return [];
+});
 
 final teacherClassesProvider = FutureProvider<List<TeacherClassModel>>((ref) async {
   final user = ref.watch(authStateProvider);
@@ -19,13 +38,15 @@ final teacherClassesProvider = FutureProvider<List<TeacherClassModel>>((ref) asy
     final List<dynamic> classData = response.data['data'];
     final List<TeacherClassModel> classes = classData.map((e) => TeacherClassModel.fromJson(e)).toList();
 
-    // 2. For each class, fetch the total student count for that grade
+    // 2. For each class, fetch the students explicitly assigned to it.
     final updatedClasses = await Future.wait(classes.map((cls) async {
       try {
-        final stuResponse = await apiClient.get('/users/students/count/${cls.grade}');
+        final stuResponse = await apiClient.get('/student-assign-to-class/class/${cls.id}');
         if (stuResponse.statusCode == 200 && stuResponse.data['success'] == true) {
-          final int gradeStudentCount = stuResponse.data['data']['count'];
-          return cls.copyWith(studentCount: gradeStudentCount);
+          final assignments = stuResponse.data['data'];
+          if (assignments is List) {
+            return cls.copyWith(studentCount: assignments.length);
+          }
         }
       } catch (e) {
         // Log error or handle gracefully
@@ -41,26 +62,12 @@ final teacherClassesProvider = FutureProvider<List<TeacherClassModel>>((ref) asy
 
 final classStudentsProvider = FutureProvider.family<List<dynamic>, String>((ref, classId) async {
   final apiClient = ref.read(apiClientProvider);
-  
-  // 1. Wait for teacherClassesProvider to have data
-  final classes = await ref.watch(teacherClassesProvider.future);
-  final cls = classes.firstWhere(
-    (c) => c.id == classId, 
-    orElse: () => throw Exception('Class not found: $classId')
-  );
-  
-  // 2. Fetch all students who are in the same grade as this class
-  final response = await apiClient.get('/users/students/grade/${cls.grade}');
+
+  final response = await apiClient.get('/student-assign-to-class/class/$classId');
   
   if (response.statusCode == 200 && response.data['success'] == true) {
-    final List<dynamic> students = response.data['data'];
-    
-    // Map them to look like assignments to maintain UI compatibility
-    return students.map((s) => {
-      '_id': 'mock_${s['_id']}',
-      'studentId': s,
-      'classId': classId,
-    }).toList();
+    final data = response.data['data'];
+    if (data is List) return data;
   }
   return [];
 });

@@ -107,6 +107,8 @@ class QuizModel {
   final String? teacherName;
   final int questionCount;
   final int durationMinutes;
+  final String status;
+  final String? image;
 
   QuizModel({
     required this.id,
@@ -120,6 +122,8 @@ class QuizModel {
     this.teacherName,
     this.questionCount = 0,
     this.durationMinutes = 0,
+    this.status = '',
+    this.image,
   });
 
   factory QuizModel.fromJson(Map<String, dynamic> json) {
@@ -178,6 +182,8 @@ class QuizModel {
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
       questionCount: parseInt(json['questionCount']),
       durationMinutes: parseInt(json['time']),
+      status: json['status']?.toString() ?? '',
+      image: json['image']?.toString(),
     );
   }
 
@@ -201,11 +207,19 @@ class QuizQuestion {
   final String question;
   final List<String> options;
   final String answer;
+  final String explanation;
+  final String difficulty;
+  final String type;
+  final String imageUrl;
 
   QuizQuestion({
     required this.question,
     required this.options,
     required this.answer,
+    this.explanation = '',
+    this.difficulty = 'medium',
+    this.type = 'normal',
+    this.imageUrl = '',
   });
 
   factory QuizQuestion.fromJson(Map<String, dynamic> json) {
@@ -213,6 +227,10 @@ class QuizQuestion {
       question: json['question'] ?? '',
       options: List<String>.from(json['options'] ?? []),
       answer: json['answer'] ?? '',
+      explanation: json['explanation']?.toString() ?? '',
+      difficulty: json['difficulty']?.toString() ?? 'medium',
+      type: json['type']?.toString() ?? 'normal',
+      imageUrl: json['imageUrl']?.toString() ?? '',
     );
   }
 }

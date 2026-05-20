@@ -14,6 +14,32 @@ class GradingToolScreen extends ConsumerStatefulWidget {
 
 class _GradingToolScreenState extends ConsumerState<GradingToolScreen> {
   bool _isDraftTab = true;
+  String? _publishingSessionId;
+
+  Future<void> _publishDraft(String sessionId) async {
+    setState(() => _publishingSessionId = sessionId);
+
+    final success = await ref
+        .read(gradingActionProvider.notifier)
+        .publishSession(sessionId);
+
+    if (!mounted) return;
+    setState(() => _publishingSessionId = null);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success
+              ? 'Quiz published successfully'
+              : 'Failed to publish quiz. Please check that it has questions.',
+        ),
+      ),
+    );
+
+    if (success) {
+      setState(() => _isDraftTab = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,6 +100,7 @@ class _GradingToolScreenState extends ConsumerState<GradingToolScreen> {
                     itemCount: filteredSessions.length,
                     itemBuilder: (context, index) {
                       final session = filteredSessions[index];
+                      final sessionId = session['_id']?.toString() ?? '';
                       String imageUrl =
                           "https://img.freepik.com/free-photo/view-planet-earth-from-space_23-2148705432.jpg";
                       if (session['image'] != null &&
@@ -87,7 +114,7 @@ class _GradingToolScreenState extends ConsumerState<GradingToolScreen> {
                             context,
                             MaterialPageRoute(
                               builder: (context) =>
-                                  QuizDetailScreen(sessionId: session['_id']),
+                                  QuizDetailScreen(sessionId: sessionId),
                             ),
                           );
                         },
@@ -98,6 +125,10 @@ class _GradingToolScreenState extends ConsumerState<GradingToolScreen> {
                           time: "${session['time'] ?? 0} min",
                           status: _isDraftTab ? "Draft" : "Published",
                           imageUrl: imageUrl,
+                          isPublishing: _publishingSessionId == sessionId,
+                          onPublish: _isDraftTab && sessionId.isNotEmpty
+                              ? () => _publishDraft(sessionId)
+                              : null,
                         ),
                       );
                     },
@@ -230,6 +261,8 @@ class _GradingToolScreenState extends ConsumerState<GradingToolScreen> {
     required String time,
     required String status,
     required String imageUrl,
+    VoidCallback? onPublish,
+    bool isPublishing = false,
   }) {
     final bool isDraft = status == "Draft";
     return Container(
@@ -278,24 +311,66 @@ class _GradingToolScreenState extends ConsumerState<GradingToolScreen> {
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: isDraft
-                  ? const Color(0xFFFFCC33).withValues(alpha: 0.2)
-                  : const Color(0xFF4FA0F3).withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              status,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: isDraft
-                    ? const Color(0xFFF39C12)
-                    : const Color(0xFF007AFF),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: isDraft
+                      ? const Color(0xFFFFCC33).withValues(alpha: 0.2)
+                      : const Color(0xFF4FA0F3).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  status,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: isDraft
+                        ? const Color(0xFFF39C12)
+                        : const Color(0xFF007AFF),
+                  ),
+                ),
               ),
-            ),
+              if (onPublish != null) ...[
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 34,
+                  child: ElevatedButton(
+                    onPressed: isPublishing ? null : onPublish,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF871DAD),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: isPublishing
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Publish',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ],
           ),
         ],
       ),

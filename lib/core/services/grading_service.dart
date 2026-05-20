@@ -30,6 +30,21 @@ class GradingService {
     return response.data['data'] as Map<String, dynamic>;
   }
 
+  Future<Map<String, dynamic>> updateSession({
+    required String sessionId,
+    required String title,
+    int? time,
+  }) async {
+    final response = await _apiClient.patch(
+      '/grading/sessions/$sessionId',
+      data: {
+        'title': title,
+        'time': time ?? 5,
+      },
+    );
+    return response.data['data'] as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> upsertQuestions({
     required String sessionId,
     required List<Map<String, dynamic>> questions,
@@ -39,6 +54,20 @@ class GradingService {
       data: {'questions': questions},
     );
     return response.data['data'] as Map<String, dynamic>;
+  }
+
+  Future<String> uploadQuestionImage(String imagePath) async {
+    final formData = FormData.fromMap({
+      'image': await MultipartFile.fromFile(imagePath),
+    });
+
+    final response = await _apiClient.post(
+      '/grading/question-image',
+      data: formData,
+      options: Options(contentType: 'multipart/form-data'),
+    );
+    final data = response.data['data'] as Map<String, dynamic>;
+    return data['url']?.toString() ?? '';
   }
 
   Future<Map<String, dynamic>> publishSession(String sessionId) async {
@@ -72,12 +101,16 @@ class GradingService {
 
   Future<List<dynamic>> generateAIQuestions({
     required String prompt,
-    int count = 5,
+    int count = 10,
   }) async {
     try {
       final response = await _apiClient.post(
         '/quiz/qa/generate',
         data: {'prompt': prompt, 'count': count},
+        options: Options(
+          receiveTimeout: const Duration(seconds: 90),
+          sendTimeout: const Duration(seconds: 30),
+        ),
       );
       return _extractQuestions(response.data['data']);
     } on DioException catch (e) {
@@ -98,6 +131,10 @@ class GradingService {
           'topic': prompt,
           'count': count,
         },
+        options: Options(
+          receiveTimeout: const Duration(seconds: 90),
+          sendTimeout: const Duration(seconds: 30),
+        ),
       );
       return _extractQuestions(legacyResponse.data['data']);
     } on Exception {

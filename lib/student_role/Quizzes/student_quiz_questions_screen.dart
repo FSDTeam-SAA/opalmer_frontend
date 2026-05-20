@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/constants/api_constants.dart';
 import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
 import 'package:opalmer_education/core/providers/student_provider.dart';
@@ -128,8 +129,7 @@ class _StudentQuizQuestionsScreenState
                       final q = entry.value;
                       return _buildQuestionCard(
                         idx,
-                        q.question,
-                        q.options,
+                        q,
                         questions,
                       );
                     }).toList(),
@@ -303,7 +303,9 @@ class _StudentQuizQuestionsScreenState
     );
   }
 
-  Widget _buildQuestionCard(int index, String question, List<String> options, List<QuizQuestion> questions) {
+  Widget _buildQuestionCard(int index, QuizQuestion question, List<QuizQuestion> questions) {
+    final resolvedImageUrl = ApiConstants.buildImageUrl(question.imageUrl);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(20),
@@ -322,7 +324,7 @@ class _StudentQuizQuestionsScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "${index + 1}. $question",
+            "${index + 1}. ${question.question}",
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -330,8 +332,29 @@ class _StudentQuizQuestionsScreenState
               height: 1.4,
             ),
           ),
+          if (resolvedImageUrl.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                resolvedImageUrl,
+                width: double.infinity,
+                height: 190,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  height: 120,
+                  alignment: Alignment.center,
+                  color: Colors.grey.shade100,
+                  child: Text(
+                    'Image unavailable',
+                    style: TextStyle(color: Colors.grey.shade500),
+                  ),
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
-          ...options.asMap().entries.map((entry) {
+          ...question.options.asMap().entries.map((entry) {
             int optIdx = entry.key;
             String text = entry.value;
             bool isSelected = _answers[index] == optIdx;

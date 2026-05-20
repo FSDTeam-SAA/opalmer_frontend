@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:opalmer_education/core/constants/api_constants.dart';
 import 'package:opalmer_education/core/providers/grading_provider.dart';
 import 'package:opalmer_education/core/providers/teacher_provider.dart';
 
@@ -65,6 +66,11 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
             'question': q['question'],
             'options': List<String>.from(q['options']),
             'answer': q['answer'],
+            'explanation': q['explanation'] ?? '',
+            'difficulty': q['difficulty'] ?? 'medium',
+            'type': q['type'] ?? 'normal',
+            'imagePrompt': q['imagePrompt'] ?? '',
+            'imageUrl': q['imageUrl'] ?? '',
           },
         )
         .toList();
@@ -80,6 +86,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
         );
 
     if (success != null && mounted) {
+      ref.invalidate(teacherQuizzesProvider);
       Navigator.pop(context);
     } else if (mounted) {
       ScaffoldMessenger.of(
@@ -238,6 +245,10 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                   question: q['question'] ?? '',
                   options: List<String>.from(q['options'] ?? []),
                   answer: q['answer'] ?? '',
+                  explanation: q['explanation']?.toString() ?? '',
+                  type: q['type']?.toString() ?? 'normal',
+                  difficulty: q['difficulty']?.toString() ?? 'medium',
+                  imageUrl: q['imageUrl']?.toString() ?? '',
                 );
               }),
             ],
@@ -354,8 +365,14 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
     required String question,
     List<String>? options,
     String? answer,
+    String explanation = '',
+    String type = 'normal',
+    String difficulty = 'medium',
+    String imageUrl = '',
     bool initiallyExpanded = false,
   }) {
+    final resolvedImageUrl = ApiConstants.buildImageUrl(imageUrl);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -389,6 +406,36 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _buildQuestionChip(type),
+                        _buildQuestionChip(difficulty),
+                      ],
+                    ),
+                    if (resolvedImageUrl.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          resolvedImageUrl,
+                          width: double.infinity,
+                          height: 180,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            height: 120,
+                            alignment: Alignment.center,
+                            color: Colors.grey.shade100,
+                            child: Text(
+                              'Image preview unavailable',
+                              style: TextStyle(color: Colors.grey.shade500),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 12),
                     ...List.generate(options.length, (i) {
                       final char = String.fromCharCode(65 + i);
                       return Padding(
@@ -405,6 +452,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                     if (answer != null) ...[
                       const Divider(height: 24),
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
                             "Answer: ",
@@ -413,20 +461,54 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Text(
-                            answer,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey.shade400,
+                          Expanded(
+                            child: Text(
+                              answer,
+                              softWrap: true,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade400,
+                              ),
                             ),
                           ),
                         ],
+                      ),
+                    ],
+                    if (explanation.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        explanation,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade600,
+                          height: 1.35,
+                        ),
                       ),
                     ],
                   ],
                 ),
               ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuestionChip(String label) {
+    final normalizedLabel = label.trim().isEmpty ? 'normal' : label.trim();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: const Color(0xFF871DAD).withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        normalizedLabel.toUpperCase(),
+        style: const TextStyle(
+          fontSize: 11,
+          color: Color(0xFF871DAD),
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

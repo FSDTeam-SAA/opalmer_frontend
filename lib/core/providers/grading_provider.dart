@@ -79,8 +79,61 @@ class GradingNotifier extends StateNotifier<AsyncValue<void>> {
     }
   }
 
+  Future<bool> updateExistingSession({
+    required String sessionId,
+    required String title,
+    required List<Map<String, dynamic>> questions,
+    int? time,
+    bool publish = false,
+  }) async {
+    state = const AsyncValue.loading();
+    try {
+      await _service.updateSession(
+        sessionId: sessionId,
+        title: title,
+        time: time,
+      );
+
+      await _service.upsertQuestions(
+        sessionId: sessionId,
+        questions: questions,
+      );
+
+      if (publish) {
+        await _service.publishSession(sessionId);
+      }
+
+      state = const AsyncValue.data(null);
+      _ref.invalidate(teacherSessionsProvider);
+      _ref.invalidate(sessionDetailsProvider(sessionId));
+      _ref.invalidate(sessionQuestionsProvider(sessionId));
+      return true;
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
+      return false;
+    }
+  }
+
+  Future<String> uploadQuestionImage(String imagePath) async {
+    return _service.uploadQuestionImage(imagePath);
+  }
+
   Future<List<dynamic>> generateAIQuestions(String prompt) async {
     return _service.generateAIQuestions(prompt: prompt);
+  }
+
+  Future<bool> publishSession(String sessionId) async {
+    state = const AsyncValue.loading();
+    try {
+      await _service.publishSession(sessionId);
+      state = const AsyncValue.data(null);
+      _ref.invalidate(teacherSessionsProvider);
+      _ref.invalidate(sessionDetailsProvider(sessionId));
+      return true;
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
+      return false;
+    }
   }
 }
 

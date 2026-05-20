@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import '../../core/providers/teacher_provider.dart';
-import '../../core/models/teacher_class_model.dart';
 import '../../notification/notification.dart';
-import 'class_details.dart';
 import 'add_class.dart';
+import 'widgets/teacher_class_card.dart';
 
 class ClassesScreen extends ConsumerStatefulWidget {
   const ClassesScreen({Key? key}) : super(key: key);
@@ -24,7 +22,6 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
   @override
   Widget build(BuildContext context) {
     final classesAsync = ref.watch(teacherClassesProvider);
-    final String todayDate = DateFormat('dd-MM-yy').format(DateTime.now());
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -52,7 +49,7 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             const Text(
-                              "Class Stats",
+                              "Class Status",
                               style: TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
@@ -113,10 +110,9 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
                     return Column(
                       children: List.generate(classes.length, (index) {
                         final cls = classes[index];
-                        return ClassCard(
-                          cls: cls,
+                        return TeacherClassCard(
+                          classData: cls,
                           color: _cardColors[index % _cardColors.length],
-                          todayDate: todayDate,
                         );
                       }),
                     );
@@ -167,192 +163,6 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
             ),
             child: const Icon(Icons.add, color: Colors.white, size: 32),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class ClassCard extends ConsumerWidget {
-  final TeacherClassModel cls;
-  final Color color;
-  final String todayDate;
-
-  const ClassCard({
-    Key? key,
-    required this.cls,
-    required this.color,
-    required this.todayDate,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final attendanceStatsAsync = ref.watch(classAttendanceStatsProvider(cls.id));
-
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ClassDetailsScreen(classData: cls),
-          ),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: 0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Image.asset(
-                      'assets/images/classes/book_icon.png',
-                      width: 24,
-                      height: 24,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Text(
-                  "Grade ${cls.grade} - ${cls.subject}",
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    letterSpacing: 0.2,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                const Icon(
-                  Icons.calendar_today_outlined,
-                  color: Colors.white,
-                  size: 16,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  todayDate,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(width: 32),
-                const Icon(Icons.people_outline, color: Colors.white, size: 18),
-                const SizedBox(width: 6),
-                Text(
-                  "${cls.studentCount} Students",
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            IntrinsicHeight(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Attendance",
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        attendanceStatsAsync.when(
-                          data: (percentage) => Text(
-                            "$percentage%",
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          loading: () => const Text(
-                            "...",
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          error: (_, __) => const Text(
-                            "N/A",
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    width: 1,
-                    color: Colors.white.withValues(alpha: 0.7),
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                  ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Performance",
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          cls.performance,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
     );
