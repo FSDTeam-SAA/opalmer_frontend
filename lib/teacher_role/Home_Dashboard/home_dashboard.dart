@@ -8,6 +8,7 @@ import '../Classes_Screen/widgets/teacher_class_card.dart';
 import '../../notification/notification.dart';
 import 'package:opalmer_education/core/providers/navigation_provider.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
+import 'package:opalmer_education/core/providers/grading_provider.dart';
 
 class HomeDashboard extends ConsumerStatefulWidget {
   const HomeDashboard({Key? key}) : super(key: key);
@@ -189,6 +190,7 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
     final classesAsync = ref.watch(teacherClassesProvider);
     final quizzesAsync = ref.watch(teacherQuizzesProvider);
     final user = ref.watch(authStateProvider);
+    final sessionsAsync = ref.watch(teacherSessionsProvider(null));
 
     return Scaffold(
       backgroundColor: AppColors.scaffoldBg,
