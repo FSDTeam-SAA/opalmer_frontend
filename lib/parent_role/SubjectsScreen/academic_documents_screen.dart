@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:opalmer_education/core/constants/api_constants.dart';
 import 'package:opalmer_education/core/services/api_client.dart';
+import 'package:opalmer_education/core/services/download_client.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/parent_role/SubjectsScreen/models/academic_document.dart';
 import 'package:printing/printing.dart';
@@ -347,7 +348,6 @@ class _AcademicDocumentViewerDialogState
     'classpluse/downloads',
   );
 
-  final Dio _dio = Dio();
   late final Future<Uint8List>? _pdfBytes;
   bool _isDownloading = false;
 
@@ -360,7 +360,8 @@ class _AcademicDocumentViewerDialogState
   }
 
   Future<Uint8List> _downloadBytes() async {
-    final response = await _dio.get<List<int>>(
+    final dio = dioForDownloadUrl(widget.url);
+    final response = await dio.get<List<int>>(
       widget.url,
       options: Options(responseType: ResponseType.bytes),
     );
@@ -374,7 +375,8 @@ class _AcademicDocumentViewerDialogState
     try {
       final fileName = _safeFileName(widget.title, widget.url);
       final mimeType = _mimeType(fileName, widget.type);
-      final response = await _dio.get<List<int>>(
+      final dio = dioForDownloadUrl(widget.url);
+      final response = await dio.get<List<int>>(
         widget.url,
         options: Options(responseType: ResponseType.bytes),
       );
