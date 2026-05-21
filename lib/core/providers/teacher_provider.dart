@@ -103,9 +103,16 @@ final userRoomsProvider = FutureProvider<List<dynamic>>((ref) async {
   if (user == null) return [];
   
   final apiClient = ref.read(apiClientProvider);
-  final response = await apiClient.get('/rooms/user/${user.id}');
+  final response = await apiClient.get(ApiConstants.myRooms);
   if (response.statusCode == 200 && response.data['success'] == true) {
-    return response.data['data'];
+    final data = response.data['data'];
+    if (data is! List) return [];
+
+    return data
+        .where(
+          (room) => room is Map<String, dynamic> && room['type'] == 'group',
+        )
+        .toList();
   }
   return [];
 });
