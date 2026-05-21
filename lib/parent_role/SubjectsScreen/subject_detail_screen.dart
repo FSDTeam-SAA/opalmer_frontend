@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:opalmer_education/chat/models/chat_role.dart';
+import 'package:opalmer_education/chat/providers/chat_provider.dart';
+import 'package:opalmer_education/chat/screens/chat_screen.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/parent_role/SubjectsScreen/models/subject.dart';
 import 'package:opalmer_education/parent_role/SubjectsScreen/homework_screen.dart';
@@ -9,7 +13,7 @@ import 'package:opalmer_education/parent_role/SubjectsScreen/behavior_record_scr
 import 'package:opalmer_education/parent_role/SubjectsScreen/academic_documents_screen.dart';
 import 'package:opalmer_education/parent_role/SubjectsScreen/grading_progress_screen.dart';
 
-class SubjectDetailScreen extends StatelessWidget {
+class SubjectDetailScreen extends ConsumerStatefulWidget {
   final Subject subject;
   final String studentId;
   final String studentName;
@@ -20,6 +24,16 @@ class SubjectDetailScreen extends StatelessWidget {
     required this.studentId,
     required this.studentName,
   });
+
+  @override
+  ConsumerState<SubjectDetailScreen> createState() =>
+      _SubjectDetailScreenState();
+}
+
+class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
+  Subject get subject => widget.subject;
+  String get studentId => widget.studentId;
+  String get studentName => widget.studentName;
 
   @override
   Widget build(BuildContext context) {
@@ -123,9 +137,12 @@ class SubjectDetailScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    _buildContactButton(Icons.chat_bubble_rounded),
+                    _buildContactButton(
+                      Icons.chat_bubble_rounded,
+                      onTap: _openTeacherChat,
+                    ),
                     const SizedBox(width: 12),
-                    _buildContactButton(Icons.phone_rounded),
+                    _buildContactButton(Icons.phone_rounded, onTap: () {}),
                   ],
                 ),
               ),
@@ -283,8 +300,51 @@ class SubjectDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContactButton(IconData icon) {
-    return Container(
+  Future<void> _openTeacherChat() async {
+    final teacherId = subject.teacherId;
+
+    if (teacherId == null || teacherId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Teacher information unavailable")),
+      );
+      return;
+    }
+
+    try {
+      final room = await ref
+          .read(chatNotifierProvider.notifier)
+          .getOrCreateDirectRoom(teacherId);
+
+      if (!mounted) return;
+
+      if (room == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to initialize chat session")),
+        );
+        return;
+      }
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChatScreen(
+            session: room,
+            role: ChatRole.parent,
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Failed to initialize chat session")),
+      );
+    }
+  }
+
+  Widget _buildContactButton(IconData icon, {required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
       width: 40,
       height: 40,
       decoration: const BoxDecoration(
@@ -292,6 +352,7 @@ class SubjectDetailScreen extends StatelessWidget {
         shape: BoxShape.circle,
       ),
       child: Icon(icon, color: Colors.white, size: 20),
+      ),
     );
   }
 

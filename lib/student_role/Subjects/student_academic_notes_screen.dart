@@ -6,7 +6,6 @@ import 'package:opalmer_education/core/providers/student_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:open_filex/open_filex.dart';
 
 class StudentAcademicNotesScreen extends ConsumerStatefulWidget {
@@ -26,10 +25,6 @@ class _StudentAcademicNotesScreenState extends ConsumerState<StudentAcademicNote
         _downloadingId = id;
         _progress = 0;
       });
-
-      if (Platform.isAndroid) {
-        await Permission.storage.request();
-      }
 
       final directory = Platform.isAndroid 
           ? await getExternalStorageDirectory() 

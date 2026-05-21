@@ -4,6 +4,7 @@ class Subject {
   final String attendance;
   final String attendanceEmoji;
   final String performance;
+  final String? teacherId;
   final String teacherName;
   final String teacherAvatar;
   final String date;
@@ -15,6 +16,7 @@ class Subject {
     required this.attendance,
     required this.attendanceEmoji,
     required this.performance,
+    this.teacherId,
     required this.teacherName,
     required this.teacherAvatar,
     required this.date,
@@ -50,6 +52,7 @@ class Subject {
       attendance: _formatPercent(attendanceValue),
       attendanceEmoji: _emojiForPercent(attendanceValue),
       performance: _formatPercent(performanceValue),
+      teacherId: teacherMap?['_id']?.toString() ?? teacher?.toString(),
       teacherName: (teacherMap?['username'] ?? '—').toString(),
       teacherAvatar: avatarUrl,
       date: _formatDate(json['lastActivityDate']),

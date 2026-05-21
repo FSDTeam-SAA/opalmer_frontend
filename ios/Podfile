@@ -44,6 +44,9 @@ post_install do |installer|
         '$(inherited)',
         'PERMISSION_CAMERA=1',
         'PERMISSION_MICROPHONE=1',
+        'PERMISSION_PHOTOS=1',
+        'PERMISSION_PHOTOS_ADD_ONLY=1',
+        'PERMISSION_MEDIA_LIBRARY=1',
       ]
       # Google ML Kit's MLImage binary now supports arm64 correctly.
       # Force simulator builds to x86_64 causes errors in newer Flutter.

@@ -4,7 +4,6 @@ import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:open_filex/open_filex.dart';
 
 class StudentLessonOverviewScreen extends StatefulWidget {
@@ -26,26 +25,14 @@ class _StudentLessonOverviewScreenState extends State<StudentLessonOverviewScree
         _downloadProgress = 0;
       });
 
-      // 1. Request Storage Permission (mainly for older Android, but good practice)
-      if (Platform.isAndroid) {
-        final status = await Permission.storage.request();
-        if (!status.isGranted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Storage permission is required to download files.")),
-          );
-          setState(() => _isDownloading = false);
-          return;
-        }
-      }
-
-      // 2. Get Directory
+      // 1. Get Directory
       final directory = Platform.isAndroid 
           ? await getExternalStorageDirectory() 
           : await getApplicationDocumentsDirectory();
       
       final filePath = "${directory!.path}/$fileName.pdf";
 
-      // 3. Download
+      // 2. Download
       final dio = Dio();
       await dio.download(
         url, 
@@ -61,7 +48,7 @@ class _StudentLessonOverviewScreenState extends State<StudentLessonOverviewScree
 
       setState(() => _isDownloading = false);
 
-      // 4. Open File
+      // 3. Open File
       final result = await OpenFilex.open(filePath);
       if (result.type != ResultType.done) {
         ScaffoldMessenger.of(context).showSnackBar(
