@@ -169,9 +169,25 @@ class _AcademicDocumentsScreenState
           GestureDetector(
             onTap: () async {
               if (docUrl.isNotEmpty) {
-                final uri = Uri.parse(docUrl);
+                final uri = Uri.tryParse(docUrl);
+                if (uri == null) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Invalid file link")),
+                    );
+                  }
+                  return;
+                }
                 try {
-                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  final opened = await launchUrl(
+                    uri,
+                    mode: LaunchMode.externalApplication,
+                  );
+                  if (!opened && mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Could not open file")),
+                    );
+                  }
                 } catch (e) {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(

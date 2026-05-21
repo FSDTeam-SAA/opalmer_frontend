@@ -15,6 +15,8 @@ class CreateLessonScreen extends ConsumerStatefulWidget {
 }
 
 class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
+  static const int _maxPdfSizeBytes = 10 * 1024 * 1024;
+
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _objectiveController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
@@ -32,13 +34,24 @@ class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
     debugPrint("CreateLesson: _pickPDF called");
     try {
       final result = await FilePicker.platform.pickFiles(
-        type: FileType.any, // Use any first to test if picker opens at all
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
       );
       debugPrint("CreateLesson: FilePicker result: $result");
 
       if (result != null) {
+        final pickedFile = result.files.first;
+        if (pickedFile.size > _maxPdfSizeBytes) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("PDF must be 10 MB or smaller.")),
+            );
+          }
+          return;
+        }
+
         setState(() {
-          _selectedFile = result.files.first;
+          _selectedFile = pickedFile;
         });
       }
     } catch (e) {
@@ -53,6 +66,13 @@ class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
     if (_objectiveController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please enter an objective")),
+      );
+      return;
+    }
+
+    if (_selectedFile != null && _selectedFile!.size > _maxPdfSizeBytes) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("PDF must be 10 MB or smaller.")),
       );
       return;
     }

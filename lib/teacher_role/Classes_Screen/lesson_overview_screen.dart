@@ -127,9 +127,26 @@ class LessonOverviewScreen extends StatelessWidget {
                       const SizedBox(height: 12),
                       GestureDetector(
                         onTap: () async {
-                          final Uri url = Uri.parse(docUrl);
-                          if (await canLaunchUrl(url)) {
-                            await launchUrl(url);
+                          final url = Uri.tryParse(docUrl);
+                          if (url == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Invalid document link"),
+                              ),
+                            );
+                            return;
+                          }
+
+                          final opened = await launchUrl(
+                            url,
+                            mode: LaunchMode.externalApplication,
+                          );
+                          if (!opened && context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Could not open document"),
+                              ),
+                            );
                           }
                         },
                         child: Container(

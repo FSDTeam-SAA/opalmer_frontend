@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/providers/student_provider.dart';
+import 'package:opalmer_education/core/services/download_client.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
-import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
 
@@ -32,7 +32,7 @@ class _StudentAcademicNotesScreenState extends ConsumerState<StudentAcademicNote
       
       final filePath = "${directory!.path}/Academic_Note_$dateStr.pdf";
 
-      final dio = Dio();
+      final dio = dioForDownloadUrl(url);
       await dio.download(
         url, 
         filePath,
