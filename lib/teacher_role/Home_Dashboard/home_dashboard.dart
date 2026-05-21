@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:opalmer_education/core/theme/app_colors.dart';
-import 'package:opalmer_education/core/widgets/pressable_card.dart';
-import 'package:opalmer_education/core/providers/teacher_provider.dart';
 import 'package:opalmer_education/core/models/student_models.dart';
-import '../Classes_Screen/widgets/teacher_class_card.dart';
-import '../../notification/notification.dart';
-import 'package:opalmer_education/core/providers/navigation_provider.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
 import 'package:opalmer_education/core/providers/grading_provider.dart';
+import 'package:opalmer_education/core/providers/navigation_provider.dart';
+import 'package:opalmer_education/core/providers/teacher_provider.dart';
+import 'package:opalmer_education/core/theme/app_colors.dart';
+import 'package:opalmer_education/core/widgets/pressable_card.dart';
+
+import '../../notification/notification.dart';
+import '../Classes_Screen/widgets/teacher_class_card.dart';
 
 class HomeDashboard extends ConsumerStatefulWidget {
-  const HomeDashboard({Key? key}) : super(key: key);
+  const HomeDashboard({super.key});
 
   @override
   ConsumerState<HomeDashboard> createState() => _HomeDashboardState();
@@ -87,7 +88,7 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
 
   void _setupCardAnimations(int count) {
     if (_cardControllers.length == count) return;
-    
+
     for (var c in _cardControllers) {
       c.dispose();
     }
@@ -111,7 +112,7 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
         ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut)),
       );
     }
-    
+
     _triggerCardAnimations();
   }
 
@@ -317,7 +318,8 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
                         ),
                         GestureDetector(
                           onTap: () {
-                            ref.read(teacherTabIndexProvider.notifier).state = 1;
+                            ref.read(teacherTabIndexProvider.notifier).state =
+                                1;
                           },
                           child: Text(
                             "View All",
@@ -335,13 +337,13 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
 
                   // Horizontal scrollable Class Stats cards
                   SizedBox(
-                    height: 205,
+                    height: 220,
                     child: classesAsync.when(
                       data: (classes) {
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           _setupCardAnimations(classes.length);
                         });
-                        
+
                         if (classes.isEmpty) {
                           return const Center(child: Text("No classes found."));
                         }
@@ -352,20 +354,22 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
                           itemCount: classes.length,
                           itemBuilder: (context, index) {
                             final cls = classes[index];
-                            final Color cardColor = index % 2 == 0 
-                                ? AppColors.success 
+                            final Color cardColor = index % 2 == 0
+                                ? AppColors.success
                                 : AppColors.warning;
 
                             return Row(
                               children: [
                                 FadeTransition(
-                                  opacity: index < _cardFades.length 
-                                      ? _cardFades[index] 
+                                  opacity: index < _cardFades.length
+                                      ? _cardFades[index]
                                       : const AlwaysStoppedAnimation(1),
                                   child: SlideTransition(
-                                    position: index < _cardSlides.length 
-                                        ? _cardSlides[index] 
-                                        : const AlwaysStoppedAnimation(Offset.zero),
+                                    position: index < _cardSlides.length
+                                        ? _cardSlides[index]
+                                        : const AlwaysStoppedAnimation(
+                                            Offset.zero,
+                                          ),
                                     child: TeacherClassCard(
                                       width: 280,
                                       margin: EdgeInsets.zero,
@@ -374,14 +378,15 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
                                     ),
                                   ),
                                 ),
-                                if (index < classes.length - 1) 
+                                if (index < classes.length - 1)
                                   const SizedBox(width: 14),
                               ],
                             );
                           },
                         );
                       },
-                      loading: () => const Center(child: CircularProgressIndicator()),
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
                       error: (err, _) => Center(child: Text("Error: $err")),
                     ),
                   ),

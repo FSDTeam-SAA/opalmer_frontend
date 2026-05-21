@@ -15,18 +15,34 @@ class AddDocumentScreen extends ConsumerStatefulWidget {
 }
 
 class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
+  static const int _maxPdfSizeBytes = 10 * 1024 * 1024;
+
   PlatformFile? _selectedFile;
   bool _isLoading = false;
 
   Future<void> _pickFile() async {
     try {
       final result = await FilePicker.platform.pickFiles(
-        type: FileType.any,
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
       );
 
       if (result != null && result.files.isNotEmpty) {
+        final pickedFile = result.files.first;
+        if (pickedFile.size > _maxPdfSizeBytes) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("PDF must be 10 MB or smaller."),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
+
         setState(() {
-          _selectedFile = result.files.first;
+          _selectedFile = pickedFile;
         });
       }
     } catch (e) {
@@ -52,13 +68,23 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
       return;
     }
 
+    if (_selectedFile!.size > _maxPdfSizeBytes) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("PDF must be 10 MB or smaller."),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
     try {
       final apiClient = ref.read(apiClientProvider);
-      
+
       final formData = FormData.fromMap({
         "studentId": widget.studentId,
         "title": _selectedFile!.name,
@@ -85,7 +111,9 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
           Navigator.pop(context);
         }
       } else {
-        throw Exception(response.data?['message'] ?? 'Failed to upload document');
+        throw Exception(
+          response.data?['message'] ?? 'Failed to upload document',
+        );
       }
     } catch (e) {
       String errorMessage = "Failed to upload document";

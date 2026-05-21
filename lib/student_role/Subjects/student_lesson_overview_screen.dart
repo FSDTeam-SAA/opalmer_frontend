@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/core/models/student_models.dart';
-import 'package:dio/dio.dart';
+import 'package:opalmer_education/core/services/download_client.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
 
@@ -33,7 +33,7 @@ class _StudentLessonOverviewScreenState extends State<StudentLessonOverviewScree
       final filePath = "${directory!.path}/$fileName.pdf";
 
       // 2. Download
-      final dio = Dio();
+      final dio = dioForDownloadUrl(url);
       await dio.download(
         url, 
         filePath,
