@@ -1,0 +1,61 @@
+definitions:
+  environment:
+    shorebird_android_env: &shorebird_android_env
+      flutter: 3.47.6
+      groups:
+        - shorebird
+      vars:
+        FLUTTER_VERSION: 3.47.6
+  scripts:
+    - &install_shorebird
+      name: Install Shorebird CLI
+      script: |
+        curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
+        echo 'export PATH="$HOME/.shorebird/bin:$PATH"' >> "$CM_ENV"
+    - &fetch_flutter_dependencies
+      name: Fetch Flutter dependencies
+      script: flutter pub get
+
+workflows:
+  release_android:
+    name: Shorebird Android release
+    instance_type: mac_mini_m2
+    max_build_duration: 120
+    environment:
+      <<: *shorebird_android_env
+      groups:
+        - shorebird
+        - play_store
+      android_signing:
+        - android_keystore
+    scripts:
+      - *install_shorebird
+      - *fetch_flutter_dependencies
+      - name: Create Shorebird release
+        script: |
+          shorebird release android --flutter-version="$FLUTTER_VERSION"
+    artifacts:
+      - build/**/outputs/**/*.aab
+      - build/**/outputs/**/mapping.txt
+    publishing:
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+
+  patch_android:
+    name: Shorebird Android patch
+    instance_type: mac_mini_m2
+    max_build_duration: 120
+    environment:
+      <<: *shorebird_android_env
+      android_signing:
+        - android_keystore
+    inputs:
+      release_version:
+        description: Shorebird release version to patch (for example 1.0.0+1)
+    scripts:
+      - *install_shorebird
+      - *fetch_flutter_dependencies
+      - name: Create Shorebird patch
+        script: |
+          shorebird patch android --release-version="${{ inputs.release_version }}"
