@@ -41,13 +41,8 @@ final teacherClassesProvider = FutureProvider<List<TeacherClassModel>>((ref) asy
     // 2. For each class, fetch the students explicitly assigned to it.
     final updatedClasses = await Future.wait(classes.map((cls) async {
       try {
-        final stuResponse = await apiClient.get('/student-assign-to-class/class/${cls.id}');
-        if (stuResponse.statusCode == 200 && stuResponse.data['success'] == true) {
-          final assignments = stuResponse.data['data'];
-          if (assignments is List) {
-            return cls.copyWith(studentCount: assignments.length);
-          }
-        }
+        final assignments = await ref.watch(classStudentsProvider(cls.id).future);
+        return cls.copyWith(studentCount: assignments.length);
       } catch (e) {
         // Log error or handle gracefully
       }
@@ -67,9 +62,47 @@ final classStudentsProvider = FutureProvider.family<List<dynamic>, String>((ref,
   
   if (response.statusCode == 200 && response.data['success'] == true) {
     final data = response.data['data'];
-    if (data is List) return data;
+    if (data is List) {
+      return data.where((row) => row is Map && row['studentId'] is Map).toList();
+    }
   }
-  return [];
+  throw StateError('Unable to load enrolled students');
+});
+
+// Nullable metrics distinguish missing records from a measured zero percent.
+final classDetailsAttendanceProvider = FutureProvider.family<int?, String>((ref, key) async {
+  final parts = key.split('|');
+  final student = parts.first == 'student';
+  final response = await ref.read(apiClientProvider).get(
+    student ? '/attendances/student/${parts[1]}/stats' : '/attendances/class/${parts[1]}/stats',
+    queryParameters: student ? {'classId': parts[2]} : null,
+  );
+  if (response.data['success'] != true || response.data['data'] is! Map) {
+    throw StateError('Unable to load attendance');
+  }
+  final data = response.data['data'];
+  final count = student ? data['recordedCount'] : data['totalDays'];
+  if (count is! num || count <= 0 || (!student && (data['studentCount'] as num? ?? 0) <= 0)) return null;
+  final percentage = data['percentage'];
+  return percentage is num && percentage.isFinite && percentage >= 0 && percentage <= 100
+      ? percentage.round() : null;
+});
+
+final classPerformanceProvider = FutureProvider.family<int?, String>((ref, classId) async {
+  final students = await ref.watch(classStudentsProvider(classId).future);
+  double total = 0;
+  int count = 0;
+  for (final assignment in students) {
+    final metric = assignment['studentId']['performance'];
+    if (metric is! Map) continue;
+    final resultCount = metric['resultCount'];
+    final sum = metric['totalPercentage'];
+    if (resultCount is num && resultCount > 0 && sum is num && sum.isFinite) {
+      total += sum;
+      count += resultCount.toInt();
+    }
+  }
+  return count > 0 ? (total / count).round() : null;
 });
 
 final classLessonsProvider = FutureProvider.family<List<dynamic>, String>((ref, classId) async {

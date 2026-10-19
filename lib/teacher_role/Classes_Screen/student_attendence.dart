@@ -14,40 +14,82 @@ class StudentAttendanceScreen extends ConsumerStatefulWidget {
 }
 
 class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScreen> {
-  final String _todayDate = DateFormat('dd-MM-yy').format(DateTime.now());
   bool _isCreating = false;
+  AsyncValue<List<dynamic>> _attendance = const AsyncLoading();
+  final Set<String> _savingIds = {};
 
   Future<void> _updateStatus(String studentId, String attendanceId, String status) async {
+    if (_savingIds.contains(attendanceId)) return;
+    final rows = _attendance.asData?.value ?? [];
+    final index = rows.indexWhere((row) => row['_id'] == attendanceId);
+    if (index < 0 || rows[index]['status'] == status) return;
+    final previous = Map<String, dynamic>.from(rows[index]);
+    void replaceRow(Map<String, dynamic> row) {
+      final current = List<dynamic>.from(_attendance.asData?.value ?? []);
+      final position = current.indexWhere((item) => item['_id'] == attendanceId);
+      if (position >= 0) current[position] = row;
+      _attendance = AsyncData(current);
+    }
+    setState(() {
+      _savingIds.add(attendanceId);
+      replaceRow({...previous, 'status': status});
+    });
     try {
       final apiClient = ref.read(apiClientProvider);
       final response = await apiClient.patch('/attendances/class/$attendanceId', data: {'status': status});
-      if (response.statusCode == 200 && response.data['success'] == true) {
+      if (response.statusCode == 200 && response.data['success'] == true && response.data['data'] is Map) {
+        if (!mounted) return;
+        setState(() => replaceRow(Map<String, dynamic>.from(response.data['data'])));
         ref.invalidate(classAttendanceProvider(widget.classData.id));
         ref.invalidate(classAttendanceStatsProvider(widget.classData.id));
+        ref.invalidate(classDetailsAttendanceProvider('class|${widget.classData.id}'));
+        ref.invalidate(classDetailsAttendanceProvider('student|$studentId|${widget.classData.id}'));
+        ref.invalidate(studentAnalysisProvider('${widget.classData.id}|$studentId|weekly'));
+        ref.invalidate(studentAnalysisProvider('${widget.classData.id}|$studentId|monthly'));
+        ref.invalidate(studentAnalysisProvider('${widget.classData.id}|$studentId|daily'));
         ref.invalidate(
           studentAttendanceStatsProvider('$studentId|${widget.classData.id}'),
         );
+      } else {
+        throw StateError('Attendance was not saved. Please try again.');
       }
     } catch (e) {
       if (mounted) {
+        setState(() => replaceRow(previous));
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
+    } finally {
+      if (mounted) setState(() => _savingIds.remove(attendanceId));
     }
   }
 
   Future<void> _initTodayAttendance() async {
+    if (!mounted) return;
     if (_isCreating) return;
     setState(() => _isCreating = true);
     try {
       final apiClient = ref.read(apiClientProvider);
       // This endpoint creates attendance for missing students for today
-      await apiClient.post('/attendances/class', data: {
+      final response = await apiClient.post('/attendances/class', data: {
         'classId': widget.classData.id,
         'date': DateTime.now().toIso8601String(),
       });
+      if (response.data['success'] != true || response.data['data'] is! Map) {
+        throw StateError('Unable to load attendance');
+      }
+      final data = response.data['data'];
+      if (!mounted) return;
+      setState(() => _attendance = AsyncData([
+        ...data['existing'] as List,
+        ...data['created'] as List,
+      ]));
       ref.invalidate(classAttendanceProvider(widget.classData.id));
+      ref.invalidate(classDetailsAttendanceProvider('class|${widget.classData.id}'));
+      for (final row in _attendance.asData?.value ?? []) {
+        ref.invalidate(classDetailsAttendanceProvider('student|${row['userId']}|${widget.classData.id}'));
+      }
     } catch (e) {
-      // Ignore error if it's just "already exists"
+      if (mounted) setState(() => _attendance = AsyncError(e, StackTrace.current));
     } finally {
       if (mounted) setState(() => _isCreating = false);
     }
@@ -62,7 +104,7 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
   @override
   Widget build(BuildContext context) {
     final studentsAsync = ref.watch(classStudentsProvider(widget.classData.id));
-    final attendanceAsync = ref.watch(classAttendanceProvider(widget.classData.id));
+    final attendanceAsync = _attendance;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -209,9 +251,11 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
                                     final record = attendanceMap[studentId];
                                     
                                     return _buildRow(
-                                      _todayDate,
+                                      record?['date'] is String
+                                          ? DateFormat('dd-MM-yy').format(DateTime.parse(record['date']))
+                                          : 'N/A',
                                       student['username'] ?? student['name'] ?? 'Unknown',
-                                      record?['status'] ?? 'absent',
+                                      record?['status'] ?? 'not_recorded',
                                       studentId,
                                       record?['_id'],
                                       student,
@@ -224,7 +268,13 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
                             );
                           },
                           loading: () => const Center(child: CircularProgressIndicator()),
-                          error: (err, stack) => Center(child: Text("Error: $err")),
+                          error: (err, stack) => Center(child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('Unable to load attendance.'),
+                              TextButton(onPressed: _initTodayAttendance, child: const Text('Retry')),
+                            ],
+                          )),
                         ),
                       ),
                     ],
@@ -297,18 +347,30 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
         textColor = const Color(0xFFC04345);
         text = "Absent";
         break;
+      case 'late':
       case 'tardy':
         bgColor = const Color(0xFFCFE1EB);
         textColor = const Color(0xFF4C7B90);
-        text = "Tardy";
+        text = "Late";
+        break;
+      case 'excused':
+        bgColor = const Color(0xFFCFE1EB);
+        textColor = const Color(0xFF4C7B90);
+        text = 'Excused';
+        break;
+      case 'holiday':
+        bgColor = const Color(0xFFCFE1EB);
+        textColor = const Color(0xFF4C7B90);
+        text = 'Holiday';
         break;
       default:
         bgColor = const Color(0xFFF7CFD1);
         textColor = const Color(0xFFC04345);
-        text = "Absent";
+        text = "Not recorded";
     }
 
     return PopupMenuButton<String>(
+      enabled: attendanceId != null && !_savingIds.contains(attendanceId),
       onSelected: (newStatus) {
         if (attendanceId != null) {
           _updateStatus(studentId, attendanceId, newStatus);
@@ -317,7 +379,9 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
       itemBuilder: (context) => [
         const PopupMenuItem(value: 'present', child: Text('Present')),
         const PopupMenuItem(value: 'absent', child: Text('Absent')),
-        const PopupMenuItem(value: 'tardy', child: Text('Tardy')),
+        const PopupMenuItem(value: 'late', child: Text('Late')),
+        const PopupMenuItem(value: 'excused', child: Text('Excused')),
+        const PopupMenuItem(value: 'holiday', child: Text('Holiday')),
       ],
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -328,15 +392,20 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
+            Flexible(child: Text(
               text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: textColor,
                 fontWeight: FontWeight.w500,
                 fontSize: 12,
               ),
-            ),
-            Icon(Icons.keyboard_arrow_down, color: textColor, size: 16),
+            )),
+            if (_savingIds.contains(attendanceId))
+              SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: textColor))
+            else
+              Icon(Icons.keyboard_arrow_down, color: textColor, size: 16),
           ],
         ),
       ),

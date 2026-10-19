@@ -1,3 +1,4 @@
+import '../core/widgets/brand_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/core/widgets/primary_button.dart';
@@ -43,7 +44,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       "image":
           "assets/images/onbording_background_image/onbording_background_image_2.png",
       "bgColor": const Color(0xFF094988),
-      "imageBottom": -300.0,
+      "imageTopFraction": 0.10,
+      "imageBottomFraction": -0.08,
       "imageAlignment": Alignment.topCenter,
       "textTop": 180.0,
       "textRight": 20.0,
@@ -136,6 +138,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
       body: Stack(
         children: [
@@ -155,10 +158,19 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   children: [
                     // Background Image — animated
                     Positioned(
-                      bottom: onboardingData[index]["imageBottom"],
+                      bottom:
+                          onboardingData[index]["imageBottomFraction"] != null
+                          ? screenSize.height *
+                                (onboardingData[index]["imageBottomFraction"]
+                                    as double)
+                          : onboardingData[index]["imageBottom"],
                       left: 0,
                       right: 0,
-                      top: 0,
+                      top:
+                          screenSize.height *
+                          (onboardingData[index]["imageTopFraction"]
+                                  as double? ??
+                              0),
                       child: FadeTransition(
                         opacity: _imageFade,
                         child: SlideTransition(
@@ -174,7 +186,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
                     // Rotated Text — animated
                     Positioned(
-                      top: onboardingData[index]["textTop"],
+                      top: screenSize.height * 0.16,
                       right: onboardingData[index]["textRight"],
                       child: FadeTransition(
                         opacity: _textFade,
@@ -203,22 +215,17 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
           // ── Top Logo ──
           Positioned(
-            top: 70,
+            top: MediaQuery.paddingOf(context).top + 8,
             left: 0,
             right: 0,
             child: Center(
-              child: Container(
-                width: 50,
-                height: 50,
-                decoration: const BoxDecoration(
-                  color: AppColors.primaryMid,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Image.asset(
-                    'assets/images/onbording_logo.png',
-                    width: 50,
-                    height: 50,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: BrandLogo(
+                    assetPath: 'assets/images/achieverplus-logo-onboarding.png',
+                    size: (screenSize.width * 0.14).clamp(48.0, 56.0),
                   ),
                 ),
               ),
@@ -280,6 +287,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
                       // Button
                       PrimaryButton(
+                        isGradient: false,
                         text: _currentPage == onboardingData.length - 1
                             ? "GET STARTED"
                             : "CONTINUE",

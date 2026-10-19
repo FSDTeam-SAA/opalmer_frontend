@@ -1,4 +1,4 @@
-import 'dart:ui' as ui;
+import '../../core/widgets/performance_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/chat/providers/chat_provider.dart';
@@ -53,35 +53,22 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
     final studentId = student['_id'] ?? '';
     final classId = widget.classId ?? '';
     final attendanceStatsAsync = ref.watch(
-      studentAttendanceStatsProvider('$studentId|$classId'),
+      classDetailsAttendanceProvider('student|$studentId|$classId'),
     );
     final parentsAsync = ref.watch(studentParentsProvider(studentId));
-    final quizResultsAsync = ref.watch(studentQuizResultsProvider(studentId));
 
     final analysisAsync = ref.watch(
       studentAnalysisProvider('$classId|$studentId|$_selectedFilter'),
     );
 
-    // Use percentage from analysis summary
-    final progressPercentStr = analysisAsync.maybeWhen(
+    final progressLabel = analysisAsync.when(
       data: (data) {
-        if (data.isNotEmpty && data['summary'] != null) {
-          final percentage = data['summary']['percentage']?.toString() ?? "0";
-          if (percentage.contains('.')) {
-            return double.parse(percentage).round().toString();
-          }
-          return percentage;
-        }
-        return "0";
+        final value = data['performanceSummary']?['percentage'];
+        return value is num ? '${value.round()}%' : 'N/A';
       },
-      orElse: () => "0",
+      loading: () => '...',
+      error: (_, _) => 'N/A',
     );
-
-    // Debug print to see what data we are getting
-    debugPrint('StudentProfile: Analysis State: ${analysisAsync.isLoading ? "Loading" : "Loaded"}');
-    if (analysisAsync.hasValue) {
-      debugPrint('StudentProfile: Analysis Data: ${analysisAsync.value}');
-    }
 
     // Handle avatar
     final avatar = student['avatar'];
@@ -96,7 +83,7 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
     avatarUrl = ApiConstants.buildImageUrl(avatarUrl);
 
     // Handle PDF or invalid image formats in Cloudinary
-    if (avatarUrl != null && avatarUrl.toLowerCase().endsWith('.pdf')) {
+    if (avatarUrl.toLowerCase().endsWith('.pdf')) {
       avatarUrl = null;
     }
 
@@ -168,15 +155,9 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                               ? Image.network(
                                   avatarUrl,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Image.asset(
-                                    'assets/images/classes/student_image.png',
-                                    fit: BoxFit.cover,
-                                  ),
+                                  errorBuilder: (_, __, ___) => const Icon(Icons.person_outline, color: Color(0xFF871DAD)),
                                 )
-                              : Image.asset(
-                                  'assets/images/classes/student_image.png',
-                                  fit: BoxFit.cover,
-                                ),
+                              : const Icon(Icons.person_outline, color: Color(0xFF871DAD)),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -241,8 +222,8 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                           child: attendanceStatsAsync.when(
                             data: (percentage) => _buildStatBox(
                               "Attendance",
-                              "$percentage%${_getAttendanceEmoji(percentage)}",
-                              _getAttendanceColor(percentage),
+                              percentage == null ? "N/A" : "$percentage%${_getAttendanceEmoji(percentage)}",
+                              _getAttendanceColor(percentage ?? 0),
                             ),
                             loading: () => _buildStatBox(
                               "Attendance",
@@ -260,7 +241,7 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                         Expanded(
                           child: _buildStatBox(
                             "Progress",
-                            "$progressPercentStr%",
+                            progressLabel,
                             const Color(0xFFFEBD43),
                           ),
                         ),
@@ -322,15 +303,9 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                                       ? Image.network(
                                           avatarUrl,
                                           fit: BoxFit.cover,
-                                          errorBuilder: (_, __, ___) => Image.asset(
-                                            'assets/images/classes/student_image.png',
-                                            fit: BoxFit.cover,
-                                          ),
+                                          errorBuilder: (_, __, ___) => const Icon(Icons.person_outline, color: Color(0xFF871DAD)),
                                         )
-                                      : Image.asset(
-                                          'assets/images/classes/student_image.png',
-                                          fit: BoxFit.cover,
-                                        ),
+                                      : const Icon(Icons.person_outline, color: Color(0xFF871DAD)),
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
@@ -411,41 +386,21 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                                   color: Color(0xFF871DAD),
                                 ),
                               ),
-                              GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    _selectedFilter = _selectedFilter == 'weekly' ? 'monthly' : 'weekly';
-                                  });
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: const Color(0xFF871DAD),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        _selectedFilter == 'weekly' ? "Weekly" : "Monthly",
-                                        style: const TextStyle(
-                                          color: Color(0xFF871DAD),
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      const Icon(
-                                        Icons.keyboard_arrow_down,
-                                        color: Color(0xFF871DAD),
-                                        size: 16,
-                                      ),
-                                    ],
-                                  ),
+                              DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  value: _selectedFilter,
+                                  dropdownColor: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  style: const TextStyle(color: Color(0xFF871DAD), fontSize: 13),
+                                  icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF871DAD)),
+                                  items: const [
+                                    DropdownMenuItem(value: 'daily', child: Text('Day')),
+                                    DropdownMenuItem(value: 'weekly', child: Text('Week')),
+                                    DropdownMenuItem(value: 'monthly', child: Text('Month')),
+                                  ],
+                                  onChanged: (value) {
+                                    if (value != null) setState(() => _selectedFilter = value);
+                                  },
                                 ),
                               ),
                             ],
@@ -456,24 +411,8 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                             width: double.infinity,
                             child: analysisAsync.when(
                               data: (data) {
-                                if (data.isEmpty || data['chartData'] == null) {
-                                  return const Center(child: Text("No data available"));
-                                }
-                                final List<dynamic> chartData = data['chartData'];
-                                final labels = chartData.map((e) => (e['label'] as String).substring(0, 3)).toList();
-                                final values = chartData.map((e) {
-                                  final p = e['present'] as int;
-                                  final a = e['absent'] as int;
-                                  if (p + a == 0) return 0.0;
-                                  return (p / (p + a)) * 100.0;
-                                }).toList();
-
-                                return CustomPaint(
-                                  painter: _ProgressChartPainter(
-                                    labels: labels,
-                                    values: values,
-                                  ),
-                                );
+                                final points = data['performanceChartData'];
+                                return PerformanceChart(points: points is List ? points : []);
                               },
                               loading: () => const Center(child: CircularProgressIndicator()),
                               error: (err, _) => Center(child: Text("Error: $err")),
@@ -516,7 +455,7 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const GradingProgressScreen(),
+                            builder: (context) => GradingProgressScreen(studentId: studentId, classId: classId),
                           ),
                         );
                       },
@@ -648,232 +587,3 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
   }
 }
 
-class _ProgressChartPainter extends CustomPainter {
-  final List<String> labels;
-  final List<double> values;
-
-  _ProgressChartPainter({required this.labels, required this.values});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final double w = size.width;
-    final double h = size.height;
-
-    final double topMargin = 30.0;
-    final double botMargin = 30.0;
-    final double leftMargin = 30.0;
-    final double rightMargin = 10.0;
-
-    final double chartW = w - leftMargin - rightMargin;
-    final double chartH = h - topMargin - botMargin;
-
-    // Grid labels mappings
-    final List<int> yLabels = [100, 50, 40, 30, 20, 10];
-    final int hLines = 6;
-    final double yStep = chartH / (hLines - 1);
-
-    // Draw Grid and Text
-    final TextPainter textPainter = TextPainter(
-      textDirection: ui.TextDirection.ltr,
-    );
-
-    for (int i = 0; i < hLines; i++) {
-      final double y = topMargin + (i * yStep);
-
-      // Grid line
-      final Paint gridPaint = Paint()
-        ..color = Colors.grey.withValues(alpha: 0.3)
-        ..strokeWidth = 1
-        ..style = PaintingStyle.stroke;
-
-      // Dashed line manual draw
-      double startX = leftMargin;
-      while (startX < w) {
-        canvas.drawLine(Offset(startX, y), Offset(startX + 4, y), gridPaint);
-        startX += 8;
-      }
-
-      // Label text
-      textPainter.text = TextSpan(
-        text: yLabels[i].toString(),
-        style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
-      );
-      textPainter.layout();
-      textPainter.paint(canvas, Offset(0, y - textPainter.height / 2));
-    }
-
-    // X Labels
-    final List<String> xLabels = labels;
-    final double xStep = chartW / (xLabels.length - 1);
-
-    for (int i = 0; i < xLabels.length; i++) {
-      final double x = leftMargin + (i * xStep);
-      textPainter.text = TextSpan(
-        text: xLabels[i],
-        style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
-      );
-      textPainter.layout();
-      textPainter.paint(
-        canvas,
-        Offset(x - textPainter.width / 2, topMargin + chartH + 10),
-      );
-    }
-
-    // Data mapped onto non-linear Y axis where each segment is logically one fifth
-    double mapY(double val) {
-      double pos;
-      if (val <= 50) {
-        pos = (val) / 12.5; // Scale 0-50 to 0-4 segments
-      } else {
-        pos = 4 + (val - 50) / 50.0; // 4 to 5
-      }
-      // pos 0 is at bottom (yLabels[5]=10? No, yLabels[5] is 10, but bottom line is yLabels[5])
-      // Actually let's simplify mapY to be linear for now as the yLabels are a bit weird
-      return (topMargin + chartH) - (val / 100.0 * chartH);
-    }
-
-    // Foreground values (Purple Line)
-    final List<double> fgVals = values;
-    // Background values (Light Gray Line) - Using a dummy baseline or smoothed version
-    final List<double> bgVals = values.map((v) => v * 0.7).toList();
-
-    List<Offset> fgPoints = [];
-    List<Offset> bgPoints = [];
-
-    for (int i = 0; i < xLabels.length; i++) {
-      final double x = leftMargin + (i * xStep);
-      fgPoints.add(Offset(x, mapY(fgVals[i])));
-      bgPoints.add(Offset(x, mapY(bgVals[i])));
-    }
-
-    Path constructSpline(List<Offset> pts) {
-      Path path = Path();
-      if (pts.isEmpty) return path;
-      path.moveTo(pts.first.dx, pts.first.dy);
-      if (pts.length < 2) return path;
-
-      for (int i = 0; i < pts.length - 1; i++) {
-        final p1 = pts[i];
-        final p2 = pts[i + 1];
-        
-        // Simple cubic bezier for smoothness
-        final double controlPointX = (p1.dx + p2.dx) / 2;
-        path.cubicTo(controlPointX, p1.dy, controlPointX, p2.dy, p2.dx, p2.dy);
-      }
-      return path;
-    }
-
-    // 1) Draw Background Path
-    final Path bgPath = constructSpline(bgPoints);
-    final Paint bgPaint = Paint()
-      ..color = const Color(0xFFD1C4E9)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-    canvas.drawPath(bgPath, bgPaint);
-
-    // 2) Draw Foreground Gradient Fill
-    final Path fgPath = constructSpline(fgPoints);
-    final Path fgFillPath = Path.from(fgPath);
-    fgFillPath.lineTo(fgPoints.last.dx, topMargin + chartH);
-    fgFillPath.lineTo(fgPoints.first.dx, topMargin + chartH);
-    fgFillPath.close();
-
-    final Paint fgFillPaint = Paint()
-      ..shader = ui.Gradient.linear(
-        Offset(0, topMargin),
-        Offset(0, topMargin + chartH),
-        [
-          const Color(0xFF8E24AA).withValues(alpha: 0.3),
-          const Color(0xFF8E24AA).withValues(alpha: 0.0),
-        ],
-      )
-      ..style = PaintingStyle.fill;
-    canvas.drawPath(fgFillPath, fgFillPaint);
-
-    // 3) Draw Foreground Path
-    final Paint fgPaint = Paint()
-      ..color = const Color(0xFF8E24AA)
-      ..strokeWidth = 2.5
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
-    canvas.drawPath(fgPath, fgPaint);
-
-    // 4) Draw Peak Highlight (highest value)
-    int peakIndex = 0;
-    double maxVal = -1.0;
-    for (int i = 0; i < fgVals.length; i++) {
-      if (fgVals[i] > maxVal) {
-        maxVal = fgVals[i];
-        peakIndex = i;
-      }
-    }
-    
-    final Offset peak = fgPoints[peakIndex];
-
-    // Orange vertical line
-    final Paint peakLinePaint = Paint()
-      ..color = const Color(0xFFFFA726)
-      ..strokeWidth = 1.0;
-    canvas.drawLine(
-      Offset(peak.dx, peak.dy),
-      Offset(peak.dx, topMargin + chartH),
-      peakLinePaint,
-    );
-
-    // Circle at peak
-    final Paint peakCircleBgPaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.fill;
-    final Paint peakCircleBorderPaint = Paint()
-      ..color = const Color(0xFFFFA726)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-    canvas.drawCircle(peak, 5, peakCircleBgPaint);
-    canvas.drawCircle(peak, 5, peakCircleBorderPaint);
-
-    // Map label above peak
-    final String peakLabel = "${maxVal.round()}%";
-    textPainter.text = TextSpan(
-      text: peakLabel,
-      style: const TextStyle(
-        color: Color(0xFF222222),
-        fontSize: 12,
-        fontWeight: FontWeight.bold,
-      ),
-    );
-    textPainter.layout();
-
-    final RRect bubbleRRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(
-        center: Offset(peak.dx, peak.dy - 20),
-        width: textPainter.width + 16,
-        height: textPainter.height + 12,
-      ),
-      const Radius.circular(8),
-    );
-
-    // Draw shadow bubble
-    final Paint shadowPaint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.06)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
-    canvas.drawRRect(bubbleRRect, shadowPaint);
-
-    final Paint bubblePaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.fill;
-    canvas.drawRRect(bubbleRRect, bubblePaint);
-
-    textPainter.paint(
-      canvas,
-      Offset(
-        peak.dx - textPainter.width / 2,
-        peak.dy - 20 - textPainter.height / 2,
-      ),
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _ProgressChartPainter oldDelegate) {
-    return oldDelegate.labels != labels || oldDelegate.values != values;
-  }
-}

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:opalmer_education/core/widgets/data_avatar.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/parent_role/ProfileScreen/models/blocked_user.dart';
 
@@ -100,11 +101,7 @@ class _BlockListScreenState extends State<BlockListScreen> {
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 28,
-            backgroundImage: NetworkImage(user.avatarUrl),
-            backgroundColor: Colors.grey.shade100,
-          ),
+          DataAvatar(url: user.avatarUrl, radius: 28),
           const SizedBox(width: 16),
           Expanded(
             child: Column(

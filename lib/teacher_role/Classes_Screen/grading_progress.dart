@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
 import 'scan_document.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import '../../core/providers/teacher_provider.dart';
 
-class GradingProgressScreen extends StatefulWidget {
-  const GradingProgressScreen({Key? key}) : super(key: key);
+class GradingProgressScreen extends ConsumerStatefulWidget {
+  final String studentId;
+  final String classId;
+  const GradingProgressScreen({super.key, required this.studentId, required this.classId});
 
   @override
-  State<GradingProgressScreen> createState() => _GradingProgressScreenState();
+  ConsumerState<GradingProgressScreen> createState() => _GradingProgressScreenState();
 }
 
-class _GradingProgressScreenState extends State<GradingProgressScreen> {
+class _GradingProgressScreenState extends ConsumerState<GradingProgressScreen> {
   @override
   Widget build(BuildContext context) {
+    final resultsAsync = ref.watch(studentQuizResultsProvider(widget.studentId));
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
       appBar: AppBar(
@@ -75,46 +81,45 @@ class _GradingProgressScreenState extends State<GradingProgressScreen> {
         ],
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          children: [
-            _buildProgressCard(
-              title: "Fractions Practice",
-              date: "12/05/2025",
-              progress: 0.93,
-              indicatorColor: const Color(0xFF4AA678), // Green
-            ),
-            _buildProgressCard(
-              title: "Photosynthesis",
-              date: "12/05/2025",
-              progress: 0.93,
-              indicatorColor: const Color(0xFF3F99B4), // Blue
-            ),
-            _buildProgressCard(
-              title: "Force and Motion",
-              date: "12/05/2025",
-              progress: 0.93,
-              indicatorColor: const Color(0xFFFEBD43), // Yellow
-            ),
-            _buildProgressCard(
-              title: "Fractions Practice",
-              date: "12/05/2025",
-              progress: 0.93,
-              indicatorColor: const Color(0xFF4AA678), // Green
-            ),
-            _buildProgressCard(
-              title: "Photosynthesis",
-              date: "12/05/2025",
-              progress: 0.93,
-              indicatorColor: const Color(0xFF3F99B4), // Blue
-            ),
-            _buildProgressCard(
-              title: "Force and Motion",
-              date: "12/05/2025",
-              progress: 0.93,
-              indicatorColor: const Color(0xFFFEBD43), // Yellow
-            ),
-          ],
+        child: resultsAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, _) => Center(child: TextButton(
+            onPressed: () => ref.invalidate(studentQuizResultsProvider(widget.studentId)),
+            child: const Text('Unable to load grading results. Retry'),
+          )),
+          data: (results) {
+            final reviewed = results.where((result) {
+              final quiz = result['quizId'];
+              final progress = result['progress'];
+              return quiz is Map && quiz['classId']?.toString() == widget.classId &&
+                  progress is Map && progress['status'] == 'completed' &&
+                  ['reviewed', 'released'].contains(result['gradeStatus']) &&
+                  result['percentage'] is num && (result['percentage'] as num).isFinite &&
+                  result['percentage'] >= 0 && result['percentage'] <= 100;
+            }).toList();
+            if (reviewed.isEmpty) return const Center(child: Text('No reviewed grading results for this student in this class.'));
+            return RefreshIndicator(
+              onRefresh: () async {
+                ref.invalidate(studentQuizResultsProvider(widget.studentId));
+                await ref.read(studentQuizResultsProvider(widget.studentId).future);
+              },
+              child: ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(20),
+                itemCount: reviewed.length,
+                itemBuilder: (context, index) {
+                  final result = reviewed[index];
+                  final date = DateTime.tryParse(result['submittedAt']?.toString() ?? result['updatedAt']?.toString() ?? '');
+                  return _buildProgressCard(
+                    title: result['quizId']['title']?.toString() ?? 'Untitled assessment',
+                    date: date == null ? 'Date unavailable' : DateFormat('dd/MM/yyyy').format(date.toLocal()),
+                    progress: (result['percentage'] as num).toDouble() / 100,
+                    indicatorColor: const Color(0xFF4AA678),
+                  );
+                },
+              ),
+            );
+          },
         ),
       ),
     );

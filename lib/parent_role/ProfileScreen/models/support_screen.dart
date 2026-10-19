@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:opalmer_education/core/widgets/data_avatar.dart';
 import 'package:opalmer_education/chat/screens/call.dart';
 import 'package:opalmer_education/teacher_role/profile_screen/language.dart';
 
@@ -13,7 +14,7 @@ class _SupportScreenState extends State<SupportScreen> {
   final TextEditingController _messageController = TextEditingController();
   final String _supportName = "Support Randolph";
   final String _supportImageUrl =
-      "https://i.pravatar.cc/150?u=support_randolph";
+      "";
 
   @override
   Widget build(BuildContext context) {
@@ -47,10 +48,7 @@ class _SupportScreenState extends State<SupportScreen> {
         titleSpacing: 0,
         title: Row(
           children: [
-            CircleAvatar(
-              radius: 20,
-              backgroundImage: NetworkImage(_supportImageUrl),
-            ),
+            DataAvatar(url: _supportImageUrl),
             const SizedBox(width: 12),
             Flexible(
               child: Text(

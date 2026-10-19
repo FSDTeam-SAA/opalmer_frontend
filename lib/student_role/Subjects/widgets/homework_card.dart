@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:opalmer_education/core/widgets/assignment_details_screen.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 
 class HomeworkCard extends StatelessWidget {
+  final String? homeworkId;
   final String title;
   final String description;
   final String dueDate;
   const HomeworkCard({
     super.key,
+    this.homeworkId,
     required this.title,
     required this.description,
     required this.dueDate,
@@ -14,7 +17,7 @@ class HomeworkCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GestureDetector(onTap: homeworkId == null ? null : () => Navigator.push(context, MaterialPageRoute(builder: (_) => AssignmentDetailsScreen(homeworkId: homeworkId!))), child: Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
@@ -72,6 +75,6 @@ class HomeworkCard extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 }

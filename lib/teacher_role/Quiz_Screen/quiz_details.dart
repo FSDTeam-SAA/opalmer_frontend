@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/widgets/data_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/constants/api_constants.dart';
 import 'package:opalmer_education/core/providers/grading_provider.dart';
@@ -138,7 +139,7 @@ class QuizDetailScreen extends ConsumerWidget {
               : 'N/A';
 
           String imageUrl =
-              "https://img.freepik.com/free-photo/view-planet-earth-from-space_23-2148705432.jpg";
+              "";
           if (session['image'] != null &&
               session['image'].toString().isNotEmpty) {
             imageUrl = session['image'].toString();
@@ -309,12 +310,7 @@ class QuizDetailScreen extends ConsumerWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              imageUrl,
-              width: 84,
-              height: 84,
-              fit: BoxFit.cover,
-            ),
+            child: DataImage(url: imageUrl, width: 84, height: 84),
           ),
           const SizedBox(width: 16),
           Expanded(

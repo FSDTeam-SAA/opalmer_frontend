@@ -191,7 +191,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     try {
       final loginResponse = await ref
           .read(authServiceProvider)
-          .login(schoolId, password);
+          .login(schoolId, password, requestOtp: () async {
+            if (!mounted) return null;
+            final controller = TextEditingController();
+            final code = await showDialog<String>(context: context, builder: (dialogContext) => AlertDialog(
+              title: const Text('Email verification'),
+              content: TextField(controller: controller, keyboardType: TextInputType.number, maxLength: 6, autofillHints: const [AutofillHints.oneTimeCode], decoration: const InputDecoration(labelText: 'Six-digit code')),
+              actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')), FilledButton(onPressed: () => Navigator.pop(dialogContext, controller.text.trim()), child: const Text('Verify'))],
+            ));
+            controller.dispose();
+            return code;
+          });
 
       if (loginResponse != null) {
         // Validation: Ensure the user's role matches what was selected

@@ -122,14 +122,16 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                           ? Image.network(
                               user.avatar!,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Image.asset(
-                                'assets/images/profile/olivia.png',
-                                fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const Icon(
+                                Icons.person_outline_rounded,
+                                size: 54,
+                                color: Color(0xFFB088C2),
                               ),
                             )
-                          : Image.asset(
-                              'assets/images/profile/olivia.png',
-                              fit: BoxFit.cover,
+                          : const Icon(
+                              Icons.person_outline_rounded,
+                              size: 54,
+                              color: Color(0xFFB088C2),
                             ),
                     ),
                   ),

@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/assignment_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers/teacher_provider.dart';
@@ -214,14 +215,14 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> {
                 itemCount: homeworkList.length,
                 itemBuilder: (context, index) {
                   final hw = homeworkList[index];
-                  return _buildHomeworkCard(
+                  return GestureDetector(onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AssignmentDetailsScreen(homeworkId: hw['_id'].toString()))), child: _buildHomeworkCard(
                     title: hw['title'] ?? 'No Title',
                     description: hw['description'] ?? 'No Description',
                     dueDate: hw['created_at'] != null 
                         ? "Created: ${hw['created_at'].toString().split('T')[0]}" 
                         : "Date: TBD",
-                    showOptions: index == 0, // Just to match screenshot style
-                  );
+                    showOptions: index == 0,
+                  ));
                 },
               );
             },

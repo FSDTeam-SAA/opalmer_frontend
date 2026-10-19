@@ -174,6 +174,7 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => HomeworkScreen(
+                        childId: studentId,
                         classId: subject.id,
                         subjectName: subject.name,
                       ),

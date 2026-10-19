@@ -45,7 +45,6 @@ class ApiClient {
           debugPrint(
             'ApiClient: [${options.method}] REQUEST to: ${options.uri}',
           );
-          debugPrint('ApiClient: [${options.method}] Data: ${options.data}');
           return handler.next(options);
         },
         onResponse: (response, handler) {
@@ -60,7 +59,6 @@ class ApiClient {
             'ApiClient: [${e.requestOptions.method}] ERROR from: ${e.requestOptions.uri}',
           );
           debugPrint('ApiClient: [${e.requestOptions.method}] Message: ${e.message}');
-          debugPrint('ApiClient: [${e.requestOptions.method}] Response Data: ${e.response?.data}');
           
           if (e.response?.statusCode == 401) {
             // Handle token expiration - e.g., redirect to login or refresh token

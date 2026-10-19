@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'app_colors.dart';
 
 class AppTheme {
+  static const statusBarStyle = SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.light,
+    statusBarBrightness: Brightness.dark,
+  );
+
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
+      appBarTheme: const AppBarTheme(systemOverlayStyle: statusBarStyle),
       fontFamily:
           'SF Pro Display', // Defaulting to the one seen in UserRoleScreen
       scaffoldBackgroundColor: AppColors.scaffoldBg,

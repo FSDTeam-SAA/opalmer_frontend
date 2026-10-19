@@ -57,7 +57,7 @@ const List<LearningTip> mockLearningTips = [
   LearningTip(
     title: "Start Your Child's Learning Journey Strong at Home",
     imageUrl:
-        "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=200&q=60",
+        "",
     sections: [
       LearningTipSection(
         title: "1. Set a Daily Routine",
@@ -69,9 +69,9 @@ const List<LearningTip> mockLearningTips = [
       LearningTipSection(
         title: "2. Visual Inspiration",
         imageUrls: [
-          "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=200&q=80",
-          "https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=200&q=80",
-          "https://images.unsplash.com/photo-1427504494785-319ce83d6a2a?auto=format&fit=crop&w=200&q=80",
+          "",
+          "",
+          "",
         ],
       ),
       LearningTipSection(
@@ -91,7 +91,7 @@ const List<LearningTip> mockLearningTips = [
   LearningTip(
     title: "Create Daily Routines That Support Learning Success",
     imageUrl:
-        "https://images.unsplash.com/photo-1620063255146-5f07aee3b784?auto=format&fit=crop&w=200&q=60",
+        "",
     sections: [
       LearningTipSection(
         title: "1. Build a Consistent Schedule",
@@ -109,9 +109,9 @@ const List<LearningTip> mockLearningTips = [
       LearningTipSection(
         title: "2. Use Visual Timetables",
         imageUrls: [
-          "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=200&q=80",
-          "https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=200&q=80",
-          "https://images.unsplash.com/photo-1596495577886-d920f1fb7238?auto=format&fit=crop&w=200&q=80",
+          "",
+          "",
+          "",
         ],
       ),
       LearningTipSection(
@@ -135,21 +135,21 @@ const List<LearningTip> mockLearningTips = [
   LearningTip(
     title: "Discover the Magic of Reading Together Every Night",
     imageUrl:
-        "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=200&q=60",
+        "",
   ),
   LearningTip(
     title: "How to Build a Calm, Distraction-Free Study Space",
     imageUrl:
-        "https://images.unsplash.com/photo-1427504494785-319ce83d6a2a?auto=format&fit=crop&w=200&q=60",
+        "",
   ),
   LearningTip(
     title: "Top 5 Educational Games That Make Math Fun",
     imageUrl:
-        "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=200&q=60",
+        "",
   ),
   LearningTip(
     title: "Healthy Snack Ideas to Boost Brain Power",
     imageUrl:
-        "https://images.unsplash.com/photo-1620063255146-5f07aee3b784?auto=format&fit=crop&w=200&q=60",
+        "",
   ),
 ];

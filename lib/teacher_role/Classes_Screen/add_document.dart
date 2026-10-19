@@ -18,6 +18,7 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
   static const int _maxPdfSizeBytes = 10 * 1024 * 1024;
 
   PlatformFile? _selectedFile;
+  String? _selectedClassId;
   bool _isLoading = false;
 
   Future<void> _pickFile() async {
@@ -25,6 +26,7 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf'],
+        withData: true,
       );
 
       if (result != null && result.files.isNotEmpty) {
@@ -58,10 +60,10 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
   }
 
   Future<void> _uploadFile() async {
-    if (_selectedFile == null) {
+    if (_selectedFile == null || _selectedClassId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Please select a file to upload."),
+          content: Text("Please select a class and a PDF file."),
           backgroundColor: Colors.red,
         ),
       );
@@ -87,11 +89,17 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
 
       final formData = FormData.fromMap({
         "studentId": widget.studentId,
+        "classId": _selectedClassId,
         "title": _selectedFile!.name,
-        "document": await MultipartFile.fromFile(
-          _selectedFile!.path!,
-          filename: _selectedFile!.name,
-        ),
+        "document": _selectedFile!.bytes != null
+            ? MultipartFile.fromBytes(
+                _selectedFile!.bytes!,
+                filename: _selectedFile!.name,
+              )
+            : await MultipartFile.fromFile(
+                _selectedFile!.path!,
+                filename: _selectedFile!.name,
+              ),
       });
 
       final response = await apiClient.post(
@@ -194,6 +202,52 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
               ),
               const SizedBox(height: 24),
 
+              ref
+                  .watch(teacherClassesProvider)
+                  .when(
+                    loading: () => const LinearProgressIndicator(),
+                    error: (_, __) => TextButton(
+                      onPressed: () => ref.invalidate(teacherClassesProvider),
+                      child: const Text('Unable to load classes. Retry'),
+                    ),
+                    data: (classes) => DropdownButtonFormField<String>(
+                      initialValue: _selectedClassId,
+                      isExpanded: true,
+                      menuMaxHeight: 300,
+                      dropdownColor: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF871DAD)),
+                      hint: const Text('Select student class'),
+                      style: const TextStyle(color: Color(0xFF333333), fontSize: 14),
+                      selectedItemBuilder: (context) => classes.map((cls) => Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text('Grade ${cls.grade} - ${cls.subject}${cls.section?.isNotEmpty == true ? ' (Section ${cls.section})' : ''}', maxLines: 1, overflow: TextOverflow.ellipsis),
+                      )).toList(),
+                      decoration: InputDecoration(
+                        labelText: 'Student class',
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      items: classes
+                          .map(
+                            (cls) => DropdownMenuItem(
+                              value: cls.id,
+                              child: Text(
+                                'Grade ${cls.grade} - ${cls.subject}${cls.section?.isNotEmpty == true ? ' (Section ${cls.section})' : ''}',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: _isLoading
+                          ? null
+                          : (value) => setState(() => _selectedClassId = value),
+                    ),
+                  ),
+              const SizedBox(height: 24),
               // Dashed Upload Area
               GestureDetector(
                 onTap: _pickFile,
@@ -309,11 +363,7 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
       ),
       child: Row(
         children: [
-          const Icon(
-            Icons.picture_as_pdf,
-            color: Color(0xFF871DAD),
-            size: 24,
-          ),
+          const Icon(Icons.picture_as_pdf, color: Color(0xFF871DAD), size: 24),
           const SizedBox(width: 14),
           Expanded(
             child: Text(
@@ -335,11 +385,7 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
                 color: Colors.grey.shade200,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.close,
-                color: Colors.grey.shade600,
-                size: 16,
-              ),
+              child: Icon(Icons.close, color: Colors.grey.shade600, size: 16),
             ),
           ),
         ],

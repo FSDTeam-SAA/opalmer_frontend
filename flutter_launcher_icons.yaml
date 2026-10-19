@@ -1,0 +1,18 @@
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/images/achieverplus-logo.png
+  remove_alpha_ios: true
+  background_color_ios: "#ffffff"
+  web:
+    generate: true
+    image_path: assets/images/achieverplus-logo.png
+    background_color: "#ffffff"
+    theme_color: "#871dad"
+  windows:
+    generate: true
+    image_path: assets/images/achieverplus-logo.png
+    icon_size: 256
+  macos:
+    generate: true
+    image_path: assets/images/achieverplus-logo.png

@@ -1,8 +1,9 @@
 class ApiConstants {
-  // Production Server: https://api.classpulse.info/api/v1
-  static const String baseUrl = 'https://api.classpulse.info/api/v1';
-  // Local Development Server
-  // static const String baseUrl = 'http://10.0.2.2:5000/api/v1';
+  // Production backend. Override with API_BASE_URL when needed.
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://api.classpulse.info/api/v1',
+  );
 
   // Auth Endpoints
   static const String login = '/users/login';
@@ -45,7 +46,7 @@ class ApiConstants {
   static const String notificationsReadAll = '/notifications/read';
 
   // Socket
-  static const String socketBaseUrl = 'https://api.classpulse.info';
+  static String get socketBaseUrl => apiOrigin;
   static String get apiOrigin =>
       baseUrl.replaceFirst(RegExp(r'/api/v1/?$'), '');
 

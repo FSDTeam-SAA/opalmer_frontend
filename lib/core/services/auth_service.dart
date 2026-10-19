@@ -12,7 +12,11 @@ class AuthService {
   final ApiClient _apiClient = ApiClient();
   final SecureStorageService _storage = SecureStorageService();
 
-  Future<LoginResponse?> login(String id, String password) async {
+  Future<LoginResponse?> login(
+    String id,
+    String password, {
+    Future<String?> Function()? requestOtp,
+  }) async {
     debugPrint('AuthService: Attempting login for ID: $id');
     try {
       final response = await _apiClient.post(
@@ -23,13 +27,29 @@ class AuthService {
       debugPrint(
         'AuthService: Login response received: ${response.statusCode}',
       );
-      final dataMap = UserModel.recursiveSafeMap(response.data);
+      var dataMap = UserModel.recursiveSafeMap(response.data);
+      final challenge = UserModel.recursiveSafeMap(dataMap['data']);
+      if (challenge['is2FA'] == true) {
+        final otp = await requestOtp?.call();
+        if (otp == null || otp.isEmpty) return null;
+        final verified = await Dio().post(
+          '${ApiConstants.baseUrl}/users/verify-otp',
+          data: {'otp': otp},
+          options: Options(
+            headers: {'Authorization': 'Bearer ${challenge["challengeToken"]}'},
+          ),
+        );
+        dataMap = UserModel.recursiveSafeMap(verified.data);
+      }
 
       if (response.statusCode == 200 && dataMap['success'] == true) {
         debugPrint('AuthService: Login successful, saving token and user data');
         final loginResponse = LoginResponse.fromJson(dataMap);
 
         // Save token and user data
+        if (loginResponse.token.isEmpty || loginResponse.user.id.isEmpty) {
+          throw Exception('Invalid login response');
+        }
         await _storage.saveToken(loginResponse.token);
         await _storage.saveUserData(jsonEncode(loginResponse.user.toJson()));
 
@@ -103,9 +123,26 @@ class AuthService {
   Future<UserModel> updateProfile({
     required String userId,
     required Map<String, dynamic> updates,
+    Uint8List? avatarBytes,
+    String? avatarFilename,
   }) async {
     try {
-      final response = await _apiClient.put('/users/$userId', data: updates);
+      final Object payload;
+      if (avatarBytes != null) {
+        payload = FormData.fromMap({
+          for (final entry in updates.entries)
+            entry.key: entry.value is List || entry.value is Map
+                ? jsonEncode(entry.value)
+                : entry.value,
+          'image': MultipartFile.fromBytes(
+            avatarBytes,
+            filename: avatarFilename ?? 'profile.jpg',
+          ),
+        });
+      } else {
+        payload = updates;
+      }
+      final response = await _apiClient.put('/users/$userId', data: payload);
 
       final dataMap = UserModel.recursiveSafeMap(response.data);
       if (response.statusCode == 200 && dataMap['success'] == true) {

@@ -358,12 +358,14 @@ class QuizResultModel {
 }
 
 class QuizSubmissionResult {
+  final String gradeStatus;
   final int correctCount;
   final int totalQuestions;
   final double percentage;
   final List<QuizAnswerSummary> answers;
 
   QuizSubmissionResult({
+    this.gradeStatus = 'pending_review',
     required this.correctCount,
     required this.totalQuestions,
     required this.percentage,
@@ -373,6 +375,7 @@ class QuizSubmissionResult {
   factory QuizSubmissionResult.fromJson(Map<String, dynamic> json) {
     var answerList = json['answers'] as List? ?? [];
     return QuizSubmissionResult(
+      gradeStatus: json['gradeStatus']?.toString() ?? 'pending_review',
       correctCount: (json['correctCount'] ?? 0).toInt(),
       totalQuestions: (json['totalQuestions'] ?? 0).toInt(),
       percentage: (json['percentage'] ?? 0).toDouble(),

@@ -64,7 +64,7 @@ class ChildProfile {
       leftBorderColor: lBorderColor,
       imageUrl: (json['avatar'] != null && json['avatar']['url'] != null && json['avatar']['url'].toString().isNotEmpty)
           ? json['avatar']['url']
-          : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
+          : '',
     );
   }
 }
@@ -80,7 +80,7 @@ final List<ChildProfile> mockChildProfiles = [
     barColor: AppColors.primaryMid,
     leftBorderColor: const Color(0xFF4CB07D),
     imageUrl:
-        "https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?auto=format&fit=crop&w=150&q=80",
+        "",
   ),
   ChildProfile(
     name: "Alex Johnson",
@@ -91,7 +91,7 @@ final List<ChildProfile> mockChildProfiles = [
     barColor: AppColors.primaryMid,
     leftBorderColor: const Color(0xFFF4B84F),
     imageUrl:
-        "https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=150&q=80",
+        "",
   ),
   ChildProfile(
     name: "Mia Johnson",
@@ -102,6 +102,6 @@ final List<ChildProfile> mockChildProfiles = [
     barColor: AppColors.primaryMid,
     leftBorderColor: const Color(0xFF3892A8),
     imageUrl:
-        "https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?auto=format&fit=crop&w=150&q=80",
+        "",
   ),
 ];

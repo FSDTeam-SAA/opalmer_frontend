@@ -51,7 +51,7 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
     final socket = _ref.read(notificationSocketProvider);
     socket.onNotification = (notification) {
       state = state.copyWith(
-        items: [notification, ...state.items],
+        items: [notification, ...state.items.where((item) => item.id != notification.id)],
       );
     };
 
@@ -93,6 +93,11 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
         error: e.toString().replaceAll('Exception: ', ''),
       );
     }
+  }
+
+  Future<void> markAsRead(String notificationId) async {
+    await _ref.read(notificationServiceProvider).markAsRead(notificationId);
+    state = state.copyWith(items: state.items.map((item) => item.id == notificationId ? item.copyWith(isViewed: true) : item).toList());
   }
 
   Future<void> markAllAsRead() async {

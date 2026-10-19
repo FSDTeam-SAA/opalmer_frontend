@@ -241,15 +241,15 @@ class StudentService {
     }
   }
 
-  Future<bool> startQuiz(String quizId) async {
+  Future<Map<String, dynamic>> startQuiz(String quizId) async {
     try {
       final response = await _apiClient.post(
         '${ApiConstants.submitQuiz}/start',
         data: {'quizId': quizId},
       );
-      return response.statusCode == 201 || response.statusCode == 200;
+      return Map<String, dynamic>.from(response.data['data'] as Map);
     } on DioException catch (e) {
-      if (e.response?.statusCode == 409) return true; // Already started
+      if (e.response?.statusCode == 409) throw Exception('This assessment cannot be started.');
       rethrow;
     } catch (e) {
       rethrow;
@@ -280,8 +280,9 @@ class StudentService {
     String quizId,
     String studentId,
     int score,
-    int totalQuestions,
-  ) async {
+    int totalQuestions, {
+    List<Map<String, dynamic>> answers = const [],
+  }) async {
     try {
       final response = await _apiClient.post(
         '${ApiConstants.submitQuiz}/submit',
@@ -290,6 +291,7 @@ class StudentService {
           'studentId': studentId,
           'score': score,
           'totalQuestion': totalQuestions,
+          'answers': answers,
         },
       );
       if (response.statusCode == 201 || response.statusCode == 200) {

@@ -22,8 +22,10 @@ class TeacherClassCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final attendanceStatsAsync = ref.watch(
-      classAttendanceStatsProvider(classData.id),
+      classDetailsAttendanceProvider('class|${classData.id}'),
     );
+    final performanceAsync = ref.watch(classPerformanceProvider(classData.id));
+    final studentsAsync = ref.watch(classStudentsProvider(classData.id));
     final section = classData.section?.trim();
     final schedule = classData.schedule?.trim();
 
@@ -119,8 +121,11 @@ class TeacherClassCard extends ConsumerWidget {
             const SizedBox(height: 8),
             _InfoRow(
               icon: Icons.people_outline,
-              text:
-                  '${classData.studentCount} ${classData.studentCount == 1 ? 'Student' : 'Students'}',
+              text: studentsAsync.when(
+                data: (students) => '${students.length} ${students.length == 1 ? 'Student' : 'Students'}',
+                loading: () => 'Loading students...',
+                error: (_, _) => 'Student count unavailable',
+              ),
             ),
             const SizedBox(height: 18),
             IntrinsicHeight(
@@ -130,7 +135,7 @@ class TeacherClassCard extends ConsumerWidget {
                     child: _Metric(
                       label: 'Attendance',
                       value: attendanceStatsAsync.when(
-                        data: (percentage) => '$percentage%',
+                        data: (percentage) => percentage == null ? 'N/A' : '$percentage%',
                         loading: () => '...',
                         error: (_, __) => 'N/A',
                       ),
@@ -144,7 +149,11 @@ class TeacherClassCard extends ConsumerWidget {
                   Expanded(
                     child: _Metric(
                       label: 'Performance',
-                      value: classData.performance,
+                      value: performanceAsync.when(
+                        data: (value) => value == null ? 'N/A' : '$value%',
+                        loading: () => '...',
+                        error: (_, _) => 'N/A',
+                      ),
                     ),
                   ),
                 ],

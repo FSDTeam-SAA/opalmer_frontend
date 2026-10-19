@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/constants/api_constants.dart';
@@ -9,7 +10,8 @@ import 'package:opalmer_education/student_role/Quizzes/student_quiz_result_scree
 
 class StudentQuizQuestionsScreen extends ConsumerStatefulWidget {
   final QuizModel quiz;
-  const StudentQuizQuestionsScreen({Key? key, required this.quiz}) : super(key: key);
+  const StudentQuizQuestionsScreen({Key? key, required this.quiz})
+    : super(key: key);
 
   @override
   ConsumerState<StudentQuizQuestionsScreen> createState() =>
@@ -21,6 +23,24 @@ class _StudentQuizQuestionsScreenState
   final Map<int, int> _answers = {};
   bool _isSubmitting = false;
   bool _isInitializing = true;
+  Future<void> _saveTail = Future.value();
+  String? _initializationError;
+  String? _saveError;
+  Timer? _timer;
+  DateTime? _deadline;
+  List<QuizQuestion> _questions = [];
+  int get _remainingSeconds {
+    if (_deadline == null) return 0;
+    final remaining =
+        (_deadline!.difference(DateTime.now()).inMilliseconds / 1000).ceil();
+    return remaining < 0 ? 0 : remaining;
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -30,28 +50,75 @@ class _StudentQuizQuestionsScreenState
 
   Future<void> _initializeQuiz() async {
     try {
-      await ref.read(studentServiceProvider).startQuiz(widget.quiz.id);
+      final questions = await ref
+          .read(studentServiceProvider)
+          .getQuizQA(widget.quiz.id);
+      final progress = await ref
+          .read(studentServiceProvider)
+          .startQuiz(widget.quiz.id);
+      if (!mounted) return;
+      if (questions == null || questions.questions.isEmpty) {
+        throw StateError('No questions');
+      }
+      _questions = questions.questions;
+      _deadline = DateTime.tryParse(progress['deadline']?.toString() ?? '');
+      if (_deadline == null) throw StateError('Missing assessment deadline');
+      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (!mounted) {
+          timer.cancel();
+          return;
+        }
+        setState(() {});
+        if (_remainingSeconds == 0) {
+          timer.cancel();
+          if (!_isSubmitting) unawaited(_submitQuiz(_questions));
+        }
+      });
+      if (progress['answers'] is List) {
+        for (final answer in progress['answers'] as List) {
+          final index = questions.questions.indexWhere(
+            (q) => q.question == answer['question'],
+          );
+          if (index >= 0) {
+            final selected = questions.questions[index].options.indexOf(
+              answer['selectedAnswer']?.toString() ?? '',
+            );
+            if (selected >= 0) _answers[index] = selected;
+          }
+        }
+      }
     } catch (e) {
-      debugPrint('Error starting quiz: $e');
+      _initializationError =
+          'Unable to start assessment. Please return and try again.';
     } finally {
       if (mounted) setState(() => _isInitializing = false);
     }
   }
 
-  Future<void> _saveAnswer(int questionIdx, int optionIdx, List<QuizQuestion> questions) async {
+  Future<void> _saveAnswer(
+    int questionIdx,
+    int optionIdx,
+    List<QuizQuestion> questions,
+  ) async {
+    if (_isSubmitting || _remainingSeconds == 0) return;
     setState(() => _answers[questionIdx] = optionIdx);
-    
-    // Auto-save progress to backend
-    try {
-      final question = questions[questionIdx];
-      await ref.read(studentServiceProvider).saveQuizProgress(
+    final question = questions[questionIdx];
+    final service = ref.read(studentServiceProvider);
+    _saveTail = _saveTail.catchError((_) {}).then((_) async {
+      final saved = await service.saveQuizProgress(
         widget.quiz.id,
         question.question,
         question.options[optionIdx],
       );
-    } catch (e) {
-      debugPrint('Error saving progress: $e');
-    }
+      if (mounted) {
+        setState(
+          () => _saveError = saved
+              ? null
+              : 'An answer could not be saved. Keep this page open and submit before the timer ends to retry all answers.',
+        );
+      }
+    });
+    await _saveTail;
   }
 
   Future<void> _submitQuiz(List<QuizQuestion> questions) async {
@@ -61,41 +128,53 @@ class _StudentQuizQuestionsScreenState
     setState(() => _isSubmitting = true);
 
     try {
-      int score = 0;
-      for (int i = 0; i < questions.length; i++) {
-        if (_answers.containsKey(i)) {
-          final selectedOption = questions[i].options[_answers[i]!];
-          if (selectedOption == questions[i].answer) {
-            score++;
-          }
-        }
-      }
-
-      final result = await ref.read(studentServiceProvider).submitQuiz(
-        widget.quiz.id,
-        user.id,
-        score,
-        questions.length,
-      );
+      if (_initializationError != null) throw Exception(_initializationError);
+      await _saveTail;
+      if (!mounted) return;
+      final result = await ref
+          .read(studentServiceProvider)
+          .submitQuiz(
+            widget.quiz.id,
+            user.id,
+            0, // Scoring is calculated by the server.
+            questions.length,
+            answers: questions
+                .asMap()
+                .entries
+                .map(
+                  (entry) => {
+                    'question': entry.value.question,
+                    'selectedAnswer': _answers.containsKey(entry.key)
+                        ? entry.value.options[_answers[entry.key]!]
+                        : '',
+                  },
+                )
+                .toList(),
+          );
 
       if (result != null && mounted) {
         // Invalidate providers so the dashboard and other screens fetch fresh data
         ref.invalidate(studentQuizResultsProvider);
         ref.invalidate(studentClassesProvider);
-        
+
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => StudentQuizResultScreen(result: result)),
+          MaterialPageRoute(
+            builder: (_) => StudentQuizResultScreen(result: result),
+          ),
         );
-      } else {
+      } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to submit quiz. Please try again.")),
+          const SnackBar(
+            content: Text("Failed to submit quiz. Please try again."),
+          ),
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -104,45 +183,63 @@ class _StudentQuizQuestionsScreenState
   @override
   Widget build(BuildContext context) {
     final quizQAAsync = ref.watch(quizQAProvider(widget.quiz.id));
+    if (_initializationError != null) {
+      return Scaffold(
+        appBar: _buildAppBar(context),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(_initializationError!),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
-      body: _isInitializing 
-        ? const Center(child: CircularProgressIndicator())
-        : quizQAAsync.when(
-            data: (quizQA) {
-          if (quizQA == null || quizQA.questions.isEmpty) {
-            return _buildEmptyState();
-          }
-          final questions = quizQA.questions;
-          return Column(
-            children: [
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      body: _isInitializing
+          ? const Center(child: CircularProgressIndicator())
+          : quizQAAsync.when(
+              data: (quizQA) {
+                if (quizQA == null || quizQA.questions.isEmpty) {
+                  return _buildEmptyState();
+                }
+                final questions = quizQA.questions;
+                return Column(
                   children: [
-                    _buildQuizInfoCard(questions.length),
-                    const SizedBox(height: 24),
-                    ...questions.asMap().entries.map((entry) {
-                      final idx = entry.key;
-                      final q = entry.value;
-                      return _buildQuestionCard(
-                        idx,
-                        q,
-                        questions,
-                      );
-                    }).toList(),
+                    Expanded(
+                      child: ListView(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 16,
+                        ),
+                        children: [
+                          _buildQuizInfoCard(questions.length),
+                          if (_saveError != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: Text(
+                                _saveError!,
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          const SizedBox(height: 24),
+                          ...questions.asMap().entries.map((entry) {
+                            final idx = entry.key;
+                            final q = entry.value;
+                            return _buildQuestionCard(idx, q, questions);
+                          }).toList(),
+                        ],
+                      ),
+                    ),
+                    _buildFooter(context, questions),
                   ],
-                ),
-              ),
-              _buildFooter(context, questions),
-            ],
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => _buildErrorState(err),
-      ),
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, stack) => _buildErrorState(err),
+            ),
     );
   }
 
@@ -175,8 +272,7 @@ class _StudentQuizQuestionsScreenState
             ),
             const SizedBox(height: 20),
             OutlinedButton(
-              onPressed: () =>
-                  ref.invalidate(quizQAProvider(widget.quiz.id)),
+              onPressed: () => ref.invalidate(quizQAProvider(widget.quiz.id)),
               child: const Text('Refresh'),
             ),
           ],
@@ -186,7 +282,8 @@ class _StudentQuizQuestionsScreenState
   }
 
   Widget _buildErrorState(Object error) {
-    final isNetwork = error.toString().toLowerCase().contains('connection') ||
+    final isNetwork =
+        error.toString().toLowerCase().contains('connection') ||
         error.toString().toLowerCase().contains('socketexception');
     final message = isNetwork
         ? 'Could not reach the server. Please check your connection.'
@@ -197,8 +294,7 @@ class _StudentQuizQuestionsScreenState
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline,
-                size: 64, color: Colors.redAccent),
+            const Icon(Icons.error_outline, size: 64, color: Colors.redAccent),
             const SizedBox(height: 12),
             Text(
               message,
@@ -215,8 +311,7 @@ class _StudentQuizQuestionsScreenState
                 backgroundColor: AppColors.primaryMid,
                 foregroundColor: Colors.white,
               ),
-              onPressed: () =>
-                  ref.invalidate(quizQAProvider(widget.quiz.id)),
+              onPressed: () => ref.invalidate(quizQAProvider(widget.quiz.id)),
               child: const Text('Retry'),
             ),
           ],
@@ -273,6 +368,11 @@ class _StudentQuizQuestionsScreenState
           const SizedBox(height: 12),
           _buildInfoRow("Total Questions", totalQuestions.toString()),
           const SizedBox(height: 12),
+          _buildInfoRow(
+            "Time remaining",
+            "${_remainingSeconds ~/ 60}:${(_remainingSeconds % 60).toString().padLeft(2, '0')}",
+          ),
+          const SizedBox(height: 12),
           _buildInfoRow("Teacher", widget.quiz.teacherName ?? "N/A"),
         ],
       ),
@@ -303,7 +403,11 @@ class _StudentQuizQuestionsScreenState
     );
   }
 
-  Widget _buildQuestionCard(int index, QuizQuestion question, List<QuizQuestion> questions) {
+  Widget _buildQuestionCard(
+    int index,
+    QuizQuestion question,
+    List<QuizQuestion> questions,
+  ) {
     final resolvedImageUrl = ApiConstants.buildImageUrl(question.imageUrl);
 
     return Container(
@@ -360,7 +464,9 @@ class _StudentQuizQuestionsScreenState
             bool isSelected = _answers[index] == optIdx;
 
             return GestureDetector(
-              onTap: () => _saveAnswer(index, optIdx, questions),
+              onTap: _isSubmitting || _remainingSeconds == 0
+                  ? null
+                  : () => _saveAnswer(index, optIdx, questions),
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Row(
@@ -432,7 +538,9 @@ class _StudentQuizQuestionsScreenState
         width: double.infinity,
         height: 56,
         child: ElevatedButton(
-          onPressed: (_isSubmitting || _isInitializing) ? null : () => _submitQuiz(questions),
+          onPressed: (_isSubmitting || _isInitializing)
+              ? null
+              : () => _submitQuiz(questions),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryMid,
             shape: RoundedRectangleBorder(

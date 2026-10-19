@@ -313,15 +313,9 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                 ? Image.network(
                     avatarUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Image.asset(
-                      'assets/images/classes/student_image.png',
-                      fit: BoxFit.cover,
-                    ),
+                    errorBuilder: (_, __, ___) => const Icon(Icons.person_outline, color: Color(0xFF871DAD)),
                   )
-                : Image.asset(
-                    'assets/images/classes/student_image.png',
-                    fit: BoxFit.cover,
-                  ),
+                : const Icon(Icons.person_outline, color: Color(0xFF871DAD)),
           ),
           const SizedBox(width: 14),
           Expanded(

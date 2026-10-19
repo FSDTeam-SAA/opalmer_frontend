@@ -99,7 +99,14 @@ class _ParentProfileScreenState extends ConsumerState<ParentProfileScreen> {
                     backgroundImage:
                         user?.avatar != null && user!.avatar!.isNotEmpty
                         ? NetworkImage(user.avatar!)
-                        : const AssetImage('assets/images/profile/parent.png'),
+                        : null,
+                    child: user?.avatar?.isNotEmpty == true
+                        ? null
+                        : const Icon(
+                            Icons.person_outline_rounded,
+                            size: 54,
+                            color: AppColors.primaryMid,
+                          ),
                   ),
                 ),
               ),
