@@ -7,12 +7,8 @@ import 'splash_screen/splash_screen.dart';
 import 'core/theme/app_theme.dart';
 
 void main() {
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent, // transparent status bar
-      statusBarIconBrightness: Brightness.light,
-    ),
-  );
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setSystemUIOverlayStyle(AppTheme.statusBarStyle);
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -27,7 +23,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       builder: (context, child) {
-        return AppCallListener(child: child ?? const SizedBox.shrink());
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: AppTheme.statusBarStyle,
+          child: AppCallListener(child: child ?? const SizedBox.shrink()),
+        );
       },
       home: const SplashScreen(),
     );

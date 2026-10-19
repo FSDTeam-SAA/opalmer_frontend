@@ -1,8 +1,8 @@
 class ApiConstants {
-  // Local backend from the Android emulator. Override with API_BASE_URL for other devices.
+  // Production backend. Override with API_BASE_URL when needed.
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:5000/api/v1',
+    defaultValue: 'https://api.classpulse.info/api/v1',
   );
 
   // Auth Endpoints

@@ -135,10 +135,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 scale: _scaleAnimation,
                 child: ScaleTransition(
                   scale: _pulseAnimation,
-                  child: SizedBox(
-                    width: MediaQuery.sizeOf(context).width * 0.8,
-                    child: BrandLogo(
-                      size: MediaQuery.sizeOf(context).height * 0.55,
+                  child: BrandLogo(
+                    size: (MediaQuery.sizeOf(context).width * 0.45).clamp(
+                      120.0,
+                      180.0,
                     ),
                   ),
                 ),
