@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:opalmer_education/core/services/secure_storage_service.dart';
 import 'package:opalmer_education/core/constants/api_constants.dart';
 import 'package:opalmer_education/core/models/notification_model.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
@@ -17,7 +18,9 @@ class NotificationSocketService {
 
   bool get isConnected => _socket?.connected ?? false;
 
-  void connect(String userId) {
+  Future<void> connect(String userId) async {
+    final token = await SecureStorageService().getToken();
+    if (token == null || token.isEmpty) { disconnect(); return; }
     if (_socket != null && _joinedUserId == userId) {
       if (!_socket!.connected) _socket!.connect();
       return;
@@ -30,6 +33,7 @@ class NotificationSocketService {
       ApiConstants.socketBaseUrl,
       io.OptionBuilder()
           .setTransports(['websocket'])
+          .setAuth({'token': token})
           .enableAutoConnect()
           .enableReconnection()
           .setReconnectionDelay(2000)

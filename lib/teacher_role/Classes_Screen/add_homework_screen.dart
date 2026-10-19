@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers/auth_provider.dart';
@@ -6,214 +8,52 @@ import '../../core/providers/teacher_provider.dart';
 class AddHomeworkScreen extends ConsumerStatefulWidget {
   final String classId;
   const AddHomeworkScreen({super.key, required this.classId});
-
   @override
   ConsumerState<AddHomeworkScreen> createState() => _AddHomeworkScreenState();
 }
-
 class _AddHomeworkScreenState extends ConsumerState<AddHomeworkScreen> {
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _noteController = TextEditingController();
-  bool _isLoading = false;
-
-  Future<void> _saveHomework() async {
-    if (_titleController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a title')),
-      );
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
+  final _title = TextEditingController();
+  final _instructions = TextEditingController();
+  final _points = TextEditingController(text: '100');
+  DateTime? _due;
+  List<PlatformFile> _files = [];
+  bool _notifyStudent = true, _notifyParent = true, _draft = false, _busy = false;
+  String? _error;
+  @override
+  void dispose() { _title.dispose(); _instructions.dispose(); _points.dispose(); super.dispose(); }
+  Future<void> _save() async {
+    final points = double.tryParse(_points.text);
+    if (_title.text.trim().isEmpty || points == null || points <= 0) { setState(() => _error = 'Enter a title and valid points possible.'); return; }
+    setState(() { _busy = true; _error = null; });
     try {
       final user = ref.read(authStateProvider);
-      final apiClient = ref.read(apiClientProvider);
-
-      if (user == null) throw Exception('User not logged in');
-
-      final response = await apiClient.post('/homework/create', data: {
-        'classId': widget.classId,
-        'userId': user.id,
-        'title': _titleController.text,
-        'description': _noteController.text, // Backend uses description
-      });
-
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Homework added successfully!')),
-          );
-          ref.invalidate(classHomeworkProvider(widget.classId));
-          Navigator.pop(context);
-        }
-      } else {
-        throw Exception(response.data['message'] ?? 'Failed to add homework');
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+      if (user == null) throw StateError('Sign in required');
+      final data = FormData.fromMap({ 'classId': widget.classId, 'userId': user.id, 'title': _title.text.trim(), 'description': _instructions.text.trim(), 'pointsPossible': points, 'status': _draft ? 'draft' : 'published', 'notifyStudent': _notifyStudent, 'notifyParent': _notifyParent, if (_due != null) 'dueDate': _due!.toUtc().toIso8601String() });
+      for (final file in _files) { if (file.bytes != null) data.files.add(MapEntry('file', MultipartFile.fromBytes(file.bytes!, filename: file.name))); }
+      await ref.read(apiClientProvider).post('/homework/create', data: data);
+      ref.invalidate(classHomeworkProvider(widget.classId));
+      if (mounted) Navigator.pop(context, true);
+    } catch (_) { if (mounted) setState(() => _error = 'Unable to save assignment. Check your connection and attachments.'); }
+    finally { if (mounted) setState(() => _busy = false); }
   }
-
   @override
-  void dispose() {
-    _titleController.dispose();
-    _noteController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Header ──
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF871DAD),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  const Text(
-                    "Add Homework",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Objective Field
-                    const Text(
-                      "Objective",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF333333),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: _titleController,
-                      decoration: InputDecoration(
-                        hintText: "Enter title here",
-                        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-                        filled: true,
-                        fillColor: const Color(0xFFFAFAFA),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Color(0xFF871DAD)),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Note Field
-                    const Text(
-                      "Note",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF333333),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: _noteController,
-                      maxLines: 4,
-                      decoration: InputDecoration(
-                        hintText: "Write",
-                        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-                        filled: true,
-                        fillColor: const Color(0xFFFAFAFA),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Color(0xFF871DAD)),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Save Button fixed at bottom padding
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _saveHomework,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF871DAD),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                        )
-                      : const Text(
-                          "SAVE",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.0,
-                          ),
-                        ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Create assignment')), body: ListView(padding: const EdgeInsets.all(24), children: [
+    TextField(controller: _title, decoration: const InputDecoration(labelText: 'Assignment title')),
+    TextField(controller: _instructions, maxLines: 5, decoration: const InputDecoration(labelText: 'Instructions')),
+    TextField(controller: _points, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Points possible')),
+    ListTile(contentPadding: EdgeInsets.zero, title: Text(_due == null ? 'Choose due date' : 'Due: ${_due!.toLocal().toString().split(' ')[0]}'), trailing: const Icon(Icons.calendar_month), onTap: () async {
+      final date = await showDatePicker(context: context, firstDate: DateTime.now(), lastDate: DateTime.now().add(const Duration(days: 730)), initialDate: _due ?? DateTime.now());
+      if (mounted && date != null) setState(() => _due = DateTime(date.year, date.month, date.day, 23, 59));
+    }),
+    TextButton.icon(icon: const Icon(Icons.attach_file), label: Text(_files.isEmpty ? 'Add PDF, video or other resources' : '${_files.length} attachment(s)'), onPressed: _busy ? null : () async {
+      final selected = await FilePicker.platform.pickFiles(allowMultiple: true, withData: true, type: FileType.custom, allowedExtensions: ['pdf','mp4','webm','mov','png','jpg','jpeg','doc','docx','ppt','pptx']);
+      if (mounted && selected != null) setState(() => _files = selected.files);
+    }),
+    ..._files.map((file) => ListTile(title: Text(file.name), trailing: IconButton(icon: const Icon(Icons.close), onPressed: () => setState(() => _files.remove(file))))),
+    SwitchListTile(title: const Text('Save as draft'), value: _draft, onChanged: (value) => setState(() => _draft = value)),
+    CheckboxListTile(title: const Text('Notify student'), value: _notifyStudent, onChanged: (value) => setState(() => _notifyStudent = value ?? true)),
+    CheckboxListTile(title: const Text('Notify parent'), value: _notifyParent, onChanged: (value) => setState(() => _notifyParent = value ?? true)),
+    if (_error != null) Text(_error!, style: const TextStyle(color: Colors.red)),
+    const SizedBox(height: 16), FilledButton(onPressed: _busy ? null : _save, child: Text(_busy ? 'Saving...' : _draft ? 'Save draft' : 'Publish assignment')),
+  ]));
 }
-

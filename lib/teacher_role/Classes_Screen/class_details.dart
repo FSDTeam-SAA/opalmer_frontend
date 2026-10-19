@@ -6,7 +6,6 @@ import '../../core/providers/teacher_provider.dart';
 import '../../core/constants/api_constants.dart';
 
 import 'student_attendence.dart';
-import 'student_profile.dart';
 import 'lessons_screen.dart';
 import 'homework_screen.dart';
 import 'lesson_overview_screen.dart';
@@ -37,8 +36,9 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
     final studentsAsync = ref.watch(classStudentsProvider(classData.id));
     final lessonsAsync = ref.watch(classLessonsProvider(classData.id));
     final attendanceStatsAsync = ref.watch(
-      classAttendanceStatsProvider(classData.id),
+      classDetailsAttendanceProvider('class|${classData.id}'),
     );
+    final performanceAsync = ref.watch(classPerformanceProvider(classData.id));
     final String todayDate = DateFormat('dd-MM-yy').format(DateTime.now());
 
     return Scaffold(
@@ -198,7 +198,11 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                         Expanded(
                           child: _buildStatBox(
                             "Students",
-                            "${classData.studentCount}",
+                            studentsAsync.when(
+                              data: (students) => '${students.length}',
+                              loading: () => '...',
+                              error: (_, __) => 'N/A',
+                            ),
                             const Color(0xFF3F99B4),
                           ),
                         ),
@@ -219,7 +223,7 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                           child: attendanceStatsAsync.when(
                             data: (percentage) => _buildStatBox(
                               "Attendance",
-                              "$percentage%",
+                              percentage == null ? "N/A" : "$percentage%",
                               const Color(0xFF4AA678),
                             ),
                             loading: () => _buildStatBox(
@@ -238,7 +242,11 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                         Expanded(
                           child: _buildStatBox(
                             "Performance",
-                            classData.performance,
+                            performanceAsync.when(
+                              data: (value) => value == null ? 'N/A' : '$value%',
+                              loading: () => '...',
+                              error: (_, __) => 'N/A',
+                            ),
                             const Color(0xFFFEBD43),
                           ),
                         ),
@@ -489,8 +497,17 @@ class StudentCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final studentId = studentData['_id'] ?? '';
     final attendanceStatsAsync = ref.watch(
-      studentAttendanceStatsProvider('$studentId|${classData.id}'),
+      classDetailsAttendanceProvider('student|$studentId|${classData.id}'),
     );
+    final metric = studentData['performance'];
+    final percentage = metric is Map ? metric['percentage'] : null;
+    final progress = percentage is num && percentage.isFinite && percentage >= 0 && percentage <= 100
+        ? '${percentage.round()}%' : 'N/A';
+    final state = studentData['state'];
+    final status = studentData['isActive'] == false ? 'Inactive'
+        : state == 'active' ? 'Active'
+        : state == 'inactive' ? 'Inactive'
+        : state == 'suspended' ? 'Suspended' : 'N/A';
 
     final name = studentData['username'] ?? studentData['name'] ?? 'Unknown';
     final avatar = studentData['avatar'];
@@ -505,8 +522,8 @@ class StudentCard extends ConsumerWidget {
 
     // Handle PDF or invalid image formats in Cloudinary
     final bool isInvalidImage =
-        avatarUrl != null && avatarUrl.toLowerCase().endsWith('.pdf');
-    final String effectiveAvatarUrl = isInvalidImage ? '' : (avatarUrl ?? '');
+        avatarUrl.toLowerCase().endsWith('.pdf');
+    final String effectiveAvatarUrl = isInvalidImage ? '' : avatarUrl;
 
     return GestureDetector(
       onTap: () {
@@ -564,15 +581,9 @@ class StudentCard extends ConsumerWidget {
                                 ? Image.network(
                                     effectiveAvatarUrl,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => Image.asset(
-                                      'assets/images/classes/student_image.png',
-                                      fit: BoxFit.cover,
-                                    ),
+                                    errorBuilder: (_, __, ___) => const Icon(Icons.person_outline, color: Color(0xFF871DAD)),
                                   )
-                                : Image.asset(
-                                    'assets/images/classes/student_image.png',
-                                    fit: BoxFit.cover,
-                                  ),
+                                : const Icon(Icons.person_outline, color: Color(0xFF871DAD)),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -589,7 +600,7 @@ class StudentCard extends ConsumerWidget {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  "Grade ${studentData['gradeLevel'] ?? classData.grade}",
+                                  "Grade ${studentData['gradeLevel'] ?? 'N/A'}",
                                   style: TextStyle(
                                     color: Colors.grey.shade500,
                                     fontSize: 12,
@@ -609,8 +620,8 @@ class StudentCard extends ConsumerWidget {
                               ).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: const Text(
-                              "Active",
+                            child: Text(
+                              status,
                               style: TextStyle(
                                 color: Color(0xFF4AA678),
                                 fontSize: 11,
@@ -638,8 +649,8 @@ class StudentCard extends ConsumerWidget {
                                   const SizedBox(height: 4),
                                   Text(
                                     attendanceStatsAsync.when(
-                                      data: (stats) => "$stats%",
-                                      loading: () => "...%",
+                                      data: (stats) => stats == null ? "N/A" : "$stats%",
+                                      loading: () => "...",
                                       error: (_, __) => "N/A",
                                     ),
                                     style: const TextStyle(
@@ -663,16 +674,16 @@ class StudentCard extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      "Progress",
+                                      "Assessment average",
                                       style: TextStyle(
                                         color: Colors.grey.shade500,
                                         fontSize: 12,
                                       ),
                                     ),
                                     const SizedBox(height: 4),
-                                    const Text(
-                                      "85%",
-                                      style: TextStyle(
+                                    Text(
+                                      progress,
+                                      style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 16,
                                         color: Color(0xFF222222),

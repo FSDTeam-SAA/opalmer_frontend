@@ -115,19 +115,19 @@ class GroupMember {
 const List<GroupMember> mockGroupMembers = [
   GroupMember(
     name: "Mia johnson",
-    avatarUrl: "https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?auto=format&fit=crop&w=150&q=80",
+    avatarUrl: "",
   ),
   GroupMember(
     name: "Mia johnson",
-    avatarUrl: "https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?auto=format&fit=crop&w=150&q=80",
+    avatarUrl: "",
   ),
   GroupMember(
     name: "Mia johnson",
-    avatarUrl: "https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?auto=format&fit=crop&w=150&q=80",
+    avatarUrl: "",
   ),
   GroupMember(
     name: "Mia johnson",
-    avatarUrl: "https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?auto=format&fit=crop&w=150&q=80",
+    avatarUrl: "",
   ),
 ];
 

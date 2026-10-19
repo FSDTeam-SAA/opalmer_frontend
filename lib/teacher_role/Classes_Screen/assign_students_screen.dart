@@ -345,7 +345,18 @@ class _AssignStudentsScreenState extends ConsumerState<AssignStudentsScreen> {
         ),
         Expanded(
           child: filteredStudents.isEmpty
-              ? const Center(child: Text('No students found.'))
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(
+                      _students.isEmpty
+                          ? 'No active Grade ${widget.classData.grade} students found in your school.\nAdd a student in this grade or check the student\'s grade in the dashboard.'
+                          : 'No students match your search.',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Color(0xFF666666)),
+                    ),
+                  ),
+                )
               : ListView.separated(
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                   itemCount: filteredStudents.length,

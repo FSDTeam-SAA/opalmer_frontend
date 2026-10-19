@@ -1,451 +1,730 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:opalmer_education/authentication_screen/registration_successful_screen.dart';
-import 'package:opalmer_education/core/providers/auth_provider.dart';
-import 'package:opalmer_education/core/constants/api_constants.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../Authentication_Screen/registration_successful_screen.dart';
+import '../../core/constants/api_constants.dart';
+import '../../core/models/user_model.dart';
+import '../../core/providers/auth_provider.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
   final bool isRegistrationFlow;
-
-  const ProfileSetupScreen({super.key, this.isRegistrationFlow = false});
-
+  final ImagePicker? imagePicker;
+  const ProfileSetupScreen({
+    super.key,
+    this.isRegistrationFlow = false,
+    this.imagePicker,
+  });
   @override
   ConsumerState<ProfileSetupScreen> createState() => _ProfileSetupScreenState();
 }
 
 class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
-  final _nameController = TextEditingController();
-  final _phoneController = TextEditingController();
-  String? _selectedGrade;
-  String? _selectedState;
-  String _selectedSubject = 'Math';
-  bool _isLoading = false;
-
-  final List<String> _grades = List.generate(12, (index) => (index + 1).toString());
-  final List<String> _states = [
-    'California', 'New York', 'Texas', 'Florida', 'Illinois',
-    'Pennsylvania', 'Ohio', 'Georgia', 'North Carolina', 'Michigan'
+  static const _purple = Color(0xFF871DAD);
+  final _formKey = GlobalKey<FormState>();
+  final _name = TextEditingController();
+  final _phone = TextEditingController();
+  final _subjects = <String>{};
+  String? _grade;
+  String? _state;
+  Uint8List? _photo;
+  String? _filename;
+  bool _removeAvatar = false;
+  bool _saving = false;
+  bool _picking = false;
+  bool _prefilled = false;
+  String? _error;
+  static const _subjectOptions = [
+    'Math',
+    'Science',
+    'Reading',
+    'History',
+    'Social Studies',
+  ];
+  static const _states = [
+    'Alabama',
+    'Alaska',
+    'Arizona',
+    'Arkansas',
+    'California',
+    'Colorado',
+    'Connecticut',
+    'Delaware',
+    'District of Columbia',
+    'Florida',
+    'Georgia',
+    'Hawaii',
+    'Idaho',
+    'Illinois',
+    'Indiana',
+    'Iowa',
+    'Kansas',
+    'Kentucky',
+    'Louisiana',
+    'Maine',
+    'Maryland',
+    'Massachusetts',
+    'Michigan',
+    'Minnesota',
+    'Mississippi',
+    'Missouri',
+    'Montana',
+    'Nebraska',
+    'Nevada',
+    'New Hampshire',
+    'New Jersey',
+    'New Mexico',
+    'New York',
+    'North Carolina',
+    'North Dakota',
+    'Ohio',
+    'Oklahoma',
+    'Oregon',
+    'Pennsylvania',
+    'Rhode Island',
+    'South Carolina',
+    'South Dakota',
+    'Tennessee',
+    'Texas',
+    'Utah',
+    'Vermont',
+    'Virginia',
+    'Washington',
+    'West Virginia',
+    'Wisconsin',
+    'Wyoming',
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    // Initialize data from current user state
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final user = ref.read(authStateProvider);
-      if (user != null) {
-        setState(() {
-          _nameController.text = user.username;
-          _phoneController.text = user.phoneNumber ?? '';
-          _selectedGrade = user.gradeLevel;
-        });
-      }
-    });
+  void _prefill(UserModel? user) {
+    if (_prefilled || user == null) return;
+    _name.text = user.username;
+    _phone.text = user.phoneNumber ?? '';
+    _grade = user.gradeLevel;
+    _state = user.locationState?.isNotEmpty == true ? user.locationState : null;
+    _subjects.addAll(user.subjects);
+    _prefilled = true;
   }
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _phoneController.dispose();
+    _name.dispose();
+    _phone.dispose();
     super.dispose();
   }
 
-  Future<void> _saveChanges() async {
-    final user = ref.read(authStateProvider);
-    if (user == null) return;
-
-    setState(() => _isLoading = true);
-    try {
-      final updates = {
-        'username': _nameController.text,
-        'phoneNumber': _phoneController.text,
-        if (_selectedGrade != null) 'gradeLevel': _selectedGrade,
-      };
-
-      final updatedUser = await ref.read(authServiceProvider).updateProfile(
-        userId: user.id,
-        updates: updates,
-      );
-
-      // Update global state
-      ref.read(authStateProvider.notifier).state = updatedUser;
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully!')),
-        );
-        if (widget.isRegistrationFlow) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => const RegistrationSuccessfulScreen(),
+  Future<void> _choosePhoto() async {
+    FocusManager.instance.primaryFocus?.unfocus();
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheet) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('Choose from gallery'),
+              onTap: () => Navigator.pop(sheet, ImageSource.gallery),
             ),
-          );
-        } else {
-          Navigator.of(context).pop();
-        }
+            ListTile(
+              leading: const Icon(Icons.camera_alt_outlined),
+              title: const Text('Take a photo'),
+              onTap: () => Navigator.pop(sheet, ImageSource.camera),
+            ),
+            if (_photo != null ||
+                (!_removeAvatar &&
+                    ref.read(authStateProvider)?.avatar?.isNotEmpty == true))
+              ListTile(
+                leading: const Icon(Icons.delete_outline, color: Colors.red),
+                title: const Text('Remove photo'),
+                onTap: () {
+                  setState(() {
+                    _photo = null;
+                    _filename = null;
+                    _removeAvatar = true;
+                  });
+                  Navigator.pop(sheet);
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+    if (source == null || !mounted) return;
+    setState(() {
+      _picking = true;
+      _error = null;
+    });
+    try {
+      final image = await (widget.imagePicker ?? ImagePicker()).pickImage(
+        source: source,
+        maxWidth: 1400,
+        maxHeight: 1400,
+        imageQuality: 85,
+        requestFullMetadata: false,
+      );
+      if (image == null) return;
+      final bytes = await image.readAsBytes();
+      if (bytes.length > 5 * 1024 * 1024 ||
+          !RegExp(
+            r'\.(jpe?g|png)$',
+            caseSensitive: false,
+          ).hasMatch(image.name)) {
+        throw Exception('Choose a JPG or PNG under 5 MB.');
       }
-    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _photo = bytes;
+        _filename = image.name;
+        _removeAvatar = false;
+      });
+    } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+        setState(
+          () => _error =
+              'Unable to select this photo. Check camera/photos permission and choose a JPG or PNG under 5 MB.',
         );
       }
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) setState(() => _picking = false);
     }
   }
+
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate()) return;
+    final user = ref.read(authStateProvider);
+    if (user == null) {
+      setState(() => _error = 'Please sign in again to save your profile.');
+      return;
+    }
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      final updated = await ref
+          .read(authServiceProvider)
+          .updateProfile(
+            userId: user.id,
+            updates: {
+              'username': _name.text.trim(),
+              'phoneNumber': _phone.text.trim(),
+              if (_grade != null &&
+                  int.tryParse(_grade!) != null &&
+                  int.parse(_grade!) <= 12)
+                'gradeLevel': int.parse(_grade!),
+              'locationState': _state ?? '',
+              'subjects': _subjects.toList(),
+              if (_removeAvatar) 'removeAvatar': true,
+            },
+            avatarBytes: _photo,
+            avatarFilename: _filename,
+          );
+      ref.read(authStateProvider.notifier).state = updated;
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile updated successfully')),
+      );
+      if (widget.isRegistrationFlow) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => const RegistrationSuccessfulScreen(),
+          ),
+        );
+      } else {
+        Navigator.of(context).pop();
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _error =
+              'Your profile could not be saved. Your changes are still here; please try again.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  OutlineInputBorder _border([
+    Color color = const Color(0xFFE5DFEB),
+    double width = 1,
+  ]) => OutlineInputBorder(
+    borderRadius: BorderRadius.circular(14),
+    borderSide: BorderSide(color: color, width: width),
+  );
+  InputDecoration _decoration(String hint, IconData icon) => InputDecoration(
+    hintText: hint,
+    prefixIcon: Icon(icon, size: 21, color: const Color(0xFF81748B)),
+    filled: true,
+    fillColor: const Color(0xFFFCFAFD),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
+    border: _border(),
+    enabledBorder: _border(),
+    disabledBorder: _border(),
+    focusedBorder: _border(_purple, 1.6),
+    errorBorder: _border(Colors.red),
+    focusedErrorBorder: _border(Colors.red, 1.6),
+  );
+  Widget _label(String text) => Padding(
+    padding: const EdgeInsets.only(bottom: 9),
+    child: Text(
+      text,
+      style: const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: Color(0xFF342C3B),
+      ),
+    ),
+  );
+  Widget _emptyAvatar() => Container(
+    color: const Color(0xFFF5EDF9),
+    alignment: Alignment.center,
+    child: const Icon(
+      Icons.person_outline_rounded,
+      size: 54,
+      color: Color(0xFFB088C2),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(authStateProvider);
-
-    String? avatarUrl = ApiConstants.buildImageUrl(user?.avatar);
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Custom Header Area
-            Stack(
-              clipBehavior: Clip.none,
+    _prefill(user);
+    final avatar = _removeAvatar
+        ? null
+        : ApiConstants.buildImageUrl(user?.avatar);
+    final busy = _saving || _picking;
+    final subjectOptions = {..._subjectOptions, ..._subjects};
+    final states = {..._states, ?_state}.toList()..sort();
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF8F6FB),
+        body: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            child: Column(
               children: [
-                // Wavy Header Background
-                SizedBox(
-                  width: double.infinity,
-                  height: 350,
-                  child: Image.asset(
-                    'assets/images/header_design.png',
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(color: const Color(0xFF871DAD));
-                    },
-                  ),
-                ),
-
-                // Safe Area content for the top part
-                SafeArea(
-                  bottom: false,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 16,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              "Profile Setup",
-                              style: TextStyle(
-                                fontSize: 32,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                Stack(
+                  alignment: Alignment.bottomCenter,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 56),
+                      child: Container(
+                        width: double.infinity,
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Color(0xFF951EC2), Color(0xFF74189D)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.vertical(
+                            bottom: Radius.circular(36),
+                          ),
+                        ),
+                        child: SafeArea(
+                          bottom: false,
+                          child: Center(
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 680),
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  20,
+                                  16,
+                                  20,
+                                  76,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        IconButton.filledTonal(
+                                          onPressed: busy
+                                              ? null
+                                              : () =>
+                                                    Navigator.maybePop(context),
+                                          tooltip: 'Back',
+                                          style: IconButton.styleFrom(
+                                            backgroundColor: Colors.white
+                                                .withValues(alpha: 0.16),
+                                            foregroundColor: Colors.white,
+                                          ),
+                                          icon: const Icon(
+                                            Icons.arrow_back_rounded,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 14),
+                                        const Expanded(
+                                          child: Text(
+                                            'Profile Setup',
+                                            style: TextStyle(
+                                              fontSize: 27,
+                                              fontWeight: FontWeight.w700,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    const Text(
+                                      'Complete your profile to connect with your students and school.',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        height: 1.5,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                            GestureDetector(
-                              onTap: () => Navigator.pop(context),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Semantics(
+                      button: true,
+                      label: 'Upload profile photo',
+                      child: InkWell(
+                        onTap: busy ? null : _choosePhoto,
+                        borderRadius: BorderRadius.circular(64),
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              width: 116,
+                              height: 116,
+                              padding: const EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: const Color(0xFFE8D3F2),
+                                  width: 2,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: _purple.withValues(alpha: 0.09),
+                                    blurRadius: 18,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
+                              ),
+                              child: ClipOval(
+                                child: _photo != null
+                                    ? Image.memory(
+                                        _photo!,
+                                        fit: BoxFit.cover,
+                                        gaplessPlayback: true,
+                                      )
+                                    : avatar != null && avatar.isNotEmpty
+                                    ? Image.network(
+                                        avatar,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, _, _) =>
+                                            _emptyAvatar(),
+                                      )
+                                    : _emptyAvatar(),
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 1,
+                              right: 0,
                               child: Container(
-                                width: 36,
-                                height: 36,
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: _purple,
                                   shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 3,
+                                  ),
                                 ),
                                 child: const Icon(
-                                  Icons.arrow_back,
-                                  color: Color(0xFF871DAD),
-                                  size: 20,
+                                  Icons.add_a_photo_outlined,
+                                  size: 17,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          "Complete your profile to connect with\nyour students and school.",
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                            height: 1.3,
-                          ),
-                        ),
-                      ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: busy ? null : _choosePhoto,
+                  child: Text(
+                    _picking
+                        ? 'Selecting photo...'
+                        : _photo != null || avatar?.isNotEmpty == true
+                        ? 'Change profile photo'
+                        : 'Upload profile photo',
+                    style: const TextStyle(
+                      color: _purple,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-
-                // Avatar
-                Positioned(
-                  top: 260,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Stack(
-                      children: [
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: const Color(0xFF871DAD),
-                              width: 3,
-                            ),
-                            color: const Color(0xFFF3F4F6),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(60),
-                            child: avatarUrl != null && avatarUrl.isNotEmpty
-                                ? Image.network(
-                                    avatarUrl,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => Image.asset(
-                                      'assets/images/profile/olivia.png',
-                                      fit: BoxFit.cover,
-                                    ),
-                                  )
-                                : Image.asset(
-                                    'assets/images/profile/olivia.png',
-                                    fit: BoxFit.cover,
+                const Text(
+                  'Optional · JPG or PNG · Up to 5 MB',
+                  style: TextStyle(fontSize: 12, color: Color(0xFF81748B)),
+                ),
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 680),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: const Color(0xFFEDE7F2)),
+                        ),
+                        child: Form(
+                          key: _formKey,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              const Text(
+                                'Personal information',
+                                style: TextStyle(
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF302538),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              const Text(
+                                'Keep your details up to date.',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF81748B),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              _label('Name'),
+                              TextFormField(
+                                key: const Key('profile-name'),
+                                controller: _name,
+                                enabled: !busy,
+                                decoration: _decoration(
+                                  'Enter your full name',
+                                  Icons.person_outline_rounded,
+                                ),
+                                textCapitalization: TextCapitalization.words,
+                                textInputAction: TextInputAction.next,
+                                autofillHints: const [AutofillHints.name],
+                                maxLength: 100,
+                                buildCounter:
+                                    (
+                                      _, {
+                                      required currentLength,
+                                      required isFocused,
+                                      maxLength,
+                                    }) => null,
+                                validator: (value) =>
+                                    (value ?? '').trim().isEmpty
+                                    ? 'Enter your name'
+                                    : null,
+                              ),
+                              const SizedBox(height: 20),
+                              _label('Contact number'),
+                              TextFormField(
+                                key: const Key('profile-phone'),
+                                controller: _phone,
+                                enabled: !busy,
+                                decoration: _decoration(
+                                  'Enter your phone number',
+                                  Icons.phone_outlined,
+                                ),
+                                keyboardType: TextInputType.phone,
+                                textInputAction: TextInputAction.done,
+                                autofillHints: const [
+                                  AutofillHints.telephoneNumber,
+                                ],
+                                validator: (value) {
+                                  final text = (value ?? '').trim();
+                                  final digits = text.replaceAll(
+                                    RegExp(r'\D'),
+                                    '',
+                                  );
+                                  return text.isNotEmpty &&
+                                          (!RegExp(
+                                                r'^\+?[0-9 ()\-.]+$',
+                                              ).hasMatch(text) ||
+                                              digits.length < 7 ||
+                                              digits.length > 15)
+                                      ? 'Enter a valid contact number'
+                                      : null;
+                                },
+                              ),
+                              const SizedBox(height: 20),
+                              _label('Grade level'),
+                              DropdownButtonFormField<String>(
+                                key: const Key('profile-grade'),
+                                initialValue:
+                                    List.generate(
+                                      12,
+                                      (i) => '${i + 1}',
+                                    ).contains(_grade)
+                                    ? _grade
+                                    : null,
+                                isExpanded: true,
+                                decoration: _decoration(
+                                  'Select your grade level',
+                                  Icons.school_outlined,
+                                ),
+                                hint: const Text('Select your grade level'),
+                                items: List.generate(
+                                  12,
+                                  (i) => DropdownMenuItem(
+                                    value: '${i + 1}',
+                                    child: Text('Grade ${i + 1}'),
                                   ),
+                                ),
+                                onChanged: busy
+                                    ? null
+                                    : (value) => setState(() => _grade = value),
+                              ),
+                              const SizedBox(height: 20),
+                              _label('State'),
+                              DropdownButtonFormField<String>(
+                                key: const Key('profile-state'),
+                                initialValue: _state,
+                                isExpanded: true,
+                                decoration: _decoration(
+                                  'Select your state',
+                                  Icons.location_on_outlined,
+                                ),
+                                hint: const Text('Select your state'),
+                                items: states
+                                    .map(
+                                      (state) => DropdownMenuItem(
+                                        value: state,
+                                        child: Text(
+                                          state,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: busy
+                                    ? null
+                                    : (value) => setState(() => _state = value),
+                              ),
+                              const SizedBox(height: 24),
+                              _label('Subjects'),
+                              const Text(
+                                'Select all subjects you teach.',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF81748B),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Wrap(
+                                spacing: 9,
+                                runSpacing: 9,
+                                children: subjectOptions
+                                    .map(
+                                      (subject) => FilterChip(
+                                        label: Text(subject),
+                                        selected: _subjects.contains(subject),
+                                        onSelected: busy
+                                            ? null
+                                            : (selected) => setState(() {
+                                                if (selected) {
+                                                  _subjects.add(subject);
+                                                } else {
+                                                  _subjects.remove(subject);
+                                                }
+                                              }),
+                                        selectedColor: const Color(0xFFF0DFF8),
+                                        checkmarkColor: _purple,
+                                        labelStyle: TextStyle(
+                                          fontSize: 13,
+                                          color: _subjects.contains(subject)
+                                              ? _purple
+                                              : const Color(0xFF655A6D),
+                                        ),
+                                        side: BorderSide(
+                                          color: _subjects.contains(subject)
+                                              ? _purple.withValues(alpha: 0.4)
+                                              : const Color(0xFFE9E3ED),
+                                        ),
+                                        backgroundColor: const Color(
+                                          0xFFFCFAFD,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                              ),
+                              if (_error != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 20),
+                                  child: Semantics(
+                                    liveRegion: true,
+                                    child: Text(
+                                      _error!,
+                                      style: const TextStyle(
+                                        color: Color(0xFFB3261E),
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              const SizedBox(height: 28),
+                              FilledButton(
+                                onPressed: busy ? null : _save,
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: _purple,
+                                  foregroundColor: Colors.white,
+                                  minimumSize: const Size.fromHeight(54),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                                child: _saving
+                                    ? const SizedBox(
+                                        width: 22,
+                                        height: 22,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : const Text(
+                                        'Save changes',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                              ),
+                            ],
                           ),
                         ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF871DAD),
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
-                            ),
-                            child: const Icon(
-                              Icons.camera_alt_outlined,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
-
-            const SizedBox(height: 60), // Spacer below avatar
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildLabel("Name"),
-                  _buildTextField(
-                    _nameController,
-                    "Enter your name",
-                    Icons.person_outline,
-                  ),
-
-                  const SizedBox(height: 20),
-                  _buildLabel("Contact Number"),
-                  _buildTextField(
-                    _phoneController,
-                    "Enter your phone number",
-                    Icons.phone_outlined,
-                  ),
-
-                  const SizedBox(height: 20),
-                  _buildLabel("Grade Level"),
-                  _buildDropdown(
-                    "Select your grade level",
-                    _grades,
-                    _selectedGrade,
-                    (val) => setState(() => _selectedGrade = val),
-                  ),
-
-                  const SizedBox(height: 20),
-                  _buildLabel("State"),
-                  _buildDropdown(
-                    "Select your state",
-                    _states,
-                    _selectedState,
-                    (val) => setState(() => _selectedState = val),
-                  ),
-
-                  const SizedBox(height: 28),
-                  const Text(
-                    "Subjects",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF333333),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: [
-                      _buildSubjectChip("Math"),
-                      _buildSubjectChip("Science"),
-                      _buildSubjectChip("Reading"),
-                      _buildSubjectChip("History"),
-                      _buildSubjectChip("Social Studies"),
-                    ],
-                  ),
-
-                  const SizedBox(height: 40),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _saveChanges,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF871DAD),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: _isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : const Text(
-                              "SAVE CHANGES",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                    ),
-                  ),
-                  const SizedBox(height: 40),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLabel(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 15, color: Color(0xFF444444)),
-      ),
-    );
-  }
-
-  Widget _buildTextField(
-    TextEditingController controller,
-    String hint,
-    IconData icon,
-  ) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: const Color(0xFFB485D6)),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Icon(icon, color: Colors.grey.shade600, size: 20),
-          ),
-          Container(width: 1, height: 24, color: Colors.grey.shade300),
-          const SizedBox(width: 16),
-          Expanded(
-            child: TextFormField(
-              controller: controller,
-              decoration: InputDecoration(
-                hintText: hint,
-                hintStyle: TextStyle(fontSize: 15, color: Colors.grey.shade500),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-              style: const TextStyle(fontSize: 15, color: Color(0xFF333333)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDropdown(
-    String hint,
-    List<String> items,
-    String? selectedValue,
-    void Function(String?) onChanged,
-  ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButtonFormField<String>(
-          value: items.contains(selectedValue) ? selectedValue : null,
-          hint: Text(
-            hint,
-            style: TextStyle(fontSize: 15, color: Colors.grey.shade500),
-          ),
-          isExpanded: true,
-          icon: Icon(Icons.keyboard_arrow_down, color: Colors.grey.shade600),
-          decoration: const InputDecoration(border: InputBorder.none),
-          items: items.map((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(
-                value.length <= 2 ? "Grade $value" : value,
-                style: const TextStyle(fontSize: 15, color: Color(0xFF333333)),
-              ),
-            );
-          }).toList(),
-          onChanged: onChanged,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSubjectChip(String label) {
-    bool isSelected = _selectedSubject == label;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedSubject = label;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF871DAD) : const Color(0xFFF3F4F6),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: isSelected ? Colors.white : const Color(0xFF444444),
           ),
         ),
       ),

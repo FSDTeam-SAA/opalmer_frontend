@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../core/widgets/brand_logo.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,6 +20,7 @@ class SplashScreen extends ConsumerStatefulWidget {
 
 class _SplashScreenState extends ConsumerState<SplashScreen>
     with TickerProviderStateMixin {
+  Timer? _navigationTimer;
   late AnimationController _scaleController;
   late AnimationController _fadeController;
   late AnimationController _pulseController;
@@ -65,7 +67,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     _scaleController.forward();
 
     // Navigate after 3 seconds, evaluating persistent login state
-    Timer(const Duration(seconds: 3), () async {
+    _navigationTimer = Timer(const Duration(seconds: 3), () async {
+      if (!mounted) return;
       final storage = SecureStorageService();
       final token = await storage.getToken();
       final userDataStr = await storage.getUserData();
@@ -73,11 +76,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       if (token != null && userDataStr != null && mounted) {
         try {
           final userData = jsonDecode(userDataStr);
-          
+
           // Populate the authStateProvider so other screens know the user is logged in
           final user = UserModel.fromJson(userData);
           ref.read(authStateProvider.notifier).state = user;
-          
+
           final roleType = userData['type'];
 
           Widget targetScreen;
@@ -91,9 +94,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             targetScreen = const OnboardingScreen();
           }
 
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => targetScreen),
-          );
+          Navigator.of(
+            context,
+          ).pushReplacement(MaterialPageRoute(builder: (_) => targetScreen));
         } catch (_) {
           if (mounted) {
             Navigator.of(context).pushReplacement(
@@ -111,6 +114,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   void dispose() {
+    _navigationTimer?.cancel();
     _scaleController.dispose();
     _fadeController.dispose();
     _pulseController.dispose();
@@ -120,7 +124,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF871DAD),
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -131,12 +135,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 scale: _scaleAnimation,
                 child: ScaleTransition(
                   scale: _pulseAnimation,
-                  child: Image.asset(
-                    'assets/images/logo_splash.png',
-                    width: 350,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const Icon(Icons.error, color: Colors.white, size: 100),
+                  child: SizedBox(
+                    width: MediaQuery.sizeOf(context).width * 0.8,
+                    child: BrandLogo(
+                      size: MediaQuery.sizeOf(context).height * 0.55,
+                    ),
                   ),
                 ),
               ),
@@ -147,4 +150,3 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     );
   }
 }
-

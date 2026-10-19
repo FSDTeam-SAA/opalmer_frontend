@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:opalmer_education/core/widgets/data_avatar.dart';
 import 'package:opalmer_education/core/services/api_client.dart';
 import 'package:opalmer_education/core/services/secure_storage_service.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
@@ -246,6 +247,7 @@ class _ChildsProfilesScreenState extends State<ChildsProfilesScreen> {
         onPressed: () async {
           final result = await showDialog(
             context: context,
+            barrierDismissible: false,
             builder: (context) => const AddChildDialog(),
           );
           if (result == true) {
@@ -313,11 +315,7 @@ class _ChildsProfilesScreenState extends State<ChildsProfilesScreen> {
             ),
             const SizedBox(width: 14),
             // Avatar
-            CircleAvatar(
-              radius: 28,
-              backgroundImage: NetworkImage(profile.imageUrl),
-              backgroundColor: Colors.grey.shade200,
-            ),
+            DataAvatar(url: profile.imageUrl, radius: 28),
             const SizedBox(width: 14),
             // Details
             Expanded(

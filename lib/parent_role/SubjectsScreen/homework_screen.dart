@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/assignment_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/core/constants/api_constants.dart';
 import 'package:opalmer_education/core/services/api_client.dart';
@@ -8,10 +9,12 @@ enum HomeworkTab { classTab, groupsTab }
 
 class HomeworkScreen extends StatefulWidget {
   final String classId;
+  final String? childId;
   final String subjectName;
 
   const HomeworkScreen({
     super.key,
+    this.childId,
     required this.classId,
     required this.subjectName,
   });
@@ -277,7 +280,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
   }
 
   Widget _buildHomeworkCard(Homework hw) {
-    return Container(
+    return GestureDetector(onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AssignmentDetailsScreen(homeworkId: hw.id, childId: widget.childId))), child: Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -327,7 +330,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildGroupHomeworkCard(GroupHomework hw) {

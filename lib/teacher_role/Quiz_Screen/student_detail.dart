@@ -1,321 +1,188 @@
 import 'package:flutter/material.dart';
+import 'package:opalmer_education/core/services/api_client.dart';
 
-class StudentDetailScreen extends StatelessWidget {
-  const StudentDetailScreen({super.key});
+class StudentDetailScreen extends StatefulWidget {
+  final String resultId;
+  const StudentDetailScreen({super.key, required this.resultId});
+  @override
+  State<StudentDetailScreen> createState() => _StudentDetailScreenState();
+}
+
+class _StudentDetailScreenState extends State<StudentDetailScreen> {
+  final _api = ApiClient();
+  final _score = TextEditingController();
+  final _feedback = TextEditingController();
+  final _reason = TextEditingController();
+  Map<String, dynamic>? _result;
+  String? _error;
+  bool _busy = false;
+  bool _notifyStudent = true;
+  bool _notifyParent = true;
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void dispose() {
+    _score.dispose();
+    _feedback.dispose();
+    _reason.dispose();
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    try {
+      final response = await _api.get('/grading/results/${widget.resultId}');
+      final result = Map<String, dynamic>.from(response.data['data']['result']);
+      if (!mounted) return;
+      setState(() {
+        _result = result;
+        _error = null;
+        _score.text = '${result['score'] ?? 0}';
+        _feedback.text = result['feedback']?.toString() ?? '';
+      });
+    } catch (_) {
+      if (mounted) setState(() => _error = 'Unable to load this submission.');
+    }
+  }
+
+  Future<void> _save(bool release) async {
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      if (release) {
+        await _api.post(
+          '/grading/results/${widget.resultId}/release',
+          data: {
+            'notifyStudent': _notifyStudent,
+            'notifyParent': _notifyParent,
+          },
+        );
+      } else {
+        await _api.dio.patch(
+          '/grading/results/${widget.resultId}/review',
+          data: {
+            'score': double.tryParse(_score.text),
+            'feedback': _feedback.text,
+            'reason': _reason.text,
+          },
+        );
+      }
+      await _load();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(release ? 'Grade published' : 'Review saved')),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(
+          () => _error =
+              'Unable to save. Check the score and enter a reason for an override.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final result = _result;
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leadingWidth: 70,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 20),
-          child: Center(
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF871DAD),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-            ),
-          ),
-        ),
-        title: const Text(
-          "Student Detail",
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-        ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          // Student Profile
-          _buildProfileSection(),
-
-          const SizedBox(height: 32),
-          // Stats Row
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard(
-                  label: "Questions",
-                  value: "9/10",
-                  color: const Color(0xFF4DB68D),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildStatCard(
-                  label: "Progress",
-                  value: "90%",
-                  color: const Color(0xFFFFCC33),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 32),
-          const Text(
-            "Questions",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF222222),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          _buildQuestionTile(
-            number: 1,
-            question: "What is 1/2 as a decimal?",
-            isSelectedCorrect: true,
-            selectedAnswer: "0.5",
-            correctAnswer: "0.5",
-          ),
-          _buildQuestionTile(
-            number: 2,
-            question: "What is 0.75 as a fraction?",
-            isSelectedCorrect: false,
-            selectedAnswer: "1/2",
-            correctAnswer: "3/4",
-            initiallyExpanded: true,
-            options: ["3/4", "1/2", "2/5", "5/8"],
-          ),
-          _buildQuestionTile(
-            number: 3,
-            question: "What is 7/10 as a decimal?",
-            isSelectedCorrect: true,
-            selectedAnswer: "0.7",
-            correctAnswer: "0.7",
-          ),
-          _buildQuestionTile(
-            number: 4,
-            question: "Convert 0.2 into a fraction.",
-            isSelectedCorrect: true,
-            selectedAnswer: "1/5",
-            correctAnswer: "1/5",
-          ),
-          _buildQuestionTile(
-            number: 5,
-            question: "Which decimal is equal to 3/4?",
-            isSelectedCorrect: true,
-            selectedAnswer: "0.75",
-            correctAnswer: "0.75",
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProfileSection() {
-    return Row(
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Image.network(
-            "https://i.pravatar.cc/150?u=mia",
-            width: 100,
-            height: 100,
-            fit: BoxFit.cover,
-          ),
-        ),
-        const SizedBox(width: 20),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Mia johnson",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF222222),
-                ),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                "Grade 6 - Age 12",
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                "+1 301 381 7702",
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatCard({
-    required String label,
-    required String value,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.white,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 28,
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuestionTile({
-    required int number,
-    required String question,
-    required bool isSelectedCorrect,
-    required String selectedAnswer,
-    required String correctAnswer,
-    List<String>? options,
-    bool initiallyExpanded = false,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Theme(
-        data: ThemeData().copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          initiallyExpanded: initiallyExpanded,
-          tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-          title: Text(
-            "$number. $question",
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF222222),
-            ),
-          ),
-          trailing: isSelectedCorrect
-              ? const Icon(Icons.check_circle, color: Color(0xFF4DB68D))
-              : initiallyExpanded
-              ? const Icon(Icons.keyboard_arrow_up)
-              : const Icon(Icons.keyboard_arrow_down),
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (options != null) ...[
-                    ...List.generate(options.length, (i) {
-                      final char = String.fromCharCode(65 + i);
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: Text(
-                          "$char. ${options[i]}",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
-                          ),
+      appBar: AppBar(title: const Text('Review submission')),
+      body: result == null
+          ? Center(
+              child: _error == null
+                  ? const CircularProgressIndicator()
+                  : Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(_error!),
+                        TextButton(
+                          onPressed: _load,
+                          child: const Text('Retry'),
                         ),
-                      );
-                    }),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8),
-                      child: Divider(height: 1),
+                      ],
                     ),
-                  ],
-                  Row(
-                    children: [
-                      const Text(
-                        "Selected Answer: ",
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFFE74C3C),
-                        ),
-                      ),
-                      Text(
-                        selectedAnswer,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
+            )
+          : ListView(
+              padding: const EdgeInsets.all(24),
+              children: [
+                Text(
+                  '${result['studentId']?['username'] ?? 'Student'} · ${result['studentId']?['Id'] ?? ''}',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                Text('Status: ${result['gradeStatus'] ?? 'pending_review'}'),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _score,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
                   ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Text(
-                        "Correct Answer: ",
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF4DB68D),
-                        ),
-                      ),
-                      Text(
-                        correctAnswer,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
+                  decoration: InputDecoration(
+                    labelText:
+                        'Points out of ${result['progress']?['totalQuestions'] ?? 0}',
                   ),
-                ],
-              ),
+                ),
+                TextField(
+                  controller: _reason,
+                  decoration: const InputDecoration(
+                    labelText: 'Reason for overriding the score',
+                  ),
+                ),
+                TextField(
+                  controller: _feedback,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    labelText: 'Feedback for student and parent',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ...((result['answers'] as List?) ?? []).map(
+                  (answer) => Card(
+                    child: ListTile(
+                      title: Text('${answer['question']}'),
+                      subtitle: Text('Response: ${answer['selectedAnswer']}'),
+                      trailing: Icon(
+                        answer['isCorrect'] == true
+                            ? Icons.check_circle
+                            : Icons.cancel_outlined,
+                      ),
+                    ),
+                  ),
+                ),
+                if (_error != null)
+                  Text(_error!, style: const TextStyle(color: Colors.red)),
+                const SizedBox(height: 12),
+                FilledButton(
+                  onPressed: _busy ? null : () => _save(false),
+                  child: const Text('Save review'),
+                ),
+                CheckboxListTile(
+                  value: _notifyStudent,
+                  onChanged: (value) =>
+                      setState(() => _notifyStudent = value ?? true),
+                  title: const Text('Notify student'),
+                ),
+                CheckboxListTile(
+                  value: _notifyParent,
+                  onChanged: (value) =>
+                      setState(() => _notifyParent = value ?? true),
+                  title: const Text('Notify parent'),
+                ),
+                FilledButton(
+                  onPressed: _busy || result['gradeStatus'] != 'reviewed'
+                      ? null
+                      : () => _save(true),
+                  child: const Text('Publish reviewed grade'),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/widgets/data_avatar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/providers/grading_provider.dart';
 import 'package:opalmer_education/teacher_role/Quiz_Screen/student_detail.dart';
@@ -64,6 +65,8 @@ class AttendedStudentsScreen extends ConsumerWidget {
             ...attended.map(
               (r) => {
                 'student': r['studentId'],
+                'resultId': r['_id'],
+                'status': r['status'],
                 'progress': _toNum(r['totalQuestions']) > 0
                     ? (_toNum(r['score']) / _toNum(r['totalQuestions']))
                           .clamp(0, 1)
@@ -98,7 +101,7 @@ class AttendedStudentsScreen extends ConsumerWidget {
               final progress = item['progress'] as double;
 
               // Use backend avatar URL if available, else fallback to asset
-              String imageUrl = 'assets/images/classes/student_image.png';
+              String imageUrl = '';
               final avatar = student?['avatar'];
               if (avatar != null) {
                 if (avatar is Map &&
@@ -119,11 +122,11 @@ class AttendedStudentsScreen extends ConsumerWidget {
               final sideColor = colors[index % colors.length];
 
               return GestureDetector(
-                onTap: () {
+                onTap: item['resultId'] == null || item['status'] != 'completed' ? null : () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const StudentDetailScreen(),
+                      builder: (context) => StudentDetailScreen(resultId: item['resultId'].toString()),
                     ),
                   );
                 },
@@ -186,12 +189,7 @@ class AttendedStudentsScreen extends ConsumerWidget {
                   children: [
                     Row(
                       children: [
-                        CircleAvatar(
-                          radius: 28,
-                          backgroundImage: imageUrl.startsWith('http')
-                              ? NetworkImage(imageUrl) as ImageProvider
-                              : AssetImage(imageUrl),
-                        ),
+                        DataAvatar(url: imageUrl, radius: 28),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(

@@ -126,12 +126,12 @@ const List<ChildProfile> mockChildren = [
   ChildProfile(
     id: "1",
     name: "Mia Johnson",
-    imageUrl: "https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?auto=format&fit=crop&w=150&q=80",
+    imageUrl: "",
   ),
   ChildProfile(
     id: "2",
     name: "Alex Johnson",
-    imageUrl: "https://images.unsplash.com/photo-1517677129300-07b130802f46?auto=format&fit=crop&w=150&q=80",
+    imageUrl: "",
   ),
 ];
 
@@ -154,7 +154,7 @@ const List<Subject> mockSubjects = [
     attendanceEmoji: "😇",
     performance: "85%",
     teacherName: "Olivia Carter",
-    teacherAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=60",
+    teacherAvatar: "",
     date: "06-03-25",
     weeklyProgress: scienceProgress,
   ),
@@ -165,7 +165,7 @@ const List<Subject> mockSubjects = [
     attendanceEmoji: "😎",
     performance: "90%",
     teacherName: "Benjamin Wade",
-    teacherAvatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=60",
+    teacherAvatar: "",
     date: "06-03-25",
   ),
   Subject(
@@ -175,7 +175,7 @@ const List<Subject> mockSubjects = [
     attendanceEmoji: "🌟",
     performance: "92%",
     teacherName: "Sophia Miller",
-    teacherAvatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=60",
+    teacherAvatar: "",
     date: "06-03-25",
   ),
 ];

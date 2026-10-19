@@ -1,4 +1,14 @@
 import 'package:flutter/material.dart';
+import '../core/providers/auth_provider.dart';
+import '../core/models/student_models.dart';
+import '../core/widgets/assignment_details_screen.dart';
+import '../student_role/Quizzes/student_quiz_questions_screen.dart';
+import '../student_role/Quizzes/student_quiz_result_screen.dart';
+import '../teacher_role/Quiz_Screen/student_detail.dart';
+import '../chat/screens/chat_screen.dart';
+import '../chat/models/chat_session_model.dart';
+import '../chat/models/chat_role.dart';
+import 'notification_details.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/models/notification_model.dart';
 import 'package:opalmer_education/core/providers/notification_provider.dart';
@@ -18,8 +28,68 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await ref.read(notificationsProvider.notifier).load();
       if (!mounted) return;
-      ref.read(notificationsProvider.notifier).markAllAsRead();
     });
+  }
+
+  Future<void> _open(NotificationModel notification) async {
+    try {
+      final destination = await ref
+          .read(notificationServiceProvider)
+          .destination(notification.id);
+      final record = Map<String, dynamic>.from(destination['record']);
+      final user = ref.read(authStateProvider);
+      if (user == null) return;
+      Widget page;
+      switch (destination['kind']) {
+        case 'homework':
+          page = AssignmentDetailsScreen(
+            homeworkId: record['_id'].toString(),
+            childId: user.type == 'parent'
+                ? destination['studentId']?.toString()
+                : null,
+          );
+          break;
+        case 'grade':
+          page = user.type == 'teacher'
+              ? StudentDetailScreen(resultId: record['_id'].toString())
+              : StudentQuizResultScreen(
+                  result: QuizSubmissionResult.fromJson(record),
+                );
+          break;
+        case 'quiz':
+          page = user.type == 'student'
+              ? StudentQuizQuestionsScreen(quiz: QuizModel.fromJson(record))
+              : NotificationDetails(title: notification.title, record: record);
+          break;
+        case 'message':
+          page = ChatScreen(
+            session: ChatSessionModel.fromJson(record, user.id),
+            role: user.type == 'teacher'
+                ? ChatRole.teacher
+                : user.type == 'parent'
+                ? ChatRole.parent
+                : ChatRole.student,
+          );
+          break;
+        default:
+          page = NotificationDetails(title: notification.title, record: record);
+      }
+      await ref
+          .read(notificationsProvider.notifier)
+          .markAsRead(notification.id);
+      if (!mounted) return;
+      await Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'This item is unavailable or you no longer have access. Please refresh and retry.',
+            ),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _refresh() =>
@@ -75,8 +145,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
           if (unread > 0) ...[
             const SizedBox(width: 10),
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
                 color: AppColors.primaryMid,
                 borderRadius: BorderRadius.circular(12),
@@ -134,8 +203,12 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                   ),
                 ),
               ),
-              ...group.items
-                  .map((n) => NotificationCard(notification: n)),
+              ...group.items.map(
+                (n) => GestureDetector(
+                  onTap: () => _open(n),
+                  child: NotificationCard(notification: n),
+                ),
+              ),
             ],
           );
         },
@@ -166,10 +239,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         ),
         const SizedBox(height: 8),
         Center(
-          child: TextButton(
-            onPressed: _refresh,
-            child: const Text('Refresh'),
-          ),
+          child: TextButton(onPressed: _refresh, child: const Text('Refresh')),
         ),
       ],
     );
@@ -243,8 +313,18 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
   }
 
   static const _months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
 
   String _formatDate(DateTime d) =>
@@ -363,10 +443,7 @@ class NotificationCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     _relativeTime(notification.createdAt!),
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey.shade500,
-                    ),
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
                   ),
                 ],
               ],

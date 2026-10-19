@@ -1,3 +1,4 @@
+import '../core/widgets/brand_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/core/widgets/primary_button.dart';
@@ -203,22 +204,16 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
           // ── Top Logo ──
           Positioned(
-            top: 70,
+            top: MediaQuery.paddingOf(context).top + 16,
             left: 0,
             right: 0,
             child: Center(
-              child: Container(
-                width: 50,
-                height: 50,
-                decoration: const BoxDecoration(
-                  color: AppColors.primaryMid,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Image.asset(
-                    'assets/images/onbording_logo.png',
-                    width: 50,
-                    height: 50,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: BrandLogo(
+                  size: (MediaQuery.sizeOf(context).height * 0.24).clamp(
+                    100.0,
+                    190.0,
                   ),
                 ),
               ),

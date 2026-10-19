@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/widgets/data_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/providers/grading_provider.dart';
 import 'package:opalmer_education/teacher_role/Quiz_Screen/quiz_details.dart';
@@ -102,7 +103,7 @@ class _GradingToolScreenState extends ConsumerState<GradingToolScreen> {
                       final session = filteredSessions[index];
                       final sessionId = session['_id']?.toString() ?? '';
                       String imageUrl =
-                          "https://img.freepik.com/free-photo/view-planet-earth-from-space_23-2148705432.jpg";
+                          "";
                       if (session['image'] != null &&
                           session['image'].toString().isNotEmpty) {
                         imageUrl = session['image'].toString();
@@ -283,12 +284,7 @@ class _GradingToolScreenState extends ConsumerState<GradingToolScreen> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              imageUrl,
-              width: 76,
-              height: 76,
-              fit: BoxFit.cover,
-            ),
+            child: DataImage(url: imageUrl, width: 76, height: 76),
           ),
           const SizedBox(width: 14),
           Expanded(

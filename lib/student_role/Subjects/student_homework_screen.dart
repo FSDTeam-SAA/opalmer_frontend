@@ -234,6 +234,7 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
       else
         ...activeHomework.map(
           (h) => HomeworkCard(
+            homeworkId: h.id,
             title: h.title,
             description: h.description ??
                 (h.fileUrls.isNotEmpty
@@ -277,6 +278,7 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
       else
         ...archivedHomework.map(
           (h) => HomeworkCard(
+            homeworkId: h.id,
             title: h.title,
             description: h.description ?? "Archived assignment",
             dueDate: h.dueDate != null

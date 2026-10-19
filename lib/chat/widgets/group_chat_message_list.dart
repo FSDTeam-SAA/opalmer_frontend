@@ -5,43 +5,7 @@ import 'package:opalmer_education/core/constants/api_constants.dart';
 class GroupChatMessageList extends StatelessWidget {
   const GroupChatMessageList({super.key});
 
-  static const List<_MockGroupMessage> _messages = [
-    _MockGroupMessage(text: 'Good Morning!', time: '17:47', isMe: true),
-    _MockGroupMessage(
-      text: 'Hey! How are you?',
-      time: '17:47',
-      isMe: false,
-      imageUrl: 'https://i.pravatar.cc/150?u=sarah',
-    ),
-    _MockGroupMessage(
-      text: 'He skips homework sometimes.',
-      time: '17:47',
-      isMe: true,
-    ),
-    _MockGroupMessage(
-      text: 'Science is going well.',
-      time: '17:47',
-      isMe: false,
-      imageUrl: 'https://i.pravatar.cc/150?u=teacher2',
-    ),
-    _MockGroupMessage(
-      text: 'Any suggestions for home?',
-      time: '17:47',
-      isMe: false,
-      imageUrl: 'https://i.pravatar.cc/150?u=parent1',
-    ),
-    _MockGroupMessage(
-      text: "Short quizzes, fun learning. I'll share resources.",
-      time: '17:47',
-      isMe: true,
-    ),
-    _MockGroupMessage(
-      text: 'Thank you very much.',
-      time: '17:47',
-      isMe: false,
-      imageUrl: 'https://i.pravatar.cc/150?u=sarah',
-    ),
-  ];
+  static const List<_MockGroupMessage> _messages = [];
 
   @override
   Widget build(BuildContext context) {

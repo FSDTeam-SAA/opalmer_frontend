@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/data_avatar.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 
 class GroupMemberCard extends StatelessWidget {
@@ -24,14 +25,7 @@ class GroupMemberCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: Colors.grey.shade200,
-            backgroundImage: (avatarUrl != null && avatarUrl!.isNotEmpty)
-                ? NetworkImage(avatarUrl!)
-                : const AssetImage('assets/images/classes/student_image.png')
-                      as ImageProvider,
-          ),
+          DataAvatar(url: avatarUrl),
           const SizedBox(width: 16),
           Expanded(
             child: Text(

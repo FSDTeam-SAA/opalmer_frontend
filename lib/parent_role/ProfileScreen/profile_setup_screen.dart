@@ -132,10 +132,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
           ),
       });
 
-      final response = await _api.dio.put(
-        '/users/${user.id}',
-        data: formData,
-      );
+      final response = await _api.dio.put('/users/${user.id}', data: formData);
 
       if (response.data is! Map || response.data['success'] != true) {
         throw Exception(
@@ -177,13 +174,11 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     }
   }
 
-  ImageProvider _avatarImage(UserModel? user) {
+  ImageProvider? _avatarImage(UserModel? user) {
     if (_pickedImage != null) return FileImage(_pickedImage!);
     final url = user?.avatar;
     if (url != null && url.isNotEmpty) return NetworkImage(url);
-    return const NetworkImage(
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80',
-    );
+    return null;
   }
 
   @override
@@ -271,6 +266,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                       radius: 75,
                       backgroundColor: Colors.grey.shade200,
                       backgroundImage: _avatarImage(user),
+                      child: _avatarImage(user) == null
+                          ? const Icon(
+                              Icons.person_outline_rounded,
+                              size: 66,
+                              color: AppColors.primaryMid,
+                            )
+                          : null,
                     ),
                   ),
                   Positioned(

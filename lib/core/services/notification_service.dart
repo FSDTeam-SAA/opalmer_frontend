@@ -27,6 +27,14 @@ class NotificationService {
     }
   }
 
+  Future<Map<String, dynamic>> destination(String notificationId) async {
+    final response = await _apiClient.get('/notifications/$notificationId/destination');
+    return Map<String, dynamic>.from(response.data['data']);
+  }
+  Future<void> markAsRead(String notificationId) async {
+    await _apiClient.dio.patch('/notifications/$notificationId/read');
+  }
+
   Future<int> markAllAsRead(String userId) async {
     try {
       final response = await _apiClient.dio

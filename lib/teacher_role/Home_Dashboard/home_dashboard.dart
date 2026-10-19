@@ -219,7 +219,7 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             // Animated greeting text
-                            FadeTransition(
+                            Expanded(child: FadeTransition(
                               opacity: _headerFade,
                               child: SlideTransition(
                                 position: _headerSlide,
@@ -228,6 +228,8 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
                                   children: [
                                     Text(
                                       "Hi, ${user?.username ?? 'Teacher'} 👋",
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
                                         fontSize: 24,
                                         fontWeight: FontWeight.bold,
@@ -238,6 +240,8 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
                                     const SizedBox(height: 0),
                                     Text(
                                       "Check your students activities",
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                         fontSize: 14,
                                         color: Colors.white,
@@ -256,7 +260,7 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
                                   ],
                                 ),
                               ),
-                            ),
+                            )),
 
                             // Animated bell shake
                             AnimatedBuilder(
@@ -338,7 +342,7 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
                   // Horizontal scrollable Class Stats cards
                   SizedBox(
                     height: 220,
-                    child: classesAsync.when(
+                    child: LayoutBuilder(builder: (context, constraints) => classesAsync.when(
                       data: (classes) {
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           _setupCardAnimations(classes.length);
@@ -371,7 +375,7 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
                                             Offset.zero,
                                           ),
                                     child: TeacherClassCard(
-                                      width: 280,
+                                      width: constraints.maxWidth - 40,
                                       margin: EdgeInsets.zero,
                                       classData: cls,
                                       color: cardColor,
@@ -388,7 +392,7 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
                       loading: () =>
                           const Center(child: CircularProgressIndicator()),
                       error: (err, _) => Center(child: Text("Error: $err")),
-                    ),
+                    )),
                   ),
 
                   const SizedBox(height: 24),

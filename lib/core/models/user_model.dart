@@ -13,6 +13,8 @@ class UserModel {
   final String? avatar;
   final int? age;
   final String? gender;
+  final String? locationState;
+  final List<String> subjects;
 
   UserModel({
     required this.id,
@@ -27,6 +29,8 @@ class UserModel {
     this.avatar,
     this.age,
     this.gender,
+    this.locationState,
+    this.subjects = const [],
   });
 
   UserModel copyWith({
@@ -37,6 +41,8 @@ class UserModel {
     int? age,
     String? gender,
     String? gradeLevel,
+    String? locationState,
+    List<String>? subjects,
   }) {
     return UserModel(
       id: id,
@@ -51,6 +57,8 @@ class UserModel {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       age: age ?? this.age,
       gender: gender ?? this.gender,
+      locationState: locationState ?? this.locationState,
+      subjects: subjects ?? this.subjects,
     );
   }
 
@@ -98,6 +106,10 @@ class UserModel {
           ? json['age'] as int
           : int.tryParse(json['age']?.toString() ?? ''),
       gender: json['gender']?.toString(),
+      locationState: json['locationState']?.toString(),
+      subjects: (json['subjects'] as List? ?? const [])
+          .map((value) => value.toString())
+          .toList(),
     );
   }
 
@@ -115,6 +127,8 @@ class UserModel {
       'avatar': avatar,
       'age': age,
       'gender': gender,
+      'locationState': locationState,
+      'subjects': subjects,
     };
   }
 }
