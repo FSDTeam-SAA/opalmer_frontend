@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers/teacher_provider.dart';
 import 'add_behavior.dart';
+import '../navigation/teacher_workspace.dart';
 
 class BehaviorRecordScreen extends ConsumerStatefulWidget {
   final String studentId;
+  final String? classId;
   final Map<String, dynamic>? student;
 
   const BehaviorRecordScreen({
     Key? key,
     required this.studentId,
+    this.classId,
     this.student,
   }) : super(key: key);
 
@@ -21,7 +24,9 @@ class BehaviorRecordScreen extends ConsumerStatefulWidget {
 class _BehaviorRecordScreenState extends ConsumerState<BehaviorRecordScreen> {
   @override
   Widget build(BuildContext context) {
-    final behaviorsAsync = ref.watch(studentBehaviorsProvider(widget.studentId));
+    final behaviorsAsync = ref.watch(
+      studentBehaviorsProvider(widget.studentId),
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
@@ -57,11 +62,20 @@ class _BehaviorRecordScreenState extends ConsumerState<BehaviorRecordScreen> {
       ),
       body: SafeArea(
         child: behaviorsAsync.when(
-          data: (behaviors) {
+          data: (allBehaviors) {
+            final behaviors = allBehaviors
+                .where(
+                  (row) =>
+                      widget.classId == null ||
+                      (row['classId'] is Map
+                                  ? row['classId']['_id']
+                                  : row['classId'])
+                              ?.toString() ==
+                          widget.classId,
+                )
+                .toList();
             if (behaviors.isEmpty) {
-              return const Center(
-                child: Text("No behavior records found"),
-              );
+              return const Center(child: Text("No behavior records found"));
             }
             return ListView.builder(
               padding: const EdgeInsets.all(20),
@@ -81,9 +95,13 @@ class _BehaviorRecordScreenState extends ConsumerState<BehaviorRecordScreen> {
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => AddBehaviorScreen(
-                studentId: widget.studentId,
-                student: widget.student,
+              builder: (_) => TeacherContextFrame.carry(
+                context,
+                AddBehaviorScreen(
+                  studentId: widget.studentId,
+                  student: widget.student,
+                  classId: widget.classId,
+                ),
               ),
             ),
           );
@@ -191,9 +209,15 @@ class _BehaviorRecordScreenState extends ConsumerState<BehaviorRecordScreen> {
                     ? Image.network(
                         avatarUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Icon(Icons.person_outline, color: Color(0xFF871DAD)),
+                        errorBuilder: (_, __, ___) => const Icon(
+                          Icons.person_outline,
+                          color: Color(0xFF871DAD),
+                        ),
                       )
-                    : const Icon(Icons.person_outline, color: Color(0xFF871DAD)),
+                    : const Icon(
+                        Icons.person_outline,
+                        color: Color(0xFF871DAD),
+                      ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -224,12 +248,16 @@ class _BehaviorRecordScreenState extends ConsumerState<BehaviorRecordScreen> {
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => AddBehaviorScreen(
-                        studentId: widget.studentId,
-                        student: widget.student,
-                        behaviorId: behavior['_id'],
-                        initialMessage: behavior['message'],
-                        initialState: behavior['state'],
+                      builder: (_) => TeacherContextFrame.carry(
+                        context,
+                        AddBehaviorScreen(
+                          studentId: widget.studentId,
+                          student: widget.student,
+                          classId: widget.classId,
+                          behaviorId: behavior['_id'],
+                          initialMessage: behavior['message'],
+                          initialState: behavior['state'],
+                        ),
                       ),
                     ),
                   );
@@ -297,7 +325,9 @@ class _BehaviorRecordScreenState extends ConsumerState<BehaviorRecordScreen> {
 
     if (confirmed == true) {
       try {
-        final success = await ref.read(deleteBehaviorProvider(behaviorId).future);
+        final success = await ref.read(
+          deleteBehaviorProvider(behaviorId).future,
+        );
         if (success) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -314,9 +344,9 @@ class _BehaviorRecordScreenState extends ConsumerState<BehaviorRecordScreen> {
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Error: $e")),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text("Error: $e")));
         }
       }
     }

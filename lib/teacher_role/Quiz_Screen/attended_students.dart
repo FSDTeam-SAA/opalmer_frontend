@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../navigation/teacher_workspace.dart';
 import '../../core/widgets/data_avatar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/providers/grading_provider.dart';
@@ -122,14 +123,24 @@ class AttendedStudentsScreen extends ConsumerWidget {
               final sideColor = colors[index % colors.length];
 
               return GestureDetector(
-                onTap: item['resultId'] == null || item['status'] != 'completed' ? null : () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => StudentDetailScreen(resultId: item['resultId'].toString()),
-                    ),
-                  );
-                },
+                onTap: item['resultId'] == null || item['status'] != 'completed'
+                    ? null
+                    : () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => TeacherContextFrame.carry(
+                              context,
+                              StudentDetailScreen(
+                                resultId: item['resultId'].toString(),
+                              ),
+                              student: student is Map
+                                  ? Map<String, dynamic>.from(student)
+                                  : null,
+                            ),
+                          ),
+                        );
+                      },
                 child: _buildStudentCard(
                   name: name,
                   details: "Grade $grade",

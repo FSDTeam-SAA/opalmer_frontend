@@ -5,7 +5,8 @@ import '../../core/models/teacher_class_model.dart';
 import '../../core/providers/teacher_provider.dart';
 import '../../core/constants/api_constants.dart';
 
-import 'student_attendence.dart';
+import 'student_profile.dart';
+import '../navigation/teacher_workspace.dart';
 import 'lessons_screen.dart';
 import 'homework_screen.dart';
 import 'lesson_overview_screen.dart';
@@ -86,9 +87,8 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                         await Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => AssignStudentsScreen(
-                              classData: classData,
-                            ),
+                            builder: (_) =>
+                                AssignStudentsScreen(classData: classData),
                           ),
                         );
                         ref.invalidate(classStudentsProvider(classData.id));
@@ -137,14 +137,14 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                     const SizedBox(width: 12),
                     GestureDetector(
                       onTap: () async {
-                        final updatedClass = await Navigator.push<TeacherClassModel>(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => AddClassScreen(
-                              classToEdit: classData,
-                            ),
-                          ),
-                        );
+                        final updatedClass =
+                            await Navigator.push<TeacherClassModel>(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    AddClassScreen(classToEdit: classData),
+                              ),
+                            );
 
                         if (updatedClass == null || !mounted) return;
 
@@ -243,7 +243,8 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                           child: _buildStatBox(
                             "Performance",
                             performanceAsync.when(
-                              data: (value) => value == null ? 'N/A' : '$value%',
+                              data: (value) =>
+                                  value == null ? 'N/A' : '$value%',
                               loading: () => '...',
                               error: (_, __) => 'N/A',
                             ),
@@ -272,7 +273,8 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => LessonsScreen(classId: classData.id),
+                                builder: (_) =>
+                                    LessonsScreen(classId: classData.id),
                               ),
                             );
                           },
@@ -310,13 +312,18 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (_) => LessonOverviewScreen(lesson: lesson),
+                                      builder: (_) =>
+                                          LessonOverviewScreen(lesson: lesson),
                                     ),
                                   );
                                 },
                                 child: _buildLessonCard(
-                                  title: lesson['title'] ?? lesson['objective'] ?? 'No Title',
-                                  description: lesson['note'] ?? 'No Description',
+                                  title:
+                                      lesson['title'] ??
+                                      lesson['objective'] ??
+                                      'No Title',
+                                  description:
+                                      lesson['note'] ?? 'No Description',
                                   dueDate: lesson['created_at'] != null
                                       ? "Date: ${lesson['created_at'].toString().split('T')[0]}"
                                       : "Date: TBD",
@@ -501,13 +508,23 @@ class StudentCard extends ConsumerWidget {
     );
     final metric = studentData['performance'];
     final percentage = metric is Map ? metric['percentage'] : null;
-    final progress = percentage is num && percentage.isFinite && percentage >= 0 && percentage <= 100
-        ? '${percentage.round()}%' : 'N/A';
+    final progress =
+        percentage is num &&
+            percentage.isFinite &&
+            percentage >= 0 &&
+            percentage <= 100
+        ? '${percentage.round()}%'
+        : 'N/A';
     final state = studentData['state'];
-    final status = studentData['isActive'] == false ? 'Inactive'
-        : state == 'active' ? 'Active'
-        : state == 'inactive' ? 'Inactive'
-        : state == 'suspended' ? 'Suspended' : 'N/A';
+    final status = studentData['isActive'] == false
+        ? 'Inactive'
+        : state == 'active'
+        ? 'Active'
+        : state == 'inactive'
+        ? 'Inactive'
+        : state == 'suspended'
+        ? 'Suspended'
+        : 'N/A';
 
     final name = studentData['username'] ?? studentData['name'] ?? 'Unknown';
     final avatar = studentData['avatar'];
@@ -521,8 +538,7 @@ class StudentCard extends ConsumerWidget {
     avatarUrl = ApiConstants.buildImageUrl(avatarUrl);
 
     // Handle PDF or invalid image formats in Cloudinary
-    final bool isInvalidImage =
-        avatarUrl.toLowerCase().endsWith('.pdf');
+    final bool isInvalidImage = avatarUrl.toLowerCase().endsWith('.pdf');
     final String effectiveAvatarUrl = isInvalidImage ? '' : avatarUrl;
 
     return GestureDetector(
@@ -530,7 +546,14 @@ class StudentCard extends ConsumerWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => StudentAttendanceScreen(classData: classData),
+            builder: (_) => TeacherContextFrame(
+              classData: classData,
+              student: studentData,
+              child: StudentProfileScreen(
+                studentData: studentData,
+                classId: classData.id,
+              ),
+            ),
           ),
         );
       },
@@ -581,9 +604,15 @@ class StudentCard extends ConsumerWidget {
                                 ? Image.network(
                                     effectiveAvatarUrl,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => const Icon(Icons.person_outline, color: Color(0xFF871DAD)),
+                                    errorBuilder: (_, __, ___) => const Icon(
+                                      Icons.person_outline,
+                                      color: Color(0xFF871DAD),
+                                    ),
                                   )
-                                : const Icon(Icons.person_outline, color: Color(0xFF871DAD)),
+                                : const Icon(
+                                    Icons.person_outline,
+                                    color: Color(0xFF871DAD),
+                                  ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -649,7 +678,8 @@ class StudentCard extends ConsumerWidget {
                                   const SizedBox(height: 4),
                                   Text(
                                     attendanceStatsAsync.when(
-                                      data: (stats) => stats == null ? "N/A" : "$stats%",
+                                      data: (stats) =>
+                                          stats == null ? "N/A" : "$stats%",
                                       loading: () => "...",
                                       error: (_, __) => "N/A",
                                     ),

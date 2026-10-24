@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../navigation/teacher_workspace.dart';
 import '../../core/widgets/data_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/constants/api_constants.dart';
@@ -96,8 +97,10 @@ class QuizDetailScreen extends ConsumerWidget {
                   final updated = await Navigator.push<bool>(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          EditQuizScreen(sessionId: sessionId),
+                      builder: (_) => TeacherContextFrame.carry(
+                        context,
+                        EditQuizScreen(sessionId: sessionId),
+                      ),
                     ),
                   );
                   if (updated == true) {
@@ -138,8 +141,7 @@ class QuizDetailScreen extends ConsumerWidget {
               ? classInfo['subject'] ?? 'N/A'
               : 'N/A';
 
-          String imageUrl =
-              "";
+          String imageUrl = "";
           if (session['image'] != null &&
               session['image'].toString().isNotEmpty) {
             imageUrl = session['image'].toString();
@@ -246,8 +248,10 @@ class QuizDetailScreen extends ConsumerWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            AttendedStudentsScreen(sessionId: sessionId),
+                        builder: (_) => TeacherContextFrame.carry(
+                          context,
+                          AttendedStudentsScreen(sessionId: sessionId),
+                        ),
                       ),
                     );
                   },
@@ -425,40 +429,40 @@ class QuizDetailScreen extends ConsumerWidget {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        _buildQuestionChip(type),
-                        _buildQuestionChip(difficulty),
-                      ],
-                    ),
-                    if (resolvedImageUrl.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.network(
-                          resolvedImageUrl,
-                          width: double.infinity,
-                          height: 180,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
-                            height: 120,
-                            alignment: Alignment.center,
-                            color: Colors.grey.shade100,
-                            child: Text(
-                              'Image preview unavailable',
-                              style: TextStyle(color: Colors.grey.shade500),
-                            ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildQuestionChip(type),
+                      _buildQuestionChip(difficulty),
+                    ],
+                  ),
+                  if (resolvedImageUrl.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        resolvedImageUrl,
+                        width: double.infinity,
+                        height: 180,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          height: 120,
+                          alignment: Alignment.center,
+                          color: Colors.grey.shade100,
+                          child: Text(
+                            'Image preview unavailable',
+                            style: TextStyle(color: Colors.grey.shade500),
                           ),
                         ),
                       ),
-                    ],
-                    const SizedBox(height: 12),
-                    ...List.generate(options.length, (i) {
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  ...List.generate(options.length, (i) {
                     final char = String.fromCharCode(65 + i); // A, B, C, D
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 4),

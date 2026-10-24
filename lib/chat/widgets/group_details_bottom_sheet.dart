@@ -101,41 +101,23 @@ class _GroupDetailsBottomSheetState extends State<GroupDetailsBottomSheet> {
             child: CircleAvatar(
               radius: 40,
               backgroundColor: Colors.grey.shade200,
-              backgroundImage:
-                  _selectedImage != null ? FileImage(_selectedImage!) : null,
+              backgroundImage: _selectedImage != null
+                  ? FileImage(_selectedImage!)
+                  : null,
               child: _selectedImage == null
-                  ? const Icon(
-                      Icons.camera_alt,
-                      size: 32,
-                      color: Colors.grey,
-                    )
+                  ? const Icon(Icons.camera_alt, size: 32, color: Colors.grey)
                   : null,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Set Group Image',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade600,
-            ),
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
           ),
           const SizedBox(height: 24),
           TextField(
             controller: _nameController,
-            decoration: InputDecoration(
-              hintText: 'Group Subject',
-              filled: true,
-              fillColor: const Color(0xFFF1F0F0),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 14,
-              ),
-            ),
+            decoration: InputDecoration(hintText: 'Group Subject'),
             textCapitalization: TextCapitalization.words,
           ),
           const SizedBox(height: 32),

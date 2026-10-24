@@ -13,8 +13,7 @@ class SupportScreen extends StatefulWidget {
 class _SupportScreenState extends State<SupportScreen> {
   final TextEditingController _messageController = TextEditingController();
   final String _supportName = "Support Randolph";
-  final String _supportImageUrl =
-      "";
+  final String _supportImageUrl = "";
 
   @override
   Widget build(BuildContext context) {
@@ -164,35 +163,13 @@ class _SupportScreenState extends State<SupportScreen> {
       child: Row(
         children: [
           Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: TextField(
-                controller: _messageController,
-                decoration: InputDecoration(
-                  hintText: "Type a message",
-                  hintStyle: TextStyle(
-                    color: Colors.grey.shade400,
-                    fontSize: 15,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 16,
-                  ),
-                  suffixIcon: const Icon(
-                    Icons.camera_alt,
-                    color: Color(0xFF871DAD),
-                  ),
+            child: TextField(
+              controller: _messageController,
+              decoration: InputDecoration(
+                hintText: "Type a message",
+                suffixIcon: const Icon(
+                  Icons.camera_alt,
+                  color: Color(0xFF871DAD),
                 ),
               ),
             ),

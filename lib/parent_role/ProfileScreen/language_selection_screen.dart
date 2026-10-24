@@ -83,24 +83,11 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                   const SizedBox(height: 20),
 
                   // Search Bar
-                  Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF5F5F5),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: const Color(0xFFDDDDDD),
-                        width: 1,
-                      ),
-                    ),
-                    child: TextField(
-                      onChanged: _filterLanguages,
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.search, color: Colors.grey),
-                        hintText: "Search",
-                        hintStyle: TextStyle(color: Colors.grey),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(vertical: 14),
-                      ),
+                  TextField(
+                    onChanged: _filterLanguages,
+                    decoration: const InputDecoration(
+                      prefixIcon: Icon(Icons.search, color: Colors.grey),
+                      hintText: "Search",
                     ),
                   ),
 

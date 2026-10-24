@@ -13,7 +13,8 @@ import 'package:opalmer_education/core/constants/api_constants.dart';
 import 'behavior_record.dart';
 import 'academic_documents.dart';
 import 'grading_progress.dart';
-
+import '../navigation/teacher_student_actions.dart';
+import '../navigation/teacher_workspace.dart';
 
 class StudentProfileScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> studentData;
@@ -155,9 +156,15 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                               ? Image.network(
                                   avatarUrl,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => const Icon(Icons.person_outline, color: Color(0xFF871DAD)),
+                                  errorBuilder: (_, __, ___) => const Icon(
+                                    Icons.person_outline,
+                                    color: Color(0xFF871DAD),
+                                  ),
                                 )
-                              : const Icon(Icons.person_outline, color: Color(0xFF871DAD)),
+                              : const Icon(
+                                  Icons.person_outline,
+                                  color: Color(0xFF871DAD),
+                                ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -222,7 +229,9 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                           child: attendanceStatsAsync.when(
                             data: (percentage) => _buildStatBox(
                               "Attendance",
-                              percentage == null ? "N/A" : "$percentage%${_getAttendanceEmoji(percentage)}",
+                              percentage == null
+                                  ? "N/A"
+                                  : "$percentage%${_getAttendanceEmoji(percentage)}",
                               _getAttendanceColor(percentage ?? 0),
                             ),
                             loading: () => _buildStatBox(
@@ -303,9 +312,16 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                                       ? Image.network(
                                           avatarUrl,
                                           fit: BoxFit.cover,
-                                          errorBuilder: (_, __, ___) => const Icon(Icons.person_outline, color: Color(0xFF871DAD)),
+                                          errorBuilder: (_, __, ___) =>
+                                              const Icon(
+                                                Icons.person_outline,
+                                                color: Color(0xFF871DAD),
+                                              ),
                                         )
-                                      : const Icon(Icons.person_outline, color: Color(0xFF871DAD)),
+                                      : const Icon(
+                                          Icons.person_outline,
+                                          color: Color(0xFF871DAD),
+                                        ),
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
@@ -391,15 +407,31 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                                   value: _selectedFilter,
                                   dropdownColor: Colors.white,
                                   borderRadius: BorderRadius.circular(12),
-                                  style: const TextStyle(color: Color(0xFF871DAD), fontSize: 13),
-                                  icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF871DAD)),
+                                  style: const TextStyle(
+                                    color: Color(0xFF871DAD),
+                                    fontSize: 13,
+                                  ),
+                                  icon: const Icon(
+                                    Icons.keyboard_arrow_down,
+                                    color: Color(0xFF871DAD),
+                                  ),
                                   items: const [
-                                    DropdownMenuItem(value: 'daily', child: Text('Day')),
-                                    DropdownMenuItem(value: 'weekly', child: Text('Week')),
-                                    DropdownMenuItem(value: 'monthly', child: Text('Month')),
+                                    DropdownMenuItem(
+                                      value: 'daily',
+                                      child: Text('Day'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'weekly',
+                                      child: Text('Week'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'monthly',
+                                      child: Text('Month'),
+                                    ),
                                   ],
                                   onChanged: (value) {
-                                    if (value != null) setState(() => _selectedFilter = value);
+                                    if (value != null)
+                                      setState(() => _selectedFilter = value);
                                   },
                                 ),
                               ),
@@ -412,10 +444,15 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                             child: analysisAsync.when(
                               data: (data) {
                                 final points = data['performanceChartData'];
-                                return PerformanceChart(points: points is List ? points : []);
+                                return PerformanceChart(
+                                  points: points is List ? points : [],
+                                );
                               },
-                              loading: () => const Center(child: CircularProgressIndicator()),
-                              error: (err, _) => Center(child: Text("Error: $err")),
+                              loading: () => const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                              error: (err, _) =>
+                                  Center(child: Text("Error: $err")),
                             ),
                           ),
                         ],
@@ -424,14 +461,27 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                     const SizedBox(height: 24),
 
                     // ── List Items ──
+                    TeacherStudentActions(
+                      student: student,
+                      classId: widget.classId,
+                      onMessage: () => _handleChat(
+                        studentId,
+                        student['username'] ?? 'Student',
+                        avatarUrl,
+                      ),
+                    ),
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => BehaviorRecordScreen(
-                              studentId: studentId,
-                              student: student,
+                            builder: (_) => TeacherContextFrame.carry(
+                              context,
+                              BehaviorRecordScreen(
+                                studentId: studentId,
+                                student: student,
+                                classId: widget.classId,
+                              ),
                             ),
                           ),
                         );
@@ -443,8 +493,13 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                AcademicDocumentsScreen(studentId: studentId),
+                            builder: (_) => TeacherContextFrame.carry(
+                              context,
+                              AcademicDocumentsScreen(
+                                studentId: studentId,
+                                classId: widget.classId,
+                              ),
+                            ),
                           ),
                         );
                       },
@@ -455,7 +510,13 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => GradingProgressScreen(studentId: studentId, classId: classId),
+                            builder: (_) => TeacherContextFrame.carry(
+                              context,
+                              GradingProgressScreen(
+                                studentId: studentId,
+                                classId: classId,
+                              ),
+                            ),
                           ),
                         );
                       },
@@ -506,8 +567,10 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-              ChatScreen(session: room, role: ChatRole.teacher),
+          builder: (_) => TeacherContextFrame.carry(
+            context,
+            ChatScreen(session: room, role: ChatRole.teacher),
+          ),
         ),
       );
     }
@@ -517,7 +580,10 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => CallScreen(name: name, imageUrl: avatar),
+        builder: (_) => TeacherContextFrame.carry(
+          context,
+          CallScreen(name: name, imageUrl: avatar),
+        ),
       ),
     );
   }
@@ -586,4 +652,3 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
     );
   }
 }
-

@@ -3,8 +3,8 @@ import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:opalmer_education/core/services/api_client.dart';
 import 'package:opalmer_education/core/providers/teacher_provider.dart';
+import '../../core/services/attachment_service.dart';
 
 class CreateLessonScreen extends ConsumerStatefulWidget {
   final String classId;
@@ -25,6 +25,7 @@ class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
 
   @override
   void dispose() {
+    _titleController.dispose();
     _objectiveController.dispose();
     _noteController.dispose();
     super.dispose();
@@ -36,6 +37,7 @@ class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf'],
+        withData: true,
       );
       debugPrint("CreateLesson: FilePicker result: $result");
 
@@ -56,9 +58,9 @@ class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
       }
     } catch (e) {
       debugPrint("Error picking PDF: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Could not pick PDF")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Could not pick PDF")));
     }
   }
 
@@ -89,22 +91,29 @@ class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
         'classId': widget.classId,
       });
 
-      if (_selectedFile != null && _selectedFile!.path != null) {
-        formData.files.add(MapEntry(
-          'document',
-          await MultipartFile.fromFile(
-            _selectedFile!.path!,
-            filename: _selectedFile!.name,
+      if (_selectedFile != null) {
+        formData.files.add(
+          MapEntry(
+            'document',
+            await AttachmentService.multipart(
+              _selectedFile!,
+              maxMb: 10,
+              extensions: ['pdf'],
+            ),
           ),
-        ));
+        );
       }
 
-      final response = await apiClient.post('/lessons/create', data: formData);
+      final response = await apiClient.post(
+        '/lessons/create',
+        data: formData,
+        options: AttachmentService.uploadOptions,
+      );
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         // Refresh lessons list
         ref.invalidate(classLessonsProvider(widget.classId));
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Lesson created successfully")),
@@ -118,13 +127,14 @@ class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
       debugPrint("Error creating lesson: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: ${e.toString()}")),
+          SnackBar(content: Text(AttachmentService.errorMessage(e))),
         );
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -183,29 +193,7 @@ class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
                     const SizedBox(height: 8),
                     TextField(
                       controller: _titleController,
-                      decoration: InputDecoration(
-                        hintText: "Enter title here",
-                        hintStyle: TextStyle(
-                          color: Colors.grey.shade400,
-                          fontSize: 14,
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFFFAFAFA),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF871DAD),
-                          ),
-                        ),
-                      ),
+                      decoration: InputDecoration(hintText: "Enter title here"),
                     ),
                     const SizedBox(height: 20),
 
@@ -223,26 +211,6 @@ class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
                       controller: _objectiveController,
                       decoration: InputDecoration(
                         hintText: "Enter objective here",
-                        hintStyle: TextStyle(
-                          color: Colors.grey.shade400,
-                          fontSize: 14,
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFFFAFAFA),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF871DAD),
-                          ),
-                        ),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -260,29 +228,7 @@ class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
                     TextField(
                       controller: _noteController,
                       maxLines: 4,
-                      decoration: InputDecoration(
-                        hintText: "Write",
-                        hintStyle: TextStyle(
-                          color: Colors.grey.shade400,
-                          fontSize: 14,
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFFFAFAFA),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF871DAD),
-                          ),
-                        ),
-                      ),
+                      decoration: InputDecoration(hintText: "Write"),
                     ),
                     const SizedBox(height: 24),
 
@@ -321,7 +267,7 @@ class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                "Drag and drop to upload",
+                                "Tap to choose a PDF (up to 10 MB)",
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey.shade600,

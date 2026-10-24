@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/widgets/app_back_button.dart';
 import '../../core/widgets/data_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/providers/grading_provider.dart';
@@ -102,8 +103,7 @@ class _GradingToolScreenState extends ConsumerState<GradingToolScreen> {
                     itemBuilder: (context, index) {
                       final session = filteredSessions[index];
                       final sessionId = session['_id']?.toString() ?? '';
-                      String imageUrl =
-                          "";
+                      String imageUrl = "";
                       if (session['image'] != null &&
                           session['image'].toString().isNotEmpty) {
                         imageUrl = session['image'].toString();
@@ -158,12 +158,17 @@ class _GradingToolScreenState extends ConsumerState<GradingToolScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            "Grading Tool",
-            style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+          const AppBackButton(),
+          const Expanded(
+            child: Text(
+              "Grading Tool",
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ),
           if (!_isDraftTab)

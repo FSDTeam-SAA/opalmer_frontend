@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
-import 'package:opalmer_education/core/providers/grading_provider.dart';
 import 'package:opalmer_education/core/providers/navigation_provider.dart';
 import 'package:opalmer_education/core/providers/teacher_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
@@ -10,9 +9,12 @@ import 'package:opalmer_education/core/widgets/pressable_card.dart';
 
 import '../../notification/notification.dart';
 import '../Classes_Screen/widgets/teacher_class_card.dart';
+import '../navigation/teacher_menu.dart';
+import '../Quiz_Screen/grading_tool.dart';
 
 class HomeDashboard extends ConsumerStatefulWidget {
-  const HomeDashboard({super.key});
+  final VoidCallback? onOpenMenu;
+  const HomeDashboard({super.key, this.onOpenMenu});
 
   @override
   ConsumerState<HomeDashboard> createState() => _HomeDashboardState();
@@ -166,6 +168,7 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
 
     // Bell shakes after header appears
     await Future.delayed(const Duration(milliseconds: 600));
+    if (!mounted) return;
     _bellController.forward();
 
     await Future.delayed(const Duration(milliseconds: 100));
@@ -191,7 +194,6 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
     final classesAsync = ref.watch(teacherClassesProvider);
     final quizzesAsync = ref.watch(teacherQuizzesProvider);
     final user = ref.watch(authStateProvider);
-    final sessionsAsync = ref.watch(teacherSessionsProvider(null));
 
     return Scaffold(
       backgroundColor: AppColors.scaffoldBg,
@@ -199,110 +201,136 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Header ──
-            Stack(
-              children: [
-                Image.asset(
-                  'assets/images/Home_dashboard_header.png',
-                  width: double.infinity,
-                  fit: BoxFit.fitWidth,
-                ),
-                SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // Animated greeting text
-                            Expanded(child: FadeTransition(
-                              opacity: _headerFade,
-                              child: SlideTransition(
-                                position: _headerSlide,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "Hi, ${user?.username ?? 'Teacher'} 👋",
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                        letterSpacing: -0.5,
+            // Keep navigation in the header; classes remain the first content.
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                bottom: Radius.circular(28),
+              ),
+              child: Stack(
+                children: [
+                  const Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: AppColors.primaryGradient,
+                      ),
+                    ),
+                  ),
+                  Positioned.fill(
+                    child: Opacity(
+                      opacity: 0.45,
+                      child: Image.asset(
+                        'assets/images/Home_dashboard_header.png',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  SafeArea(
+                    bottom: false,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Material(
+                                color: Colors.white.withValues(alpha: 0.14),
+                                borderRadius: BorderRadius.circular(13),
+                                child: IconButton(
+                                  key: const ValueKey('teacher-header-menu'),
+                                  tooltip: 'Open menu',
+                                  icon: const Icon(
+                                    Icons.menu_rounded,
+                                    size: 23,
+                                    color: Colors.white,
+                                  ),
+                                  onPressed:
+                                      widget.onOpenMenu ??
+                                      () => openTeacherPage(
+                                        context,
+                                        const TeacherMenuScreen(),
                                       ),
-                                    ),
-                                    const SizedBox(height: 0),
-                                    Text(
-                                      "Check your students activities",
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w500,
-                                        shadows: [
-                                          Shadow(
-                                            color: Colors.black.withValues(
-                                              alpha: 0.1,
-                                            ),
-                                            offset: const Offset(0, 1),
-                                            blurRadius: 2,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
                                 ),
                               ),
-                            )),
-
-                            // Animated bell shake
-                            AnimatedBuilder(
-                              animation: _bellShake,
-                              builder: (context, child) {
-                                return Transform.rotate(
-                                  angle: _bellShake.value,
-                                  child: child,
-                                );
-                              },
-                              child: FadeTransition(
-                                opacity: _headerFade,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const NotificationScreen(),
-                                      ),
-                                    );
-                                  },
-                                  child: Image.asset(
-                                    'assets/images/home_dashboard/notification.png',
-                                    width: 32,
-                                    height: 32,
+                              const SizedBox(width: 12),
+                              const Expanded(
+                                child: Text(
+                                  'Teacher workspace',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white,
                                   ),
                                 ),
                               ),
+                              AnimatedBuilder(
+                                animation: _bellShake,
+                                builder: (context, child) => Transform.rotate(
+                                  angle: _bellShake.value,
+                                  child: child,
+                                ),
+                                child: Material(
+                                  color: Colors.white.withValues(alpha: 0.14),
+                                  borderRadius: BorderRadius.circular(13),
+                                  child: IconButton(
+                                    tooltip: 'Notifications',
+                                    icon: const Icon(
+                                      Icons.notifications_none_rounded,
+                                      size: 23,
+                                      color: Colors.white,
+                                    ),
+                                    onPressed: () => openTeacherPage(
+                                      context,
+                                      const NotificationScreen(),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 18),
+                          FadeTransition(
+                            opacity: _headerFade,
+                            child: SlideTransition(
+                              position: _headerSlide,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Hi, ${user?.username ?? 'Teacher'}",
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: -0.6,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'Your classes, all in one place.',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.white.withValues(
+                                        alpha: 0.85,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ],
-                        ),
-                      ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-
-            // ── Main Content Area (Shifted Up to overlap header) ──
-            Transform.translate(
-              offset: const Offset(0, -25),
+            // Class statistics and assessments stay directly below the header.
+            Padding(
+              padding: const EdgeInsets.only(top: 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -312,12 +340,16 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          "Class Stats",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
+                        const Expanded(
+                          child: Text(
+                            "Class Stats",
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
                           ),
                         ),
                         GestureDetector(
@@ -341,58 +373,62 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
 
                   // Horizontal scrollable Class Stats cards
                   SizedBox(
-                    height: 220,
-                    child: LayoutBuilder(builder: (context, constraints) => classesAsync.when(
-                      data: (classes) {
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          _setupCardAnimations(classes.length);
-                        });
+                    height: 228,
+                    child: LayoutBuilder(
+                      builder: (context, constraints) => classesAsync.when(
+                        data: (classes) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            _setupCardAnimations(classes.length);
+                          });
 
-                        if (classes.isEmpty) {
-                          return const Center(child: Text("No classes found."));
-                        }
+                          if (classes.isEmpty) {
+                            return const Center(
+                              child: Text("No classes found."),
+                            );
+                          }
 
-                        return ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          itemCount: classes.length,
-                          itemBuilder: (context, index) {
-                            final cls = classes[index];
-                            final Color cardColor = index % 2 == 0
-                                ? AppColors.success
-                                : AppColors.warning;
+                          return ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            itemCount: classes.length,
+                            itemBuilder: (context, index) {
+                              final cls = classes[index];
+                              final Color cardColor = index % 2 == 0
+                                  ? AppColors.success
+                                  : AppColors.warning;
 
-                            return Row(
-                              children: [
-                                FadeTransition(
-                                  opacity: index < _cardFades.length
-                                      ? _cardFades[index]
-                                      : const AlwaysStoppedAnimation(1),
-                                  child: SlideTransition(
-                                    position: index < _cardSlides.length
-                                        ? _cardSlides[index]
-                                        : const AlwaysStoppedAnimation(
-                                            Offset.zero,
-                                          ),
-                                    child: TeacherClassCard(
-                                      width: constraints.maxWidth - 40,
-                                      margin: EdgeInsets.zero,
-                                      classData: cls,
-                                      color: cardColor,
+                              return Row(
+                                children: [
+                                  FadeTransition(
+                                    opacity: index < _cardFades.length
+                                        ? _cardFades[index]
+                                        : const AlwaysStoppedAnimation(1),
+                                    child: SlideTransition(
+                                      position: index < _cardSlides.length
+                                          ? _cardSlides[index]
+                                          : const AlwaysStoppedAnimation(
+                                              Offset.zero,
+                                            ),
+                                      child: TeacherClassCard(
+                                        width: constraints.maxWidth - 40,
+                                        margin: EdgeInsets.zero,
+                                        classData: cls,
+                                        color: cardColor,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                if (index < classes.length - 1)
-                                  const SizedBox(width: 14),
-                              ],
-                            );
-                          },
-                        );
-                      },
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (err, _) => Center(child: Text("Error: $err")),
-                    )),
+                                  if (index < classes.length - 1)
+                                    const SizedBox(width: 14),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
+                        error: (err, _) => Center(child: Text("Error: $err")),
+                      ),
+                    ),
                   ),
 
                   const SizedBox(height: 24),
@@ -403,20 +439,30 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          "Quizzes",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
+                        const Expanded(
+                          child: Text(
+                            "Quizzes",
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
                           ),
                         ),
-                        Text(
-                          "View All",
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.primaryMid,
+                        GestureDetector(
+                          onTap: () => openTeacherPage(
+                            context,
+                            const GradingToolScreen(),
+                          ),
+                          child: Text(
+                            "View All",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primaryMid,
+                            ),
                           ),
                         ),
                       ],

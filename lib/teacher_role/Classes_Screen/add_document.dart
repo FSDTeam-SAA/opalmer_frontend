@@ -5,10 +5,12 @@ import 'package:dio/dio.dart';
 import 'dart:ui' as ui;
 
 import '../../core/providers/teacher_provider.dart';
+import '../../core/services/attachment_service.dart';
 
 class AddDocumentScreen extends ConsumerStatefulWidget {
   final String studentId;
-  const AddDocumentScreen({super.key, required this.studentId});
+  final String? classId;
+  const AddDocumentScreen({super.key, required this.studentId, this.classId});
 
   @override
   ConsumerState<AddDocumentScreen> createState() => _AddDocumentScreenState();
@@ -20,6 +22,12 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
   PlatformFile? _selectedFile;
   String? _selectedClassId;
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedClassId = widget.classId;
+  }
 
   Future<void> _pickFile() async {
     try {
@@ -86,25 +94,30 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
 
     try {
       final apiClient = ref.read(apiClientProvider);
+      final classes = await ref.read(
+        studentTeacherClassesProvider(widget.studentId).future,
+      );
+      if (!classes.any((cls) => cls.id == _selectedClassId)) {
+        throw const FormatException(
+          'Select a class in which this student is enrolled.',
+        );
+      }
 
       final formData = FormData.fromMap({
         "studentId": widget.studentId,
         "classId": _selectedClassId,
         "title": _selectedFile!.name,
-        "document": _selectedFile!.bytes != null
-            ? MultipartFile.fromBytes(
-                _selectedFile!.bytes!,
-                filename: _selectedFile!.name,
-              )
-            : await MultipartFile.fromFile(
-                _selectedFile!.path!,
-                filename: _selectedFile!.name,
-              ),
+        "document": await AttachmentService.multipart(
+          _selectedFile!,
+          maxMb: 10,
+          extensions: ['pdf'],
+        ),
       });
 
       final response = await apiClient.post(
         '/academicDocument/create',
         data: formData,
+        options: AttachmentService.uploadOptions,
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -124,20 +137,7 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
         );
       }
     } catch (e) {
-      String errorMessage = "Failed to upload document";
-      if (e is DioException) {
-        if (e.response != null && e.response!.data != null) {
-          if (e.response!.data is Map) {
-            errorMessage = e.response!.data['message'] ?? errorMessage;
-          } else {
-            errorMessage = e.response!.data.toString();
-          }
-        } else {
-          errorMessage = e.message ?? errorMessage;
-        }
-      } else {
-        errorMessage = e.toString();
-      }
+      final errorMessage = AttachmentService.errorMessage(e);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -203,49 +203,69 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
               const SizedBox(height: 24),
 
               ref
-                  .watch(teacherClassesProvider)
+                  .watch(studentTeacherClassesProvider(widget.studentId))
                   .when(
                     loading: () => const LinearProgressIndicator(),
                     error: (_, __) => TextButton(
-                      onPressed: () => ref.invalidate(teacherClassesProvider),
+                      onPressed: () => ref.invalidate(
+                        studentTeacherClassesProvider(widget.studentId),
+                      ),
                       child: const Text('Unable to load classes. Retry'),
                     ),
-                    data: (classes) => DropdownButtonFormField<String>(
-                      initialValue: _selectedClassId,
-                      isExpanded: true,
-                      menuMaxHeight: 300,
-                      dropdownColor: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF871DAD)),
-                      hint: const Text('Select student class'),
-                      style: const TextStyle(color: Color(0xFF333333), fontSize: 14),
-                      selectedItemBuilder: (context) => classes.map((cls) => Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text('Grade ${cls.grade} - ${cls.subject}${cls.section?.isNotEmpty == true ? ' (Section ${cls.section})' : ''}', maxLines: 1, overflow: TextOverflow.ellipsis),
-                      )).toList(),
-                      decoration: InputDecoration(
-                        labelText: 'Student class',
-                        filled: true,
-                        fillColor: Colors.white,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      items: classes
-                          .map(
-                            (cls) => DropdownMenuItem(
-                              value: cls.id,
-                              child: Text(
-                                'Grade ${cls.grade} - ${cls.subject}${cls.section?.isNotEmpty == true ? ' (Section ${cls.section})' : ''}',
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
+                    data: (classes) => classes.isEmpty
+                        ? const Text(
+                            'This student is not enrolled in one of your classes.',
                           )
-                          .toList(),
-                      onChanged: _isLoading
-                          ? null
-                          : (value) => setState(() => _selectedClassId = value),
-                    ),
+                        : DropdownButtonFormField<String>(
+                            initialValue:
+                                classes.any((cls) => cls.id == _selectedClassId)
+                                ? _selectedClassId
+                                : null,
+                            isExpanded: true,
+                            menuMaxHeight: 300,
+                            dropdownColor: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            icon: const Icon(
+                              Icons.keyboard_arrow_down,
+                              color: Color(0xFF871DAD),
+                            ),
+                            hint: const Text('Select student class'),
+                            style: const TextStyle(
+                              color: Color(0xFF333333),
+                              fontSize: 14,
+                            ),
+                            selectedItemBuilder: (context) => classes
+                                .map(
+                                  (cls) => Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      'Grade ${cls.grade} - ${cls.subject}${cls.section?.isNotEmpty == true ? ' (Section ${cls.section})' : ''}',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                            decoration: InputDecoration(
+                              labelText: 'Student class',
+                            ),
+                            items: classes
+                                .map(
+                                  (cls) => DropdownMenuItem(
+                                    value: cls.id,
+                                    child: Text(
+                                      'Grade ${cls.grade} - ${cls.subject}${cls.section?.isNotEmpty == true ? ' (Section ${cls.section})' : ''}',
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: _isLoading
+                                ? null
+                                : (value) =>
+                                      setState(() => _selectedClassId = value),
+                          ),
                   ),
               const SizedBox(height: 24),
               // Dashed Upload Area
@@ -269,7 +289,7 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          "Drag and drop to upload",
+                          "Tap to choose a PDF (up to 10 MB)",
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.grey.shade600,

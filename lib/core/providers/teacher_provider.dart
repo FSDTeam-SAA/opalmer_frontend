@@ -25,70 +25,119 @@ final teacherQuizzesProvider = FutureProvider<List<QuizModel>>((ref) async {
   return [];
 });
 
-final teacherClassesProvider = FutureProvider<List<TeacherClassModel>>((ref) async {
+final teacherClassesProvider = FutureProvider<List<TeacherClassModel>>((
+  ref,
+) async {
   final user = ref.watch(authStateProvider);
   if (user == null) return [];
 
   final apiClient = ref.read(apiClientProvider);
-  
+
   // 1. Fetch all classes for this teacher
   final response = await apiClient.get('/classes/teacher/${user.id}');
-  
+
   if (response.statusCode == 200 && response.data['success'] == true) {
     final List<dynamic> classData = response.data['data'];
-    final List<TeacherClassModel> classes = classData.map((e) => TeacherClassModel.fromJson(e)).toList();
+    final List<TeacherClassModel> classes = classData
+        .map((e) => TeacherClassModel.fromJson(e))
+        .toList();
 
     // 2. For each class, fetch the students explicitly assigned to it.
-    final updatedClasses = await Future.wait(classes.map((cls) async {
-      try {
-        final assignments = await ref.watch(classStudentsProvider(cls.id).future);
-        return cls.copyWith(studentCount: assignments.length);
-      } catch (e) {
-        // Log error or handle gracefully
-      }
-      return cls;
-    }));
+    final updatedClasses = await Future.wait(
+      classes.map((cls) async {
+        try {
+          final assignments = await ref.watch(
+            classStudentsProvider(cls.id).future,
+          );
+          return cls.copyWith(studentCount: assignments.length);
+        } catch (e) {
+          // Log error or handle gracefully
+        }
+        return cls;
+      }),
+    );
 
     return updatedClasses;
   }
-  
+
   return [];
 });
 
-final classStudentsProvider = FutureProvider.family<List<dynamic>, String>((ref, classId) async {
+final classStudentsProvider = FutureProvider.family<List<dynamic>, String>((
+  ref,
+  classId,
+) async {
   final apiClient = ref.read(apiClientProvider);
 
-  final response = await apiClient.get('/student-assign-to-class/class/$classId');
-  
+  final response = await apiClient.get(
+    '/student-assign-to-class/class/$classId',
+  );
+
   if (response.statusCode == 200 && response.data['success'] == true) {
     final data = response.data['data'];
     if (data is List) {
-      return data.where((row) => row is Map && row['studentId'] is Map).toList();
+      return data
+          .where((row) => row is Map && row['studentId'] is Map)
+          .toList();
     }
   }
   throw StateError('Unable to load enrolled students');
 });
 
+final studentTeacherClassesProvider =
+    FutureProvider.family<List<TeacherClassModel>, String>((
+      ref,
+      studentId,
+    ) async {
+      final classes = await ref.watch(teacherClassesProvider.future);
+      final enrolled = await Future.wait(
+        classes.map((cls) async {
+          final rows = await ref.watch(classStudentsProvider(cls.id).future);
+          return rows.any((row) => row['studentId']['_id'] == studentId)
+              ? cls
+              : null;
+        }),
+      );
+      return enrolled.whereType<TeacherClassModel>().toList();
+    });
+
 // Nullable metrics distinguish missing records from a measured zero percent.
-final classDetailsAttendanceProvider = FutureProvider.family<int?, String>((ref, key) async {
+final classDetailsAttendanceProvider = FutureProvider.family<int?, String>((
+  ref,
+  key,
+) async {
   final parts = key.split('|');
   final student = parts.first == 'student';
-  final response = await ref.read(apiClientProvider).get(
-    student ? '/attendances/student/${parts[1]}/stats' : '/attendances/class/${parts[1]}/stats',
-    queryParameters: student ? {'classId': parts[2]} : null,
-  );
+  final response = await ref
+      .read(apiClientProvider)
+      .get(
+        student
+            ? '/attendances/student/${parts[1]}/stats'
+            : '/attendances/class/${parts[1]}/stats',
+        queryParameters: student ? {'classId': parts[2]} : null,
+      );
   if (response.data['success'] != true || response.data['data'] is! Map) {
     throw StateError('Unable to load attendance');
   }
   final data = response.data['data'];
   final count = student ? data['recordedCount'] : data['totalDays'];
-  if (count is! num || count <= 0 || (!student && (data['studentCount'] as num? ?? 0) <= 0)) return null;
+  if (count is! num ||
+      count <= 0 ||
+      (!student && (data['studentCount'] as num? ?? 0) <= 0))
+    return null;
   final percentage = data['percentage'];
-  return percentage is num && percentage.isFinite && percentage >= 0 && percentage <= 100
-      ? percentage.round() : null;
+  return percentage is num &&
+          percentage.isFinite &&
+          percentage >= 0 &&
+          percentage <= 100
+      ? percentage.round()
+      : null;
 });
 
-final classPerformanceProvider = FutureProvider.family<int?, String>((ref, classId) async {
+final classPerformanceProvider = FutureProvider.family<int?, String>((
+  ref,
+  classId,
+) async {
   final students = await ref.watch(classStudentsProvider(classId).future);
   double total = 0;
   int count = 0;
@@ -105,7 +154,10 @@ final classPerformanceProvider = FutureProvider.family<int?, String>((ref, class
   return count > 0 ? (total / count).round() : null;
 });
 
-final classLessonsProvider = FutureProvider.family<List<dynamic>, String>((ref, classId) async {
+final classLessonsProvider = FutureProvider.family<List<dynamic>, String>((
+  ref,
+  classId,
+) async {
   final apiClient = ref.read(apiClientProvider);
   final response = await apiClient.get('/lessons/teacher-lessons');
   if (response.statusCode == 200 && response.data['success'] == true) {
@@ -122,7 +174,10 @@ final classLessonsProvider = FutureProvider.family<List<dynamic>, String>((ref, 
   return [];
 });
 
-final classHomeworkProvider = FutureProvider.family<List<dynamic>, String>((ref, classId) async {
+final classHomeworkProvider = FutureProvider.family<List<dynamic>, String>((
+  ref,
+  classId,
+) async {
   final apiClient = ref.read(apiClientProvider);
   final response = await apiClient.get('/homework/class/$classId');
   if (response.statusCode == 200 && response.data['success'] == true) {
@@ -134,7 +189,7 @@ final classHomeworkProvider = FutureProvider.family<List<dynamic>, String>((ref,
 final userRoomsProvider = FutureProvider<List<dynamic>>((ref) async {
   final user = ref.watch(authStateProvider);
   if (user == null) return [];
-  
+
   final apiClient = ref.read(apiClientProvider);
   final response = await apiClient.get(ApiConstants.myRooms);
   if (response.statusCode == 200 && response.data['success'] == true) {
@@ -150,7 +205,10 @@ final userRoomsProvider = FutureProvider<List<dynamic>>((ref) async {
   return [];
 });
 
-final classAttendanceStatsProvider = FutureProvider.family<int, String>((ref, classId) async {
+final classAttendanceStatsProvider = FutureProvider.family<int, String>((
+  ref,
+  classId,
+) async {
   final apiClient = ref.read(apiClientProvider);
   final response = await apiClient.get('/attendances/class/$classId/stats');
   if (response.statusCode == 200 && response.data['success'] == true) {
@@ -159,8 +217,10 @@ final classAttendanceStatsProvider = FutureProvider.family<int, String>((ref, cl
   return 0;
 });
 
-final studentAttendanceStatsProvider =
-    FutureProvider.family<int, String>((ref, params) async {
+final studentAttendanceStatsProvider = FutureProvider.family<int, String>((
+  ref,
+  params,
+) async {
   final apiClient = ref.read(apiClientProvider);
   final parts = params.split('|');
   final studentId = parts[0];
@@ -178,36 +238,48 @@ final studentAttendanceStatsProvider =
 });
 
 final studentAnalysisProvider =
-    FutureProvider.family<Map<String, dynamic>, String>((ref, paramString) async {
-  final apiClient = ref.read(apiClientProvider);
-  final parts = paramString.split('|');
-  if (parts.length < 2) return {};
-  
-  final classId = parts[0];
-  final studentId = parts[1];
-  final filter = parts.length > 2 ? parts[2] : 'weekly';
+    FutureProvider.family<Map<String, dynamic>, String>((
+      ref,
+      paramString,
+    ) async {
+      final apiClient = ref.read(apiClientProvider);
+      final parts = paramString.split('|');
+      if (parts.length < 2) return {};
 
+      final classId = parts[0];
+      final studentId = parts[1];
+      final filter = parts.length > 2 ? parts[2] : 'weekly';
+
+      final response = await apiClient.get(
+        '/analysis/$classId/$studentId',
+        queryParameters: {'filter': filter},
+      );
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return response.data['data'];
+      }
+      return {};
+    });
+
+final classAttendanceProvider = FutureProvider.family<List<dynamic>, String>((
+  ref,
+  classId,
+) async {
+  final apiClient = ref.read(apiClientProvider);
   final response = await apiClient.get(
-    '/analysis/$classId/$studentId',
-    queryParameters: {'filter': filter},
+    '/attendances/class',
+    queryParameters: {'classId': classId},
   );
-
-  if (response.statusCode == 200 && response.data['success'] == true) {
-    return response.data['data'];
-  }
-  return {};
-});
-
-final classAttendanceProvider = FutureProvider.family<List<dynamic>, String>((ref, classId) async {
-  final apiClient = ref.read(apiClientProvider);
-  final response = await apiClient.get('/attendances/class', queryParameters: {'classId': classId});
   if (response.statusCode == 200 && response.data['success'] == true) {
     return response.data['data'];
   }
   return [];
 });
 
-final studentParentsProvider = FutureProvider.family<List<dynamic>, String>((ref, studentId) async {
+final studentParentsProvider = FutureProvider.family<List<dynamic>, String>((
+  ref,
+  studentId,
+) async {
   final apiClient = ref.read(apiClientProvider);
   final response = await apiClient.get('/parent/child/child/$studentId');
   if (response.statusCode == 200 && response.data['success'] == true) {
@@ -216,7 +288,10 @@ final studentParentsProvider = FutureProvider.family<List<dynamic>, String>((ref
   return [];
 });
 
-final parentChildrenProvider = FutureProvider.family<List<dynamic>, String>((ref, parentId) async {
+final parentChildrenProvider = FutureProvider.family<List<dynamic>, String>((
+  ref,
+  parentId,
+) async {
   final apiClient = ref.read(apiClientProvider);
   final response = await apiClient.get('/parent/child/parent/$parentId');
   if (response.statusCode == 200 && response.data['success'] == true) {
@@ -225,16 +300,21 @@ final parentChildrenProvider = FutureProvider.family<List<dynamic>, String>((ref
   return [];
 });
 
-final studentQuizResultsProvider = FutureProvider.family<List<dynamic>, String>((ref, studentId) async {
-  final apiClient = ref.read(apiClientProvider);
-  final response = await apiClient.get('/test/quizzes/answers/$studentId');
-  if (response.statusCode == 200 && response.data['success'] == true) {
-    return response.data['data'] ?? [];
-  }
-  return [];
-});
+final studentQuizResultsProvider = FutureProvider.family<List<dynamic>, String>(
+  (ref, studentId) async {
+    final apiClient = ref.read(apiClientProvider);
+    final response = await apiClient.get('/test/quizzes/answers/$studentId');
+    if (response.statusCode == 200 && response.data['success'] == true) {
+      return response.data['data'] ?? [];
+    }
+    return [];
+  },
+);
 
-final studentBehaviorsProvider = FutureProvider.family<List<dynamic>, String>((ref, studentId) async {
+final studentBehaviorsProvider = FutureProvider.family<List<dynamic>, String>((
+  ref,
+  studentId,
+) async {
   final apiClient = ref.read(apiClientProvider);
   final response = await apiClient.get('/behavior/student/$studentId');
   if (response.statusCode == 200 && response.data['success'] == true) {
@@ -243,46 +323,58 @@ final studentBehaviorsProvider = FutureProvider.family<List<dynamic>, String>((r
   return [];
 });
 
-final createBehaviorProvider = FutureProvider.family<bool, Map<String, dynamic>>((ref, data) async {
-  final apiClient = ref.read(apiClientProvider);
-  final response = await apiClient.post('/behavior/create', data: data);
-  return response.statusCode == 200 && response.data['success'] == true;
-});
+final createBehaviorProvider =
+    FutureProvider.family<bool, Map<String, dynamic>>((ref, data) async {
+      final apiClient = ref.read(apiClientProvider);
+      final response = await apiClient.post('/behavior/create', data: data);
+      return response.statusCode == 200 && response.data['success'] == true;
+    });
 
-final updateBehaviorProvider = FutureProvider.family<bool, Map<String, dynamic>>((ref, params) async {
-  final apiClient = ref.read(apiClientProvider);
-  final behaviorId = params['behaviorId'];
-  final data = params['data'];
-  final response = await apiClient.put('/behavior/update/$behaviorId', data: data);
-  return response.statusCode == 200 && response.data['success'] == true;
-});
+final updateBehaviorProvider =
+    FutureProvider.family<bool, Map<String, dynamic>>((ref, params) async {
+      final apiClient = ref.read(apiClientProvider);
+      final behaviorId = params['behaviorId'];
+      final data = params['data'];
+      final response = await apiClient.put(
+        '/behavior/update/$behaviorId',
+        data: data,
+      );
+      return response.statusCode == 200 && response.data['success'] == true;
+    });
 
-final deleteBehaviorProvider = FutureProvider.family<bool, String>((ref, behaviorId) async {
+final deleteBehaviorProvider = FutureProvider.family<bool, String>((
+  ref,
+  behaviorId,
+) async {
   final apiClient = ref.read(apiClientProvider);
   final response = await apiClient.delete('/behavior/delete/$behaviorId');
   return response.statusCode == 200 && response.data['success'] == true;
 });
 
 final studentAcademicDocumentsProvider =
-    FutureProvider.family<List<AcademicDocumentModel>, String>(
-        (ref, studentId) async {
-  final apiClient = ref.read(apiClientProvider);
-  final response = await apiClient.get('/academicDocument/teacher-documents');
-  if (response.statusCode == 200 && response.data['success'] == true) {
-    final List<dynamic> allDocs = response.data['data'] ?? [];
-    return allDocs
-        .map((e) => AcademicDocumentModel.fromJson(e))
-        .where((doc) => doc.studentId == studentId)
-        .toList();
-  }
-  return [];
-});
+    FutureProvider.family<List<AcademicDocumentModel>, String>((
+      ref,
+      studentId,
+    ) async {
+      final apiClient = ref.read(apiClientProvider);
+      final response = await apiClient.get(
+        '/academicDocument/teacher-documents',
+      );
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        final List<dynamic> allDocs = response.data['data'] ?? [];
+        return allDocs
+            .map((e) => AcademicDocumentModel.fromJson(e))
+            .where((doc) => doc.studentId == studentId)
+            .toList();
+      }
+      return [];
+    });
 
-final deleteAcademicDocumentProvider = FutureProvider.family<bool, String>((ref, docId) async {
+final deleteAcademicDocumentProvider = FutureProvider.family<bool, String>((
+  ref,
+  docId,
+) async {
   final apiClient = ref.read(apiClientProvider);
   final response = await apiClient.delete('/academicDocument/delete/$docId');
   return response.statusCode == 200 && response.data['success'] == true;
 });
-
-
-

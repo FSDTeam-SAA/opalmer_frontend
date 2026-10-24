@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/widgets/app_back_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/authentication_screen/two_factor_auth_screen.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
@@ -49,12 +50,15 @@ class _ParentProfileScreenState extends ConsumerState<ParentProfileScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
                     children: [
-                      const Text(
-                        "Profile",
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                      const AppBackButton(),
+                      const Expanded(
+                        child: Text(
+                          "Profile",
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                       // Notification bell

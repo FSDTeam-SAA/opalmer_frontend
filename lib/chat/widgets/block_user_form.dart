@@ -65,20 +65,11 @@ class BlockUserForm extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade300),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: TextField(
-              controller: reasonController,
-              maxLines: 5,
-              decoration: const InputDecoration(
-                hintText: 'Additional Information',
-                hintStyle: TextStyle(color: Colors.grey),
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.all(16),
-              ),
+          TextField(
+            controller: reasonController,
+            maxLines: 5,
+            decoration: const InputDecoration(
+              hintText: 'Additional Information',
             ),
           ),
           const SizedBox(height: 40),

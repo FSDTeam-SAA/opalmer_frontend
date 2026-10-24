@@ -190,6 +190,7 @@ void main() {
   testWidgets('document dropdown opens and displays selected class without overflow', (tester) async {
     await tester.pumpWidget(ProviderScope(overrides: [
       teacherClassesProvider.overrideWith((ref) async => [classData]),
+      classStudentsProvider('class-1').overrideWith((ref) async => [{'studentId': student}]),
     ], child: const MaterialApp(home: AddDocumentScreen(studentId: 'student-1'))));
     await tester.pumpAndSettle();
     await tester.tap(find.byType(DropdownButtonFormField<String>));

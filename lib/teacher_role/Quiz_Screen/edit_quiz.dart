@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_dropdown_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -195,7 +196,9 @@ class _EditQuizScreenState extends ConsumerState<EditQuizScreen> {
   }
 
   void _showSnack(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -278,10 +281,7 @@ class _EditQuizScreenState extends ConsumerState<EditQuizScreen> {
             const SizedBox(height: 16),
             _buildInputLabel('Quiz Title'),
             const SizedBox(height: 8),
-            _buildTextField(
-              hint: 'Enter Title',
-              controller: _titleController,
-            ),
+            _buildTextField(hint: 'Enter Title', controller: _titleController),
             const SizedBox(height: 16),
             _buildInputLabel('Quiz Time (minutes)'),
             const SizedBox(height: 8),
@@ -464,8 +464,7 @@ class _EditQuizScreenState extends ConsumerState<EditQuizScreen> {
                 children: [
                   Expanded(
                     child: _buildTextField(
-                      hint:
-                          'Option ${String.fromCharCode(65 + optionIndex)}',
+                      hint: 'Option ${String.fromCharCode(65 + optionIndex)}',
                       controller: question.optionControllers[optionIndex],
                     ),
                   ),
@@ -475,9 +474,7 @@ class _EditQuizScreenState extends ConsumerState<EditQuizScreen> {
                         ? null
                         : () {
                             setState(() {
-                              question
-                                  .optionControllers[optionIndex]
-                                  .dispose();
+                              question.optionControllers[optionIndex].dispose();
                               question.optionControllers.removeAt(optionIndex);
                             });
                           },
@@ -558,7 +555,9 @@ class _EditQuizScreenState extends ConsumerState<EditQuizScreen> {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: isUploading ? null : () => _pickQuestionImage(index),
+                  onPressed: isUploading
+                      ? null
+                      : () => _pickQuestionImage(index),
                   icon: isUploading
                       ? const SizedBox(
                           width: 16,
@@ -626,27 +625,11 @@ class _EditQuizScreenState extends ConsumerState<EditQuizScreen> {
     Widget? suffixIcon,
     int maxLines = 1,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200, width: 1.5),
-      ),
-      child: TextField(
-        controller: controller,
-        keyboardType: keyboardType,
-        maxLines: maxLines,
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 15),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 16,
-          ),
-          suffixIcon: suffixIcon,
-        ),
-      ),
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      maxLines: maxLines,
+      decoration: InputDecoration(hintText: hint, suffixIcon: suffixIcon),
     );
   }
 
@@ -655,30 +638,17 @@ class _EditQuizScreenState extends ConsumerState<EditQuizScreen> {
     required List<String> items,
     required ValueChanged<String> onChanged,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200, width: 1.5),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: items.contains(value) ? value : items.first,
-          isExpanded: true,
-          onChanged: (next) {
-            if (next != null) onChanged(next);
-          },
-          items: items
-              .map(
-                (item) => DropdownMenuItem(
-                  value: item,
-                  child: Text(item.toUpperCase()),
-                ),
-              )
-              .toList(),
-        ),
-      ),
+    return AppDropdownField<String>(
+      value: items.contains(value) ? value : items.first,
+      items: items
+          .map(
+            (item) =>
+                DropdownMenuItem(value: item, child: Text(item.toUpperCase())),
+          )
+          .toList(),
+      onChanged: (next) {
+        if (next != null) onChanged(next);
+      },
     );
   }
 }

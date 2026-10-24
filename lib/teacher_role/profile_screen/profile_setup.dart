@@ -247,25 +247,9 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     }
   }
 
-  OutlineInputBorder _border([
-    Color color = const Color(0xFFE5DFEB),
-    double width = 1,
-  ]) => OutlineInputBorder(
-    borderRadius: BorderRadius.circular(14),
-    borderSide: BorderSide(color: color, width: width),
-  );
   InputDecoration _decoration(String hint, IconData icon) => InputDecoration(
     hintText: hint,
     prefixIcon: Icon(icon, size: 21, color: const Color(0xFF81748B)),
-    filled: true,
-    fillColor: const Color(0xFFFCFAFD),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
-    border: _border(),
-    enabledBorder: _border(),
-    disabledBorder: _border(),
-    focusedBorder: _border(_purple, 1.6),
-    errorBorder: _border(Colors.red),
-    focusedErrorBorder: _border(Colors.red, 1.6),
   );
   Widget _label(String text) => Padding(
     padding: const EdgeInsets.only(bottom: 9),

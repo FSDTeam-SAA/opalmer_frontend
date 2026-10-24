@@ -23,21 +23,14 @@ class ComposeMessageForm extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Container(
+          child: SizedBox(
             height: 250,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade300),
-              borderRadius: BorderRadius.circular(12),
-            ),
             child: TextField(
               controller: controller,
               maxLines: null,
-              decoration: const InputDecoration(
-                hintText: 'Write a message...',
-                hintStyle: TextStyle(color: Colors.grey),
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.all(16),
-              ),
+              expands: true,
+              textAlignVertical: TextAlignVertical.top,
+              decoration: const InputDecoration(hintText: 'Write a message...'),
             ),
           ),
         ),

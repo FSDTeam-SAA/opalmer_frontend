@@ -397,39 +397,12 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     required TextEditingController controller,
     TextInputType? keyboardType,
   }) {
-    final borderRadius = BorderRadius.circular(12);
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(color: Colors.grey, fontSize: 15),
-        filled: true,
-        fillColor: const Color(0xFFF9F9F9),
-        prefixIcon: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, color: Colors.grey.shade600, size: 24),
-              const SizedBox(width: 12),
-              Container(width: 1, height: 24, color: Colors.grey.shade300),
-            ],
-          ),
-        ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 18),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: borderRadius,
-          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: borderRadius,
-          borderSide: const BorderSide(color: AppColors.primaryMid, width: 1.5),
-        ),
-        border: OutlineInputBorder(
-          borderRadius: borderRadius,
-          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-        ),
+        prefixIcon: Icon(icon, size: 20),
       ),
     );
   }

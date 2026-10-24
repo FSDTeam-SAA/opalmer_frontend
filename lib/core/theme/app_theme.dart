@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'app_colors.dart';
+import 'app_input_style.dart';
 
 class AppTheme {
   static const statusBarStyle = SystemUiOverlayStyle(
@@ -56,6 +57,7 @@ class AppTheme {
           ),
           elevation: 0,
           textStyle: const TextStyle(
+            fontFamily: 'SF Pro Display',
             fontSize: 15,
             fontWeight: FontWeight.bold,
             letterSpacing: 1.2,
@@ -63,28 +65,7 @@ class AppTheme {
         ),
       ),
 
-      // Input Decoration Theme
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 16,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: AppColors.border, width: 1.5),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: AppColors.border, width: 1.5),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: AppColors.primaryMid, width: 1.5),
-        ),
-        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-      ),
+      inputDecorationTheme: AppInputStyle.theme,
 
       // Card Theme
       cardTheme: CardThemeData(

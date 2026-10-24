@@ -13,6 +13,7 @@ import 'language.dart';
 import '../../authentication_screen/two_factor_auth_screen.dart';
 import 'package:opalmer_education/authentication_screen/login_screen.dart';
 import 'profile_setup.dart';
+import '../../core/widgets/app_back_button.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -57,12 +58,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                "Profile",
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                              const AppBackButton(),
+                              const Expanded(
+                                child: Text(
+                                  "Profile",
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                               GestureDetector(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/widgets/app_back_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers/teacher_provider.dart';
 import '../../notification/notification.dart';
@@ -48,13 +49,16 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            const Text(
-                              "Class Status",
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                letterSpacing: -0.5,
+                            const AppBackButton(),
+                            const Expanded(
+                              child: Text(
+                                "Class Status",
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  letterSpacing: -0.5,
+                                ),
                               ),
                             ),
                             GestureDetector(
@@ -168,4 +172,3 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
     );
   }
 }
-

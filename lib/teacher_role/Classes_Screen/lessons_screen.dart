@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/providers/teacher_provider.dart';
 import 'create_lesson_screen.dart';
 import 'lesson_overview_screen.dart';
+import '../navigation/teacher_workspace.dart';
 
 class LessonsScreen extends ConsumerStatefulWidget {
   final String classId;
@@ -76,7 +77,10 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => CreateLessonScreen(classId: widget.classId),
+                              builder: (_) => TeacherContextFrame.carry(
+                                context,
+                                CreateLessonScreen(classId: widget.classId),
+                              ),
                             ),
                           );
                         },
@@ -123,7 +127,9 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                     const SizedBox(height: 16),
 
                     // Lessons List
-                    ref.watch(classLessonsProvider(widget.classId)).when(
+                    ref
+                        .watch(classLessonsProvider(widget.classId))
+                        .when(
                           data: (lessons) {
                             if (lessons.isEmpty) {
                               return const Padding(
@@ -135,8 +141,12 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                               children: lessons.map((lesson) {
                                 return _buildLessonCard(
                                   lesson: lesson,
-                                  title: lesson['title'] ?? lesson['objective'] ?? 'No Title',
-                                  description: lesson['note'] ?? 'No Description',
+                                  title:
+                                      lesson['title'] ??
+                                      lesson['objective'] ??
+                                      'No Title',
+                                  description:
+                                      lesson['note'] ?? 'No Description',
                                   dueDate: lesson['created_at'] != null
                                       ? "Date: ${lesson['created_at'].toString().split('T')[0]}"
                                       : "Date: TBD",
@@ -221,7 +231,10 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => LessonOverviewScreen(lesson: lesson),
+                          builder: (_) => TeacherContextFrame.carry(
+                            context,
+                            LessonOverviewScreen(lesson: lesson),
+                          ),
                         ),
                       );
                     },

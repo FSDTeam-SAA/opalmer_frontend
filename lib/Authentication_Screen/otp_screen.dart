@@ -255,38 +255,31 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
   }
 
   Widget _buildOtpCircle(int index) {
-    return Container(
-      width: 65,
-      height: 65,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.grey.shade300, width: 1.5),
-      ),
-      child: Center(
-        child: TextField(
-          controller: _controllers[index],
-          focusNode: _focusNodes[index],
-          maxLength: 1,
-          textAlign: TextAlign.center,
-          keyboardType: TextInputType.number,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF871DAD),
-          ),
-          decoration: const InputDecoration(
-            counterText: "",
-            border: InputBorder.none,
-          ),
-          onChanged: (value) {
-            if (value.isNotEmpty && index < 3) {
-              _focusNodes[index + 1].requestFocus();
-            } else if (value.isEmpty && index > 0) {
-              _focusNodes[index - 1].requestFocus();
-            }
-          },
+    return SizedBox(
+      width: 58,
+      height: 60,
+      child: TextField(
+        controller: _controllers[index],
+        focusNode: _focusNodes[index],
+        maxLength: 1,
+        textAlign: TextAlign.center,
+        keyboardType: TextInputType.number,
+        style: const TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF871DAD),
         ),
+        decoration: const InputDecoration(
+          counterText: '',
+          contentPadding: EdgeInsets.symmetric(vertical: 14),
+        ),
+        onChanged: (value) {
+          if (value.isNotEmpty && index < 3) {
+            _focusNodes[index + 1].requestFocus();
+          } else if (value.isEmpty && index > 0) {
+            _focusNodes[index - 1].requestFocus();
+          }
+        },
       ),
     );
   }

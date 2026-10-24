@@ -87,9 +87,9 @@ class _StudentEditProfileScreenState
       ref.read(authStateProvider.notifier).state = merged;
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile updated')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Profile updated')));
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
@@ -163,10 +163,12 @@ class _StudentEditProfileScreenState
                 DropdownButtonFormField<String>(
                   initialValue: _gender,
                   items: _genderOptions
-                      .map((g) => DropdownMenuItem(
-                            value: g,
-                            child: Text(g[0].toUpperCase() + g.substring(1)),
-                          ))
+                      .map(
+                        (g) => DropdownMenuItem(
+                          value: g,
+                          child: Text(g[0].toUpperCase() + g.substring(1)),
+                        ),
+                      )
                       .toList(),
                   onChanged: (v) => setState(() => _gender = v),
                   decoration: _inputDecoration('Select gender'),
@@ -189,8 +191,9 @@ class _StudentEditProfileScreenState
                             width: 22,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                             ),
                           )
                         : const Text(
@@ -244,24 +247,6 @@ class _StudentEditProfileScreenState
   }
 
   InputDecoration _inputDecoration(String hint) {
-    return InputDecoration(
-      hintText: hint,
-      filled: true,
-      fillColor: const Color(0xFFF7F7FB),
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.grey.shade200),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.grey.shade200),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.primaryMid),
-      ),
-    );
+    return InputDecoration(hintText: hint);
   }
 }

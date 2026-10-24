@@ -8,10 +8,7 @@ import '../../core/providers/teacher_provider.dart';
 class AssignStudentsScreen extends ConsumerStatefulWidget {
   final TeacherClassModel classData;
 
-  const AssignStudentsScreen({
-    super.key,
-    required this.classData,
-  });
+  const AssignStudentsScreen({super.key, required this.classData});
 
   @override
   ConsumerState<AssignStudentsScreen> createState() =>
@@ -49,7 +46,9 @@ class _AssignStudentsScreenState extends ConsumerState<AssignStudentsScreen> {
     try {
       final apiClient = ref.read(apiClientProvider);
       final responses = await Future.wait([
-        apiClient.get('/users/my-school/students/grade/${widget.classData.grade}'),
+        apiClient.get(
+          '/users/my-school/students/grade/${widget.classData.grade}',
+        ),
         apiClient.get('/student-assign-to-class/class/${widget.classData.id}'),
       ]);
 
@@ -58,9 +57,9 @@ class _AssignStudentsScreenState extends ConsumerState<AssignStudentsScreen> {
 
       final students = studentsData is List
           ? studentsData
-              .whereType<Map>()
-              .map((student) => Map<String, dynamic>.from(student))
-              .toList()
+                .whereType<Map>()
+                .map((student) => Map<String, dynamic>.from(student))
+                .toList()
           : <Map<String, dynamic>>[];
 
       final existingAssignmentIds = <String, String>{};
@@ -109,15 +108,14 @@ class _AssignStudentsScreenState extends ConsumerState<AssignStudentsScreen> {
       final apiClient = ref.read(apiClientProvider);
       final existingStudentIds = _existingAssignmentIds.keys.toSet();
       final studentsToAdd = _selectedStudentIds.difference(existingStudentIds);
-      final studentsToRemove = existingStudentIds.difference(_selectedStudentIds);
+      final studentsToRemove = existingStudentIds.difference(
+        _selectedStudentIds,
+      );
 
       for (final studentId in studentsToAdd) {
         await apiClient.post(
           '/student-assign-to-class',
-          data: {
-            'studentId': studentId,
-            'classId': widget.classData.id,
-          },
+          data: {'studentId': studentId, 'classId': widget.classData.id},
         );
       }
 
@@ -138,9 +136,9 @@ class _AssignStudentsScreenState extends ConsumerState<AssignStudentsScreen> {
       Navigator.pop(context, _selectedStudentIds.length);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -209,9 +207,7 @@ class _AssignStudentsScreenState extends ConsumerState<AssignStudentsScreen> {
           ),
         ),
       ),
-      body: SafeArea(
-        child: _buildBody(),
-      ),
+      body: SafeArea(child: _buildBody()),
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.fromLTRB(24, 12, 24, 20),
         child: SizedBox(
@@ -301,22 +297,6 @@ class _AssignStudentsScreenState extends ConsumerState<AssignStudentsScreen> {
                 decoration: InputDecoration(
                   hintText: 'Search students',
                   prefixIcon: const Icon(Icons.search),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Color(0xFF871DAD)),
-                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -331,11 +311,15 @@ class _AssignStudentsScreenState extends ConsumerState<AssignStudentsScreen> {
                   ),
                   const Spacer(),
                   TextButton(
-                    onPressed: filteredStudents.isEmpty ? null : _selectAllVisible,
+                    onPressed: filteredStudents.isEmpty
+                        ? null
+                        : _selectAllVisible,
                     child: const Text('Select all'),
                   ),
                   TextButton(
-                    onPressed: filteredStudents.isEmpty ? null : _clearAllVisible,
+                    onPressed: filteredStudents.isEmpty
+                        ? null
+                        : _clearAllVisible,
                     child: const Text('Clear'),
                   ),
                 ],
@@ -405,8 +389,9 @@ class _AssignStudentsScreenState extends ConsumerState<AssignStudentsScreen> {
             CircleAvatar(
               radius: 22,
               backgroundColor: const Color(0xFFF3F4F6),
-              backgroundImage:
-                  avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
+              backgroundImage: avatarUrl.isNotEmpty
+                  ? NetworkImage(avatarUrl)
+                  : null,
               child: avatarUrl.isEmpty
                   ? const Icon(Icons.person, color: Color(0xFF871DAD))
                   : null,

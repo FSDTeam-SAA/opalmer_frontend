@@ -5,10 +5,16 @@ import '../../core/providers/teacher_provider.dart';
 import 'add_homework_screen.dart';
 import 'group_detail_screen.dart';
 import 'create_group_screen.dart';
+import '../navigation/teacher_workspace.dart';
 
 class HomeworkScreen extends ConsumerStatefulWidget {
   final String classId;
-  const HomeworkScreen({super.key, required this.classId});
+  final bool initialGroups;
+  const HomeworkScreen({
+    super.key,
+    required this.classId,
+    this.initialGroups = false,
+  });
 
   @override
   ConsumerState<HomeworkScreen> createState() => _HomeworkScreenState();
@@ -16,6 +22,12 @@ class HomeworkScreen extends ConsumerStatefulWidget {
 
 class _HomeworkScreenState extends ConsumerState<HomeworkScreen> {
   bool isClassSelected = true;
+
+  @override
+  void initState() {
+    super.initState();
+    isClassSelected = !widget.initialGroups;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -158,7 +170,12 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => AddHomeworkScreen(classId: widget.classId)),
+                  MaterialPageRoute(
+                    builder: (_) => TeacherContextFrame.carry(
+                      context,
+                      AddHomeworkScreen(classId: widget.classId),
+                    ),
+                  ),
                 );
               },
               style: ElevatedButton.styleFrom(
@@ -215,14 +232,27 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> {
                 itemCount: homeworkList.length,
                 itemBuilder: (context, index) {
                   final hw = homeworkList[index];
-                  return GestureDetector(onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AssignmentDetailsScreen(homeworkId: hw['_id'].toString()))), child: _buildHomeworkCard(
-                    title: hw['title'] ?? 'No Title',
-                    description: hw['description'] ?? 'No Description',
-                    dueDate: hw['created_at'] != null 
-                        ? "Created: ${hw['created_at'].toString().split('T')[0]}" 
-                        : "Date: TBD",
-                    showOptions: index == 0,
-                  ));
+                  return GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => TeacherContextFrame.carry(
+                          context,
+                          AssignmentDetailsScreen(
+                            homeworkId: hw['_id'].toString(),
+                          ),
+                        ),
+                      ),
+                    ),
+                    child: _buildHomeworkCard(
+                      title: hw['title'] ?? 'No Title',
+                      description: hw['description'] ?? 'No Description',
+                      dueDate: hw['created_at'] != null
+                          ? "Created: ${hw['created_at'].toString().split('T')[0]}"
+                          : "Date: TBD",
+                      showOptions: index == 0,
+                    ),
+                  );
                 },
               );
             },
@@ -247,7 +277,12 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => CreateGroupScreen(classId: widget.classId)),
+                  MaterialPageRoute(
+                    builder: (_) => TeacherContextFrame.carry(
+                      context,
+                      CreateGroupScreen(classId: widget.classId),
+                    ),
+                  ),
                 );
               },
               style: ElevatedButton.styleFrom(
@@ -285,7 +320,8 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> {
                   return _buildGroupCard(
                     group: group,
                     groupName: group['name'] ?? 'Unnamed Group',
-                    memberCount: "${(group['participants'] as List).length} Members",
+                    memberCount:
+                        "${(group['participants'] as List).length} Members",
                   );
                 },
               );
@@ -449,9 +485,9 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => GroupDetailScreen(
-                    roomData: group,
-                    classId: widget.classId,
+                  builder: (_) => TeacherContextFrame.carry(
+                    context,
+                    GroupDetailScreen(roomData: group, classId: widget.classId),
                   ),
                 ),
               );
@@ -478,4 +514,3 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> {
     );
   }
 }
-

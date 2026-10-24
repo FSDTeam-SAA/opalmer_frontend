@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/widgets/app_back_button.dart';
 import 'package:opalmer_education/student_role/StudentHomeDashboard/student_home_dashboard.dart';
 import 'package:opalmer_education/student_role/widgets/student_bottom_navbar.dart';
 import 'package:opalmer_education/student_role/Quizzes/student_quiz_main_screen.dart';
@@ -31,7 +32,9 @@ class _StudentMainShellState extends ConsumerState<StudentMainShell> {
     ];
 
     return Scaffold(
-      body: IndexedStack(index: currentIndex, children: pages),
+      body: AppShellRoot(
+        child: IndexedStack(index: currentIndex, children: pages),
+      ),
       bottomNavigationBar: StudentBottomNavigationBar(
         currentIndex: currentIndex,
         onTap: (index) {

@@ -28,6 +28,7 @@ class _SendToScreenState extends ConsumerState<SendToScreen> {
 
   List<Map<String, dynamic>> _contacts = [];
   bool _isLoading = true;
+  String _query = '';
 
   bool get _isTeacher => widget.role == ChatRole.teacher;
 
@@ -93,7 +94,7 @@ class _SendToScreenState extends ConsumerState<SendToScreen> {
         name: groupName,
         avatar: groupAvatar,
       );
-      
+
       if (!mounted) return;
 
       if (room != null) {
@@ -131,19 +132,30 @@ class _SendToScreenState extends ConsumerState<SendToScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final visibleContacts = _contacts
+        .where(
+          (contact) =>
+              '${contact['username'] ?? contact['name'] ?? ''} ${contact['Id'] ?? ''} ${contact['type'] ?? ''} ${contact['role'] ?? ''}'
+                  .toLowerCase()
+                  .contains(_query),
+        )
+        .toList();
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const ChatSimpleAppBar(title: 'Send To'),
       body: Column(
         children: [
-          const SendToSearchBar(),
+          SendToSearchBar(
+            onChanged: (value) =>
+                setState(() => _query = value.trim().toLowerCase()),
+          ),
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : _contacts.isEmpty
+                : visibleContacts.isEmpty
                 ? const Center(child: Text('No contacts found'))
                 : SendToContactList(
-                    contacts: _contacts,
+                    contacts: visibleContacts,
                     selectedIds: _selectedIds,
                     isMultiSelect: _isTeacher,
                     onToggleSelection: _handleContactTap,
@@ -152,8 +164,8 @@ class _SendToScreenState extends ConsumerState<SendToScreen> {
           if (_isTeacher)
             SendToActionButton(
               selectedCount: _selectedIds.length,
-              label: _selectedIds.length > 1 
-                  ? 'CREATE GROUP (${_selectedIds.length})' 
+              label: _selectedIds.length > 1
+                  ? 'CREATE GROUP (${_selectedIds.length})'
                   : 'START CHAT',
               onPressed: _selectedIds.isEmpty ? null : _createOrOpenRoom,
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/widgets/app_back_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/providers/student_provider.dart';
@@ -13,7 +14,8 @@ class StudentQuizMainScreen extends ConsumerStatefulWidget {
   const StudentQuizMainScreen({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<StudentQuizMainScreen> createState() => _StudentQuizMainScreenState();
+  ConsumerState<StudentQuizMainScreen> createState() =>
+      _StudentQuizMainScreenState();
 }
 
 class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
@@ -62,12 +64,15 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            "Quizzes",
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+          const AppBackButton(),
+          const Expanded(
+            child: Text(
+              "Quizzes",
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ),
           _NotificationBell(
@@ -183,7 +188,10 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
                   width: 44,
                   height: 44,
                   color: AppColors.primaryMid.withValues(alpha: 0.1),
-                  child: const Icon(Icons.quiz_outlined, color: AppColors.primaryMid),
+                  child: const Icon(
+                    Icons.quiz_outlined,
+                    color: AppColors.primaryMid,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -258,9 +266,7 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => StudentQuizQuestionsScreen(
-                    quiz: quiz,
-                  ),
+                  builder: (_) => StudentQuizQuestionsScreen(quiz: quiz),
                 ),
               ),
               style: ElevatedButton.styleFrom(
@@ -284,7 +290,9 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
     );
   }
 
-  Widget _buildStatsSection(AsyncValue<List<QuizResultModel>> quizResultsAsync) {
+  Widget _buildStatsSection(
+    AsyncValue<List<QuizResultModel>> quizResultsAsync,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -305,8 +313,11 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
               final bool hasResults = completed > 0;
 
               final double correctAvg = hasResults
-                  ? results.fold<double>(0, (sum, res) => sum + res.percentage) /
-                      completed
+                  ? results.fold<double>(
+                          0,
+                          (sum, res) => sum + res.percentage,
+                        ) /
+                        completed
                   : 0;
               final int correctPct = (correctAvg * 100).round();
               final int wrongPct = hasResults ? (100 - correctPct) : 0;
@@ -398,7 +409,9 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
     );
   }
 
-  Widget _buildProgressSection(AsyncValue<List<QuizResultModel>> quizResultsAsync) {
+  Widget _buildProgressSection(
+    AsyncValue<List<QuizResultModel>> quizResultsAsync,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -434,8 +447,9 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
                 for (var res in results) {
                   if (res.createdAt != null) {
                     if (_filterPeriod == "Weekly" &&
-                        DateTime.now().difference(res.createdAt!).inDays > 7) continue;
-                    
+                        DateTime.now().difference(res.createdAt!).inDays > 7)
+                      continue;
+
                     int weekday = res.createdAt!.weekday % 7;
                     weeklySpots[weekday] = res.percentage * 100;
                   }
@@ -462,7 +476,9 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
                         GestureDetector(
                           onTap: () {
                             setState(() {
-                              _filterPeriod = _filterPeriod == "Weekly" ? "Monthly" : "Weekly";
+                              _filterPeriod = _filterPeriod == "Weekly"
+                                  ? "Monthly"
+                                  : "Weekly";
                             });
                           },
                           child: Container(
@@ -502,22 +518,42 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
                           gridData: FlGridData(
                             show: true,
                             drawVerticalLine: false,
-                            getDrawingHorizontalLine: (value) =>
-                                FlLine(color: Colors.grey.shade100, strokeWidth: 1),
+                            getDrawingHorizontalLine: (value) => FlLine(
+                              color: Colors.grey.shade100,
+                              strokeWidth: 1,
+                            ),
                           ),
                           titlesData: FlTitlesData(
-                            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                            rightTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
+                            topTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
                             bottomTitles: AxisTitles(
                               sideTitles: SideTitles(
                                 showTitles: true,
                                 getTitlesWidget: (value, meta) {
-                                  const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+                                  const days = [
+                                    'S',
+                                    'M',
+                                    'T',
+                                    'W',
+                                    'T',
+                                    'F',
+                                    'S',
+                                  ];
                                   if (value >= 0 && value < days.length) {
-                                    return Text(days[value.toInt()], style: const TextStyle(fontSize: 10, color: Colors.grey));
+                                    return Text(
+                                      days[value.toInt()],
+                                      style: const TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.grey,
+                                      ),
+                                    );
                                   }
                                   return const SizedBox.shrink();
-                                }
+                                },
                               ),
                             ),
                             leftTitles: AxisTitles(
@@ -606,8 +642,7 @@ class _NotificationBell extends ConsumerWidget {
               right: -2,
               child: Container(
                 constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFF4D4F),
                   borderRadius: BorderRadius.circular(9),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/widgets/app_back_button.dart';
 import 'package:opalmer_education/chat/models/chat_role.dart';
 import 'package:opalmer_education/chat/screens/chat_dashboard.dart';
 import 'package:opalmer_education/parent_role/parent_bottom_navigation_bar.dart';
@@ -26,7 +27,9 @@ class _ParentMainShellState extends State<ParentMainShell> {
     ];
 
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: pages),
+      body: AppShellRoot(
+        child: IndexedStack(index: _currentIndex, children: pages),
+      ),
       bottomNavigationBar: ParentBottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {

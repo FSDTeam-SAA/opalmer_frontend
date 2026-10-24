@@ -263,9 +263,7 @@ class _OCRResultScreenState extends State<OCRResultScreen>
                         controller: _controller,
                         maxLines: null,
                         style: _paperTextStyle(),
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                        ),
+                        decoration: const InputDecoration(),
                       )
                     : SelectableText(
                         _controller.text.isEmpty

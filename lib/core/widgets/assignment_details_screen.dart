@@ -8,14 +8,17 @@ import 'package:url_launcher/url_launcher.dart';
 import '../providers/auth_provider.dart';
 import '../services/api_client.dart';
 import '../services/download_client.dart';
+import '../../teacher_role/navigation/teacher_materials.dart';
 
 class AssignmentDetailsScreen extends ConsumerStatefulWidget {
   final String homeworkId;
   final String? childId;
+  final String? studentId;
   const AssignmentDetailsScreen({
     super.key,
     required this.homeworkId,
     this.childId,
+    this.studentId,
   });
   @override
   ConsumerState<AssignmentDetailsScreen> createState() =>
@@ -59,6 +62,21 @@ class _AssignmentDetailsScreenState
         );
         submissions = result.data['data']['submissions'] as List? ?? [];
         missing = result.data['data']['missing'] as List? ?? [];
+        if (widget.studentId != null) {
+          submissions = submissions
+              .where(
+                (row) =>
+                    (row['studentId'] is Map
+                            ? row['studentId']['_id']
+                            : row['studentId'])
+                        ?.toString() ==
+                    widget.studentId,
+              )
+              .toList();
+          missing = missing
+              .where((row) => row['_id']?.toString() == widget.studentId)
+              .toList();
+        }
       } else if (_student || widget.childId != null) {
         final result = await _api.get(
           '/homework/${widget.homeworkId}/submission',
@@ -275,6 +293,10 @@ class _AssignmentDetailsScreenState
                     'Due: ${DateTime.tryParse(homework['dueDate'])?.toLocal()}',
                   ),
                 Text('Points possible: ${homework['pointsPossible'] ?? 100}'),
+                HomeworkHelpPanel(
+                  homeworkId: widget.homeworkId,
+                  studentId: widget.childId,
+                ),
                 const SizedBox(height: 16),
                 ...((homework['file'] as List?) ?? []).map(
                   (file) => ListTile(

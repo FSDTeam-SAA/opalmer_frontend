@@ -4,11 +4,16 @@ import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/providers/teacher_provider.dart';
 import 'add_document.dart';
+import '../navigation/teacher_workspace.dart';
 
 class AcademicDocumentsScreen extends ConsumerStatefulWidget {
   final String studentId;
-  const AcademicDocumentsScreen({Key? key, required this.studentId})
-      : super(key: key);
+  final String? classId;
+  const AcademicDocumentsScreen({
+    Key? key,
+    required this.studentId,
+    this.classId,
+  }) : super(key: key);
 
   @override
   ConsumerState<AcademicDocumentsScreen> createState() =>
@@ -19,8 +24,9 @@ class _AcademicDocumentsScreenState
     extends ConsumerState<AcademicDocumentsScreen> {
   @override
   Widget build(BuildContext context) {
-    final documentsAsync =
-        ref.watch(studentAcademicDocumentsProvider(widget.studentId));
+    final documentsAsync = ref.watch(
+      studentAcademicDocumentsProvider(widget.studentId),
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
@@ -86,8 +92,12 @@ class _AcademicDocumentsScreenState
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => AddDocumentScreen(
-                          studentId: widget.studentId,
+                        builder: (_) => TeacherContextFrame.carry(
+                          context,
+                          AddDocumentScreen(
+                            studentId: widget.studentId,
+                            classId: widget.classId,
+                          ),
                         ),
                       ),
                     );
@@ -218,8 +228,9 @@ class _AcademicDocumentsScreenState
                 context: context,
                 builder: (context) => AlertDialog(
                   title: const Text("Delete Document"),
-                  content:
-                      const Text("Are you sure you want to delete this document?"),
+                  content: const Text(
+                    "Are you sure you want to delete this document?",
+                  ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context, false),

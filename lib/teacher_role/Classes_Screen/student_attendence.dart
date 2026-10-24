@@ -2,23 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'student_profile.dart';
+import '../navigation/teacher_workspace.dart';
 import '../../core/models/teacher_class_model.dart';
 import '../../core/providers/teacher_provider.dart';
 
 class StudentAttendanceScreen extends ConsumerStatefulWidget {
   final TeacherClassModel classData;
-  const StudentAttendanceScreen({Key? key, required this.classData}) : super(key: key);
+  final String? studentId;
+  const StudentAttendanceScreen({
+    Key? key,
+    required this.classData,
+    this.studentId,
+  }) : super(key: key);
 
   @override
-  ConsumerState<StudentAttendanceScreen> createState() => _StudentAttendanceScreenState();
+  ConsumerState<StudentAttendanceScreen> createState() =>
+      _StudentAttendanceScreenState();
 }
 
-class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScreen> {
+class _StudentAttendanceScreenState
+    extends ConsumerState<StudentAttendanceScreen> {
   bool _isCreating = false;
   AsyncValue<List<dynamic>> _attendance = const AsyncLoading();
   final Set<String> _savingIds = {};
 
-  Future<void> _updateStatus(String studentId, String attendanceId, String status) async {
+  Future<void> _updateStatus(
+    String studentId,
+    String attendanceId,
+    String status,
+  ) async {
     if (_savingIds.contains(attendanceId)) return;
     final rows = _attendance.asData?.value ?? [];
     final index = rows.indexWhere((row) => row['_id'] == attendanceId);
@@ -26,27 +38,49 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
     final previous = Map<String, dynamic>.from(rows[index]);
     void replaceRow(Map<String, dynamic> row) {
       final current = List<dynamic>.from(_attendance.asData?.value ?? []);
-      final position = current.indexWhere((item) => item['_id'] == attendanceId);
+      final position = current.indexWhere(
+        (item) => item['_id'] == attendanceId,
+      );
       if (position >= 0) current[position] = row;
       _attendance = AsyncData(current);
     }
+
     setState(() {
       _savingIds.add(attendanceId);
       replaceRow({...previous, 'status': status});
     });
     try {
       final apiClient = ref.read(apiClientProvider);
-      final response = await apiClient.patch('/attendances/class/$attendanceId', data: {'status': status});
-      if (response.statusCode == 200 && response.data['success'] == true && response.data['data'] is Map) {
+      final response = await apiClient.patch(
+        '/attendances/class/$attendanceId',
+        data: {'status': status},
+      );
+      if (response.statusCode == 200 &&
+          response.data['success'] == true &&
+          response.data['data'] is Map) {
         if (!mounted) return;
-        setState(() => replaceRow(Map<String, dynamic>.from(response.data['data'])));
+        setState(
+          () => replaceRow(Map<String, dynamic>.from(response.data['data'])),
+        );
         ref.invalidate(classAttendanceProvider(widget.classData.id));
         ref.invalidate(classAttendanceStatsProvider(widget.classData.id));
-        ref.invalidate(classDetailsAttendanceProvider('class|${widget.classData.id}'));
-        ref.invalidate(classDetailsAttendanceProvider('student|$studentId|${widget.classData.id}'));
-        ref.invalidate(studentAnalysisProvider('${widget.classData.id}|$studentId|weekly'));
-        ref.invalidate(studentAnalysisProvider('${widget.classData.id}|$studentId|monthly'));
-        ref.invalidate(studentAnalysisProvider('${widget.classData.id}|$studentId|daily'));
+        ref.invalidate(
+          classDetailsAttendanceProvider('class|${widget.classData.id}'),
+        );
+        ref.invalidate(
+          classDetailsAttendanceProvider(
+            'student|$studentId|${widget.classData.id}',
+          ),
+        );
+        ref.invalidate(
+          studentAnalysisProvider('${widget.classData.id}|$studentId|weekly'),
+        );
+        ref.invalidate(
+          studentAnalysisProvider('${widget.classData.id}|$studentId|monthly'),
+        );
+        ref.invalidate(
+          studentAnalysisProvider('${widget.classData.id}|$studentId|daily'),
+        );
         ref.invalidate(
           studentAttendanceStatsProvider('$studentId|${widget.classData.id}'),
         );
@@ -56,7 +90,9 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
     } catch (e) {
       if (mounted) {
         setState(() => replaceRow(previous));
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _savingIds.remove(attendanceId));
@@ -70,26 +106,38 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
     try {
       final apiClient = ref.read(apiClientProvider);
       // This endpoint creates attendance for missing students for today
-      final response = await apiClient.post('/attendances/class', data: {
-        'classId': widget.classData.id,
-        'date': DateTime.now().toIso8601String(),
-      });
+      final response = await apiClient.post(
+        '/attendances/class',
+        data: {
+          'classId': widget.classData.id,
+          'date': DateTime.now().toIso8601String(),
+        },
+      );
       if (response.data['success'] != true || response.data['data'] is! Map) {
         throw StateError('Unable to load attendance');
       }
       final data = response.data['data'];
       if (!mounted) return;
-      setState(() => _attendance = AsyncData([
-        ...data['existing'] as List,
-        ...data['created'] as List,
-      ]));
+      setState(
+        () => _attendance = AsyncData([
+          ...data['existing'] as List,
+          ...data['created'] as List,
+        ]),
+      );
       ref.invalidate(classAttendanceProvider(widget.classData.id));
-      ref.invalidate(classDetailsAttendanceProvider('class|${widget.classData.id}'));
+      ref.invalidate(
+        classDetailsAttendanceProvider('class|${widget.classData.id}'),
+      );
       for (final row in _attendance.asData?.value ?? []) {
-        ref.invalidate(classDetailsAttendanceProvider('student|${row['userId']}|${widget.classData.id}'));
+        ref.invalidate(
+          classDetailsAttendanceProvider(
+            'student|${row['userId']}|${widget.classData.id}',
+          ),
+        );
       }
     } catch (e) {
-      if (mounted) setState(() => _attendance = AsyncError(e, StackTrace.current));
+      if (mounted)
+        setState(() => _attendance = AsyncError(e, StackTrace.current));
     } finally {
       if (mounted) setState(() => _isCreating = false);
     }
@@ -232,29 +280,45 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
                         child: attendanceAsync.when(
                           data: (attendanceRecords) {
                             return studentsAsync.when(
-                              data: (students) {
+                              data: (allStudents) {
+                                final students = allStudents
+                                    .where(
+                                      (row) =>
+                                          widget.studentId == null ||
+                                          row['studentId']['_id']?.toString() ==
+                                              widget.studentId,
+                                    )
+                                    .toList();
                                 // Create a map of studentId -> attendanceRecord for quick lookup
                                 final attendanceMap = {
                                   for (var record in attendanceRecords)
-                                    record['userId']: record
+                                    record['userId']: record,
                                 };
 
                                 return ListView.builder(
-                                  padding: const EdgeInsets.only(top: 8, bottom: 20),
+                                  padding: const EdgeInsets.only(
+                                    top: 8,
+                                    bottom: 20,
+                                  ),
                                   itemCount: students.length,
                                   itemBuilder: (context, index) {
                                     final assignment = students[index];
                                     final student = assignment['studentId'];
-                                    if (student == null) return const SizedBox();
-                                    
+                                    if (student == null)
+                                      return const SizedBox();
+
                                     final studentId = student['_id'];
                                     final record = attendanceMap[studentId];
-                                    
+
                                     return _buildRow(
                                       record?['date'] is String
-                                          ? DateFormat('dd-MM-yy').format(DateTime.parse(record['date']))
+                                          ? DateFormat('dd-MM-yy').format(
+                                              DateTime.parse(record['date']),
+                                            )
                                           : 'N/A',
-                                      student['username'] ?? student['name'] ?? 'Unknown',
+                                      student['username'] ??
+                                          student['name'] ??
+                                          'Unknown',
                                       record?['status'] ?? 'not_recorded',
                                       studentId,
                                       record?['_id'],
@@ -263,18 +327,27 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
                                   },
                                 );
                               },
-                              loading: () => const Center(child: CircularProgressIndicator()),
-                              error: (err, stack) => Center(child: Text("Error: $err")),
+                              loading: () => const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                              error: (err, stack) =>
+                                  Center(child: Text("Error: $err")),
                             );
                           },
-                          loading: () => const Center(child: CircularProgressIndicator()),
-                          error: (err, stack) => Center(child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text('Unable to load attendance.'),
-                              TextButton(onPressed: _initTodayAttendance, child: const Text('Retry')),
-                            ],
-                          )),
+                          loading: () =>
+                              const Center(child: CircularProgressIndicator()),
+                          error: (err, stack) => Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text('Unable to load attendance.'),
+                                TextButton(
+                                  onPressed: _initTodayAttendance,
+                                  child: const Text('Retry'),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -288,7 +361,14 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
     );
   }
 
-  Widget _buildRow(String date, String name, String status, String studentId, String? attendanceId, Map<String, dynamic> studentData) {
+  Widget _buildRow(
+    String date,
+    String name,
+    String status,
+    String studentId,
+    String? attendanceId,
+    Map<String, dynamic> studentData,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
@@ -307,15 +387,19 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => StudentProfileScreen(
-                        studentData: studentData,
-                        classId: widget.classData.id,
+                      builder: (_) => TeacherContextFrame(
+                        classData: widget.classData,
+                        student: studentData,
+                        child: StudentProfileScreen(
+                          studentData: studentData,
+                          classId: widget.classData.id,
+                        ),
                       ),
                     ),
                   );
                 },
                 child: Text(
-                  name,
+                  '$name${studentData['Id'] == null ? '' : '\n${studentData['Id']}'}',
                   style: const TextStyle(
                     color: Color(0xFF444444),
                     fontSize: 14,
@@ -325,13 +409,20 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
               ),
             ),
           ),
-          SizedBox(width: 86, child: _buildStatusDropdown(status, studentId, attendanceId)),
+          SizedBox(
+            width: 86,
+            child: _buildStatusDropdown(status, studentId, attendanceId),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildStatusDropdown(String status, String studentId, String? attendanceId) {
+  Widget _buildStatusDropdown(
+    String status,
+    String studentId,
+    String? attendanceId,
+  ) {
     Color bgColor;
     Color textColor;
     String text;
@@ -392,18 +483,27 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Flexible(child: Text(
-              text,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: textColor,
-                fontWeight: FontWeight.w500,
-                fontSize: 12,
+            Flexible(
+              child: Text(
+                text,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: textColor,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 12,
+                ),
               ),
-            )),
+            ),
             if (_savingIds.contains(attendanceId))
-              SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: textColor))
+              SizedBox(
+                width: 12,
+                height: 12,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: textColor,
+                ),
+              )
             else
               Icon(Icons.keyboard_arrow_down, color: textColor, size: 16),
           ],

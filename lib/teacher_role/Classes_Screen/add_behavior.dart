@@ -1,9 +1,11 @@
+import 'package:opalmer_education/core/widgets/app_dropdown_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers/teacher_provider.dart';
 
 class AddBehaviorScreen extends ConsumerStatefulWidget {
   final String studentId;
+  final String? classId;
   final Map<String, dynamic>? student;
   final String? behaviorId;
   final String? initialMessage;
@@ -12,6 +14,7 @@ class AddBehaviorScreen extends ConsumerStatefulWidget {
   const AddBehaviorScreen({
     super.key,
     required this.studentId,
+    this.classId,
     this.student,
     this.behaviorId,
     this.initialMessage,
@@ -30,8 +33,9 @@ class _AddBehaviorScreenState extends ConsumerState<AddBehaviorScreen> {
   @override
   void initState() {
     super.initState();
-    _messageController =
-        TextEditingController(text: widget.initialMessage ?? '');
+    _messageController = TextEditingController(
+      text: widget.initialMessage ?? '',
+    );
     _selectedState = widget.initialState ?? "positive";
   }
 
@@ -43,9 +47,9 @@ class _AddBehaviorScreenState extends ConsumerState<AddBehaviorScreen> {
 
   Future<void> _handleAdd() async {
     if (_messageController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter a message")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please enter a message")));
       return;
     }
 
@@ -53,6 +57,7 @@ class _AddBehaviorScreenState extends ConsumerState<AddBehaviorScreen> {
 
     final data = {
       "studentId": widget.studentId,
+      if (widget.classId != null) "classId": widget.classId,
       "message": _messageController.text,
       "state": _selectedState,
     };
@@ -62,14 +67,17 @@ class _AddBehaviorScreenState extends ConsumerState<AddBehaviorScreen> {
     try {
       final bool success;
       if (isEditing) {
-        success = await ref.read(updateBehaviorProvider({
-          "behaviorId": widget.behaviorId,
-          "data": {
-            "studentId": widget.studentId,
-            "message": _messageController.text,
-            "state": _selectedState,
-          }
-        }).future);
+        success = await ref.read(
+          updateBehaviorProvider({
+            "behaviorId": widget.behaviorId,
+            "data": {
+              "studentId": widget.studentId,
+              if (widget.classId != null) "classId": widget.classId,
+              "message": _messageController.text,
+              "state": _selectedState,
+            },
+          }).future,
+        );
       } else {
         success = await ref.read(createBehaviorProvider(data).future);
       }
@@ -78,9 +86,11 @@ class _AddBehaviorScreenState extends ConsumerState<AddBehaviorScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(isEditing
-                  ? "Behavior log updated successfully"
-                  : "Behavior log added successfully"),
+              content: Text(
+                isEditing
+                    ? "Behavior log updated successfully"
+                    : "Behavior log added successfully",
+              ),
             ),
           );
           Navigator.pop(context, true);
@@ -89,18 +99,20 @@ class _AddBehaviorScreenState extends ConsumerState<AddBehaviorScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(isEditing
-                  ? "Failed to update behavior log"
-                  : "Failed to add behavior log"),
+              content: Text(
+                isEditing
+                    ? "Failed to update behavior log"
+                    : "Failed to add behavior log",
+              ),
             ),
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: $e")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -127,10 +139,7 @@ class _AddBehaviorScreenState extends ConsumerState<AddBehaviorScreen> {
                   color: Color(0xFF871DAD),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                ),
+                child: const Icon(Icons.arrow_back, color: Colors.white),
               ),
             ),
           ),
@@ -152,59 +161,28 @@ class _AddBehaviorScreenState extends ConsumerState<AddBehaviorScreen> {
             children: [
               const Text(
                 "Message",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF444444),
-                ),
+                style: TextStyle(fontSize: 16, color: Color(0xFF444444)),
               ),
               const SizedBox(height: 8),
               TextField(
                 controller: _messageController,
-                decoration: InputDecoration(
-                  hintText: "Enter behavior message",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
-                  ),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                ),
+                decoration: InputDecoration(hintText: "Enter behavior message"),
               ),
               const SizedBox(height: 24),
               const Text(
                 "Student Behavior",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF444444),
-                ),
+                style: TextStyle(fontSize: 16, color: Color(0xFF444444)),
               ),
               const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _selectedState,
-                    isExpanded: true,
-                    items: const [
-                      DropdownMenuItem(
-                        value: "positive",
-                        child: Text("Positive"),
-                      ),
-                      DropdownMenuItem(
-                        value: "negative",
-                        child: Text("Negative"),
-                      ),
-                    ],
-                    onChanged: (val) {
-                      if (val != null) setState(() => _selectedState = val);
-                    },
-                  ),
-                ),
+              AppDropdownField<String>(
+                value: _selectedState,
+                items: const [
+                  DropdownMenuItem(value: "positive", child: Text("Positive")),
+                  DropdownMenuItem(value: "negative", child: Text("Negative")),
+                ],
+                onChanged: (val) {
+                  if (val != null) setState(() => _selectedState = val);
+                },
               ),
               const Spacer(),
               SizedBox(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/widgets/app_back_button.dart';
 import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 
@@ -10,11 +11,34 @@ class StudentQuizResultScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (result.gradeStatus != 'released') {
-      return Scaffold(appBar: AppBar(title: const Text('Assessment submitted')), body: Center(child: Padding(padding: const EdgeInsets.all(24), child: Column(mainAxisSize: MainAxisSize.min, children: [
-        const Icon(Icons.check_circle_outline, size: 72, color: Colors.green), const SizedBox(height: 20),
-        const Text('Your answers have been saved. Your grade will appear after your teacher reviews and publishes it.', textAlign: TextAlign.center),
-        const SizedBox(height: 20), FilledButton(onPressed: () => Navigator.pop(context), child: const Text('Done')),
-      ]))));
+      return Scaffold(
+        appBar: AppBar(title: const Text('Assessment submitted')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.check_circle_outline,
+                  size: 72,
+                  color: Colors.green,
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Your answers have been saved. Your grade will appear after your teacher reviews and publishes it.',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                FilledButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Done'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
     }
     return Scaffold(
       body: Container(
@@ -30,7 +54,7 @@ class StudentQuizResultScreen extends StatelessWidget {
         child: SafeArea(
           child: Column(
             children: [
-              const SizedBox(height: 40),
+              const Align(alignment: Alignment.centerLeft, child: AppBackButton()),
               // Celebratory Header
               const Text(
                 "Quiz Completed🏆",

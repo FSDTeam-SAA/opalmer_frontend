@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_dropdown_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/models/teacher_class_model.dart';
@@ -69,9 +70,9 @@ class _AddClassScreenState extends ConsumerState<AddClassScreen> {
     }
 
     if (_selectedGrade == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a grade')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please select a grade')));
       return;
     }
 
@@ -142,9 +143,9 @@ class _AddClassScreenState extends ConsumerState<AddClassScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
       }
     } finally {
       if (mounted) {
@@ -173,10 +174,7 @@ class _AddClassScreenState extends ConsumerState<AddClassScreen> {
                   color: Color(0xFF871DAD),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                ),
+                child: const Icon(Icons.arrow_back, color: Colors.white),
               ),
             ),
           ),
@@ -195,7 +193,8 @@ class _AddClassScreenState extends ConsumerState<AddClassScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              minHeight: MediaQuery.of(context).size.height -
+              minHeight:
+                  MediaQuery.of(context).size.height -
                   MediaQuery.of(context).padding.top -
                   kToolbarHeight -
                   32,
@@ -318,10 +317,7 @@ class _AddClassScreenState extends ConsumerState<AddClassScreen> {
   Widget _buildLabel(String text) {
     return Text(
       text,
-      style: const TextStyle(
-        fontSize: 16,
-        color: Color(0xFF444444),
-      ),
+      style: const TextStyle(fontSize: 16, color: Color(0xFF444444)),
     );
   }
 
@@ -335,25 +331,7 @@ class _AddClassScreenState extends ConsumerState<AddClassScreen> {
       controller: controller,
       textCapitalization: textCapitalization,
       textInputAction: textInputAction,
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: TextStyle(
-          fontSize: 16,
-          color: Colors.grey.shade600,
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 15,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFF871DAD)),
-        ),
-      ),
+      decoration: InputDecoration(hintText: hintText),
     );
   }
 
@@ -363,32 +341,11 @@ class _AddClassScreenState extends ConsumerState<AddClassScreen> {
     required List<DropdownMenuItem<T>> items,
     required ValueChanged<T?> onChanged,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<T>(
-          value: value,
-          hint: Text(
-            hintText,
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey.shade600,
-            ),
-          ),
-          isExpanded: true,
-          icon: Icon(
-            Icons.keyboard_arrow_down,
-            color: Colors.grey.shade600,
-          ),
-          items: items,
-          onChanged: onChanged,
-        ),
-      ),
+    return AppDropdownField<T>(
+      value: value,
+      hintText: hintText,
+      items: items,
+      onChanged: onChanged,
     );
   }
 
@@ -446,11 +403,7 @@ class _AddClassScreenState extends ConsumerState<AddClassScreen> {
         ),
         child: Row(
           children: [
-            const Icon(
-              Icons.access_time,
-              size: 20,
-              color: Color(0xFF871DAD),
-            ),
+            const Icon(Icons.access_time, size: 20, color: Color(0xFF871DAD)),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -539,4 +492,3 @@ class _AddClassScreenState extends ConsumerState<AddClassScreen> {
     return TimeOfDay(hour: hour, minute: minute);
   }
 }
-

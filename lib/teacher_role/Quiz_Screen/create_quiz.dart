@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_dropdown_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/constants/api_constants.dart';
@@ -19,6 +20,14 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
   bool _isGenerating = false;
   String? _selectedClassId;
 
+  @override
+  void dispose() {
+    _timeController.dispose();
+    _promptController.dispose();
+    _titleController.dispose();
+    super.dispose();
+  }
+
   Future<void> _generateQuestions() async {
     if (_promptController.text.isEmpty) return;
 
@@ -27,13 +36,14 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
       final questions = await ref
           .read(gradingActionProvider.notifier)
           .generateAIQuestions(_promptController.text);
+      if (!mounted) return;
       setState(() {
         _generatedQuestions = questions;
         _isGenerating = false;
       });
     } catch (e) {
-      setState(() => _isGenerating = false);
       if (!mounted) return;
+      setState(() => _isGenerating = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
       );
@@ -139,35 +149,32 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
       body: Stack(
         children: [
           ListView(
-            padding: const EdgeInsets.fromLTRB(20, 10, 20, 100),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
             children: [
-              _buildInputLabel("Select Class"),
+              _buildInputLabel("Class"),
               const SizedBox(height: 8),
               classesAsync.when(
-                data: (classes) => Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade200, width: 1.5),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: _selectedClassId,
-                      hint: const Text("Select Class"),
-                      isExpanded: true,
-                      onChanged: (value) =>
-                          setState(() => _selectedClassId = value),
-                      items: classes
-                          .map(
-                            (cls) => DropdownMenuItem(
-                              value: cls.id,
-                              child: Text("${cls.subject} - ${cls.grade}"),
-                            ),
-                          )
-                          .toList(),
-                    ),
-                  ),
+                data: (classes) => AppDropdownField<String>(
+                  value: _selectedClassId,
+                  hintText: classes.isEmpty
+                      ? "No classes available"
+                      : "Choose a class",
+                  prefixIcon: const Icon(Icons.school_outlined, size: 20),
+                  items: classes
+                      .map(
+                        (cls) => DropdownMenuItem(
+                          value: cls.id,
+                          child: Text(
+                            '${cls.subject} · Grade ${cls.grade}'
+                            '${cls.section?.trim().isNotEmpty == true ? ' · ${cls.section}' : ''}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) =>
+                      setState(() => _selectedClassId = value),
                 ),
                 loading: () => const Center(child: LinearProgressIndicator()),
                 error: (_, __) => const Text("Error loading classes"),
@@ -177,7 +184,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
               _buildInputLabel("Quiz Title"),
               const SizedBox(height: 8),
               _buildTextField(
-                hint: "Enter Title",
+                hint: "e.g. Fractions practice",
                 controller: _titleController,
               ),
 
@@ -185,17 +192,18 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
               _buildInputLabel("Quiz Time (minutes)"),
               const SizedBox(height: 8),
               _buildTextField(
-                hint: "00 mint",
+                hint: "e.g. 15",
                 controller: _timeController,
                 keyboardType: TextInputType.number,
               ),
 
-              const SizedBox(height: 24),
-              _buildInputLabel("Ai Prompt"),
+              const SizedBox(height: 16),
+              _buildInputLabel("AI Prompt"),
               const SizedBox(height: 8),
               _buildTextField(
-                hint: "Write a prompt to generate questions",
+                hint: "Describe the topic and questions you need…",
                 controller: _promptController,
+                maxLines: 3,
                 suffixIcon: _isGenerating
                     ? const SizedBox(
                         width: 20,
@@ -206,6 +214,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                         ),
                       )
                     : IconButton(
+                        tooltip: 'Generate questions',
                         icon: const Icon(
                           Icons.auto_awesome,
                           color: Color(0xFF871DAD),
@@ -215,7 +224,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                       ),
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
               const Text(
                 "Generated Questions",
                 style: TextStyle(
@@ -227,14 +236,37 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
               const SizedBox(height: 16),
 
               if (_generatedQuestions.isEmpty)
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Text(
-                      "Enter a prompt and click the AI icon to generate questions",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey.shade500),
-                    ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 20,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8F6FB),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Column(
+                    children: [
+                      Icon(
+                        Icons.quiz_outlined,
+                        color: Color(0xFF871DAD),
+                        size: 28,
+                      ),
+                      SizedBox(height: 12),
+                      Text(
+                        'Your questions will appear here',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      SizedBox(height: 6),
+                      Text(
+                        'Add a prompt above, then tap the sparkle icon.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Color(0xFF787481),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
@@ -259,63 +291,71 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
               color: Colors.black26,
               child: const Center(child: CircularProgressIndicator()),
             ),
-
-          // Bottom Buttons
-          Positioned(
-            bottom: 12,
-            left: 20,
-            right: 20,
-            child: Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => _handleSave(publish: false),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(
-                        color: Color(0xFF871DAD),
-                        width: 1.5,
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      "DRAFT",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF871DAD),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => _handleSave(publish: true),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF871DAD),
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      "PUBLISH",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
+      ),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            12,
+            20,
+            12 + MediaQuery.viewInsetsOf(context).bottom,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: gradingState.isLoading
+                      ? null
+                      : () => _handleSave(publish: false),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(
+                      color: Color(0xFF871DAD),
+                      width: 1.5,
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    "DRAFT",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF871DAD),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: gradingState.isLoading
+                      ? null
+                      : () => _handleSave(publish: true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF871DAD),
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    "PUBLISH",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -323,10 +363,10 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
   Widget _buildInputLabel(String label) {
     return Text(
       label,
-      style: TextStyle(
-        fontSize: 15,
-        fontWeight: FontWeight.w500,
-        color: Colors.grey.shade600,
+      style: const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: Color(0xFF494451),
       ),
     );
   }
@@ -336,27 +376,15 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
     TextEditingController? controller,
     TextInputType? keyboardType,
     Widget? suffixIcon,
+    int maxLines = 1,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200, width: 1.5),
-      ),
-      child: TextField(
-        controller: controller,
-        keyboardType: keyboardType,
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 15),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 16,
-          ),
-          suffixIcon: suffixIcon,
-        ),
-      ),
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      maxLines: maxLines,
+      minLines: maxLines > 1 ? 2 : null,
+      textAlignVertical: TextAlignVertical.top,
+      decoration: InputDecoration(hintText: hint, suffixIcon: suffixIcon),
     );
   }
 

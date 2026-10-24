@@ -45,10 +45,10 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
         ..._selectedStudentIds.map((id) => {'userId': id}),
       ];
 
-      final response = await apiClient.post('/rooms', data: {
-        'name': _titleController.text,
-        'participants': participants,
-      });
+      final response = await apiClient.post(
+        '/rooms',
+        data: {'name': _titleController.text, 'participants': participants},
+      );
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         if (mounted) {
@@ -63,9 +63,9 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -139,29 +139,7 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
                     const SizedBox(height: 8),
                     TextField(
                       controller: _titleController,
-                      decoration: InputDecoration(
-                        hintText: "Enter title here",
-                        hintStyle: TextStyle(
-                          color: Colors.grey.shade400,
-                          fontSize: 14,
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF871DAD),
-                          ),
-                        ),
-                      ),
+                      decoration: InputDecoration(hintText: "Enter title here"),
                     ),
                     const SizedBox(height: 24),
 
@@ -180,7 +158,9 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
                     studentsAsync.when(
                       data: (students) {
                         if (students.isEmpty) {
-                          return const Center(child: Text("No students available."));
+                          return const Center(
+                            child: Text("No students available."),
+                          );
                         }
                         return ListView.builder(
                           shrinkWrap: true,
@@ -190,10 +170,15 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
                             final assignment = students[index];
                             final student = assignment['studentId'];
                             if (student == null) return const SizedBox();
-                            
+
                             final studentId = student['_id'];
-                            final studentName = student['username'] ?? student['name'] ?? 'Unknown';
-                            final avatarUrl = student['avatar'] is Map ? student['avatar']['url'] : student['avatar'];
+                            final studentName =
+                                student['username'] ??
+                                student['name'] ??
+                                'Unknown';
+                            final avatarUrl = student['avatar'] is Map
+                                ? student['avatar']['url']
+                                : student['avatar'];
 
                             return _buildSelectableStudentCard(
                               id: studentId,
@@ -203,7 +188,8 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
                           },
                         );
                       },
-                      loading: () => const Center(child: CircularProgressIndicator()),
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
                       error: (err, stack) => Center(child: Text("Error: $err")),
                     ),
 
@@ -232,7 +218,10 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
                       ? const SizedBox(
                           height: 20,
                           width: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
                         )
                       : Text(
                           "(${_selectedStudentIds.length}) CREATE",
@@ -287,13 +276,19 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
             Container(
               width: 44,
               height: 44,
-              decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFF3F4F6)),
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Color(0xFFF3F4F6),
+              ),
               clipBehavior: Clip.hardEdge,
               child: avatarUrl != null && avatarUrl.isNotEmpty
                   ? Image.network(
                       avatarUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(Icons.person_outline, color: Color(0xFF871DAD)),
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.person_outline,
+                        color: Color(0xFF871DAD),
+                      ),
                     )
                   : const Icon(Icons.person_outline, color: Color(0xFF871DAD)),
             ),
@@ -339,4 +334,3 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
     );
   }
 }
-
