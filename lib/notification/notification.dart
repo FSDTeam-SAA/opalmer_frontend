@@ -15,7 +15,8 @@ import 'package:opalmer_education/core/providers/notification_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 
 class NotificationScreen extends ConsumerStatefulWidget {
-  const NotificationScreen({super.key});
+  final String? childId;
+  const NotificationScreen({super.key, this.childId});
 
   @override
   ConsumerState<NotificationScreen> createState() => _NotificationScreenState();
@@ -98,14 +99,21 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(notificationsProvider);
+    final visibleState = widget.childId == null
+        ? state
+        : state.copyWith(
+            items: state.items
+                .where((item) => item.studentId == widget.childId)
+                .toList(),
+          );
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(state.unreadCount),
-            Expanded(child: _buildBody(state)),
+            _buildHeader(visibleState.unreadCount),
+            Expanded(child: _buildBody(visibleState)),
           ],
         ),
       ),

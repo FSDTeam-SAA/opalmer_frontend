@@ -7,13 +7,17 @@ import 'package:opalmer_education/parent_role/SubjectsScreen/lesson_overview_scr
 import 'package:opalmer_education/parent_role/SubjectsScreen/models/lesson.dart';
 
 class LessonsScreen extends ConsumerStatefulWidget {
+  final String childId;
   final String classId;
   final String subjectName;
+  final ApiClient? apiClient;
 
   const LessonsScreen({
     super.key,
+    required this.childId,
     required this.classId,
     required this.subjectName,
+    this.apiClient,
   });
 
   @override
@@ -21,7 +25,7 @@ class LessonsScreen extends ConsumerStatefulWidget {
 }
 
 class _LessonsScreenState extends ConsumerState<LessonsScreen> {
-  final ApiClient _api = ApiClient();
+  late final ApiClient _api;
 
   List<Lesson> _lessons = [];
   bool _isLoading = true;
@@ -29,6 +33,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
   @override
   void initState() {
     super.initState();
+    _api = widget.apiClient ?? ApiClient();
     _loadLessons();
   }
 
@@ -37,6 +42,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
     try {
       final response = await _api.get(
         ApiConstants.lessonsByClass(widget.classId),
+        queryParameters: {'childId': widget.childId},
       );
       final rawLessons = (response.data is Map && response.data['data'] is List)
           ? (response.data['data'] as List)

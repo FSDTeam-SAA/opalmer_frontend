@@ -80,7 +80,7 @@ void main() {
     )))));
     await tester.tap(find.text('Open link dialog'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Link child'));
+    await tester.tap(find.text('Link student'));
     await tester.pumpAndSettle();
     expect(find.text('Enter the student ID.'), findsOneWidget);
     expect(find.text('Enter the invitation code.'), findsOneWidget);
@@ -89,8 +89,8 @@ void main() {
     await tester.enterText(find.byType(TextFormField).last, ' abc123 ');
     tester.view.viewInsets = const FakeViewPadding(bottom: 300);
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Link child'));
-    await tester.tap(find.text('Link child'));
+    await tester.ensureVisible(find.text('Link student'));
+    await tester.tap(find.text('Link student'));
     await tester.pump();
     expect(api.sent, {'childId': 'students-1', 'invitationCode': 'ABC123'});
     api.pending.complete(response({'linked': true}));

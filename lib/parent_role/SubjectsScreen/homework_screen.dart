@@ -9,14 +9,16 @@ enum HomeworkTab { classTab, groupsTab }
 
 class HomeworkScreen extends StatefulWidget {
   final String classId;
-  final String? childId;
+  final String childId;
   final String subjectName;
+  final ApiClient? apiClient;
 
   const HomeworkScreen({
     super.key,
-    this.childId,
+    required this.childId,
     required this.classId,
     required this.subjectName,
+    this.apiClient,
   });
 
   @override
@@ -24,7 +26,7 @@ class HomeworkScreen extends StatefulWidget {
 }
 
 class _HomeworkScreenState extends State<HomeworkScreen> {
-  final ApiClient _api = ApiClient();
+  late final ApiClient _api;
 
   HomeworkTab activeTab = HomeworkTab.classTab;
   List<Homework> _classHomework = [];
@@ -34,6 +36,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
   @override
   void initState() {
     super.initState();
+    _api = widget.apiClient ?? ApiClient();
     _loadAll();
   }
 
@@ -41,16 +44,22 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
     setState(() => _isLoading = true);
     try {
       final results = await Future.wait([
-        _api.get(ApiConstants.homeworkByClass(widget.classId)),
-        _api.get(ApiConstants.groupWorkByClass(widget.classId)),
+        _api.get(
+          ApiConstants.homeworkByClass(widget.classId),
+          queryParameters: {'childId': widget.childId},
+        ),
+        _api.get(
+          ApiConstants.groupWorkByClass(widget.classId),
+          queryParameters: {'childId': widget.childId},
+        ),
       ]);
 
-      final classList = (results[0].data is Map &&
-              results[0].data['data'] is List)
+      final classList =
+          (results[0].data is Map && results[0].data['data'] is List)
           ? (results[0].data['data'] as List)
           : const [];
-      final groupList = (results[1].data is Map &&
-              results[1].data['data'] is List)
+      final groupList =
+          (results[1].data is Map && results[1].data['data'] is List)
           ? (results[1].data['data'] as List)
           : const [];
 
@@ -60,16 +69,18 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
             .map((j) => Homework.fromJson(Map<String, dynamic>.from(j as Map)))
             .toList();
         _groupHomework = groupList
-            .map((j) =>
-                GroupHomework.fromJson(Map<String, dynamic>.from(j as Map)))
+            .map(
+              (j) =>
+                  GroupHomework.fromJson(Map<String, dynamic>.from(j as Map)),
+            )
             .toList();
       });
     } catch (e) {
       debugPrint('Failed to load homework: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load homework: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to load homework: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -85,8 +96,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
           children: [
             // ── Header ──
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Row(
                 children: [
                   GestureDetector(
@@ -98,8 +108,11 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
                         color: AppColors.primaryMid,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.arrow_back,
-                          color: Colors.white, size: 24),
+                      child: const Icon(
+                        Icons.arrow_back,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -137,10 +150,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : RefreshIndicator(
-                      onRefresh: _loadAll,
-                      child: _buildBody(),
-                    ),
+                  : RefreshIndicator(onRefresh: _loadAll, child: _buildBody()),
             ),
           ],
         ),
@@ -167,9 +177,14 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
           else
             ...today.map(_buildHomeworkCard),
           const SizedBox(height: 24),
-          _sectionHeader("Archived Homework",
-              trailing: const Icon(Icons.calendar_month_rounded,
-                  color: AppColors.primaryMid, size: 22)),
+          _sectionHeader(
+            "Archived Homework",
+            trailing: const Icon(
+              Icons.calendar_month_rounded,
+              color: AppColors.primaryMid,
+              size: 22,
+            ),
+          ),
           const SizedBox(height: 12),
           if (archived.isEmpty)
             _inlineEmpty("No archived homework.")
@@ -196,9 +211,14 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
         else
           ...todayGroups.map(_buildGroupHomeworkCard),
         const SizedBox(height: 24),
-        _sectionHeader("Archived Homework",
-            trailing: const Icon(Icons.calendar_month_rounded,
-                color: AppColors.primaryMid, size: 22)),
+        _sectionHeader(
+          "Archived Homework",
+          trailing: const Icon(
+            Icons.calendar_month_rounded,
+            color: AppColors.primaryMid,
+            size: 22,
+          ),
+        ),
         const SizedBox(height: 12),
         if (archivedGroups.isEmpty)
           _inlineEmpty("No archived group homework.")
@@ -280,57 +300,68 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
   }
 
   Widget _buildHomeworkCard(Homework hw) {
-    return GestureDetector(onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AssignmentDetailsScreen(homeworkId: hw.id, childId: widget.childId))), child: Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade100),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            offset: const Offset(0, 4),
-            blurRadius: 8,
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => AssignmentDetailsScreen(
+            homeworkId: hw.id,
+            childId: widget.childId,
           ),
-        ],
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            hw.title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF222222),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade100),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              offset: const Offset(0, 4),
+              blurRadius: 8,
             ),
-          ),
-          if (hw.description.isNotEmpty) ...[
-            const SizedBox(height: 6),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             Text(
-              hw.description,
+              hw.title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF222222),
+              ),
+            ),
+            if (hw.description.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                hw.description,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey.shade600,
+                  height: 1.4,
+                ),
+              ),
+            ],
+            const SizedBox(height: 12),
+            Divider(height: 1, color: Colors.grey.shade100),
+            const SizedBox(height: 12),
+            Text(
+              hw.dueDate.isEmpty ? "No due date" : "Due: ${hw.dueDate}",
               style: TextStyle(
-                fontSize: 13,
-                color: Colors.grey.shade600,
-                height: 1.4,
+                fontSize: 12,
+                color: Colors.grey.shade400,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
-          const SizedBox(height: 12),
-          Divider(height: 1, color: Colors.grey.shade100),
-          const SizedBox(height: 12),
-          Text(
-            hw.dueDate.isEmpty ? "No due date" : "Due: ${hw.dueDate}",
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade400,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
+        ),
       ),
-    ));
+    );
   }
 
   Widget _buildGroupHomeworkCard(GroupHomework hw) {
@@ -407,8 +438,9 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
         children: [
           CircleAvatar(
             radius: 12,
-            backgroundImage:
-                m.avatarUrl.isNotEmpty ? NetworkImage(m.avatarUrl) : null,
+            backgroundImage: m.avatarUrl.isNotEmpty
+                ? NetworkImage(m.avatarUrl)
+                : null,
             backgroundColor: Colors.grey.shade300,
             child: m.avatarUrl.isEmpty
                 ? Text(

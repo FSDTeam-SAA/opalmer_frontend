@@ -166,7 +166,7 @@ class _ChildsProfilesScreenState extends State<ChildsProfilesScreen> {
                                   ),
                                 ),
                               const Text(
-                                "Child's Profiles",
+                                "My Students",
                                 style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
@@ -348,6 +348,14 @@ class _ChildsProfilesScreenState extends State<ChildsProfilesScreen> {
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey.shade600,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'View Student',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.primaryMid,
                                 ),
                               ),
                             ],

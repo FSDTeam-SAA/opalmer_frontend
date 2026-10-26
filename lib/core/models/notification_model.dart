@@ -4,6 +4,7 @@ class NotificationModel {
   final String message;
   final String type;
   final String? refId;
+  final String? studentId;
   final bool isViewed;
   final DateTime? createdAt;
 
@@ -13,6 +14,7 @@ class NotificationModel {
     required this.message,
     required this.type,
     this.refId,
+    this.studentId,
     required this.isViewed,
     this.createdAt,
   });
@@ -24,6 +26,7 @@ class NotificationModel {
       message: (json['message'] ?? '').toString(),
       type: (json['type'] ?? 'general').toString(),
       refId: json['id']?.toString(),
+      studentId: json['studentId']?.toString(),
       isViewed: json['isViewed'] == true,
       createdAt: json['createdAt'] != null
           ? DateTime.tryParse(json['createdAt'].toString())
@@ -38,6 +41,7 @@ class NotificationModel {
       message: message,
       type: type,
       refId: refId,
+      studentId: studentId,
       isViewed: isViewed ?? this.isViewed,
       createdAt: createdAt,
     );

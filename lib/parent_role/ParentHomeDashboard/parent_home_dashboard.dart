@@ -230,14 +230,14 @@ class _ParentHomeDashboardState extends ConsumerState<ParentHomeDashboard> {
                 children: [
                   const SizedBox(height: 20),
 
-                  // ── Child's Profiles ──
+                  // ── My Students ──
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
-                          "Child's Profiles",
+                          "My Students",
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -492,6 +492,14 @@ class _ParentHomeDashboardState extends ConsumerState<ParentHomeDashboard> {
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey.shade600,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'View Student',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.primaryMid,
                                 ),
                               ),
                             ],

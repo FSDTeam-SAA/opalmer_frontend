@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:opalmer_education/notification/notification.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:opalmer_education/chat/models/chat_role.dart';
@@ -168,6 +169,15 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
 
               // ── Action Grid ──
               _buildActionTile(
+                "Student Notifications",
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => NotificationScreen(childId: studentId),
+                  ),
+                ),
+              ),
+              _buildActionTile(
                 "Home Work",
                 onTap: () {
                   Navigator.push(
@@ -205,6 +215,7 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => LessonsScreen(
+                        childId: studentId,
                         classId: subject.id,
                         subjectName: subject.name,
                       ),
@@ -328,10 +339,8 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ChatScreen(
-            session: room,
-            role: ChatRole.parent,
-          ),
+          builder: (context) =>
+              ChatScreen(session: room, role: ChatRole.parent),
         ),
       );
     } catch (_) {
@@ -346,13 +355,13 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-      width: 40,
-      height: 40,
-      decoration: const BoxDecoration(
-        color: AppColors.primaryMid,
-        shape: BoxShape.circle,
-      ),
-      child: Icon(icon, color: Colors.white, size: 20),
+        width: 40,
+        height: 40,
+        decoration: const BoxDecoration(
+          color: AppColors.primaryMid,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: Colors.white, size: 20),
       ),
     );
   }

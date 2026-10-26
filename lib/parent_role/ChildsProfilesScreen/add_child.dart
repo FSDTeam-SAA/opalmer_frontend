@@ -36,19 +36,22 @@ class _AddChildDialogState extends State<AddChildDialog> {
           'invitationCode': _invitation.text.trim().toUpperCase(),
         },
       );
-      if (response.data['success'] != true)
+      if (response.data['success'] != true) {
         throw StateError('Unable to link student');
+      }
       if (mounted) Navigator.pop(context, true);
     } on DioException catch (error) {
-      if (mounted)
+      if (mounted) {
         setState(
           () => _error = error.response?.data is Map
               ? error.response!.data['message']?.toString()
               : 'Unable to link student.',
         );
+      }
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         setState(() => _error = 'Unable to link student. Please try again.');
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -103,7 +106,7 @@ class _AddChildDialogState extends State<AddChildDialog> {
                   ),
                   const SizedBox(height: 16),
                   const Text(
-                    'Link a child',
+                    'Link Your Student',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
@@ -186,7 +189,7 @@ class _AddChildDialogState extends State<AddChildDialog> {
                               ),
                             )
                           : const Text(
-                              'Link child',
+                              'Link student',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,

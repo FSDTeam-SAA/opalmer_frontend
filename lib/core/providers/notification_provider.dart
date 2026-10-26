@@ -5,11 +5,13 @@ import 'package:opalmer_education/core/providers/auth_provider.dart';
 import 'package:opalmer_education/core/services/notification_service.dart';
 import 'package:opalmer_education/core/services/notification_socket_service.dart';
 
-final notificationServiceProvider =
-    Provider<NotificationService>((ref) => NotificationService());
+final notificationServiceProvider = Provider<NotificationService>(
+  (ref) => NotificationService(),
+);
 
-final notificationSocketProvider =
-    Provider<NotificationSocketService>((ref) => NotificationSocketService());
+final notificationSocketProvider = Provider<NotificationSocketService>(
+  (ref) => NotificationSocketService(),
+);
 
 class NotificationState {
   final bool loading;
@@ -39,19 +41,25 @@ class NotificationState {
 }
 
 class NotificationNotifier extends StateNotifier<NotificationState> {
-  NotificationNotifier(this._ref) : super(const NotificationState()) {
+  NotificationNotifier(this._ref)
+    : _socket = _ref.read(notificationSocketProvider),
+      super(const NotificationState()) {
     _bindSocket();
   }
 
   final Ref _ref;
+  final NotificationSocketService _socket;
 
   String? get _userId => _ref.read(authStateProvider)?.id;
 
   void _bindSocket() {
-    final socket = _ref.read(notificationSocketProvider);
+    final socket = _socket;
     socket.onNotification = (notification) {
       state = state.copyWith(
-        items: [notification, ...state.items.where((item) => item.id != notification.id)],
+        items: [
+          notification,
+          ...state.items.where((item) => item.id != notification.id),
+        ],
       );
     };
 
@@ -83,8 +91,9 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
       state = state.copyWith(loading: true, clearError: true);
     }
     try {
-      final items =
-          await _ref.read(notificationServiceProvider).getNotifications(userId);
+      final items = await _ref
+          .read(notificationServiceProvider)
+          .getNotifications(userId);
       state = state.copyWith(loading: false, items: items, clearError: true);
     } catch (e) {
       debugPrint('NotificationNotifier: load failed: $e');
@@ -97,7 +106,15 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
 
   Future<void> markAsRead(String notificationId) async {
     await _ref.read(notificationServiceProvider).markAsRead(notificationId);
-    state = state.copyWith(items: state.items.map((item) => item.id == notificationId ? item.copyWith(isViewed: true) : item).toList());
+    state = state.copyWith(
+      items: state.items
+          .map(
+            (item) => item.id == notificationId
+                ? item.copyWith(isViewed: true)
+                : item,
+          )
+          .toList(),
+    );
   }
 
   Future<void> markAllAsRead() async {
@@ -120,15 +137,15 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
 
   @override
   void dispose() {
-    _ref.read(notificationSocketProvider).disconnect();
+    _socket.disconnect();
     super.dispose();
   }
 }
 
 final notificationsProvider =
     StateNotifierProvider<NotificationNotifier, NotificationState>(
-  (ref) => NotificationNotifier(ref),
-);
+      (ref) => NotificationNotifier(ref),
+    );
 
 final unreadNotificationCountProvider = Provider<int>(
   (ref) => ref.watch(notificationsProvider).unreadCount,

@@ -45,14 +45,14 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
       final userData = await _storage.getUserData();
       if (userData == null) return;
       final parentId =
-          (jsonDecode(userData)['id'] ?? jsonDecode(userData)['_id']).toString();
+          (jsonDecode(userData)['id'] ?? jsonDecode(userData)['_id'])
+              .toString();
 
-      final response =
-          await _api.get(ApiConstants.childrenByParent(parentId));
+      final response = await _api.get(ApiConstants.childrenByParent(parentId));
       final List relations =
           (response.data is Map && response.data['data'] is Map)
-              ? (response.data['data']['children'] as List? ?? const [])
-              : const [];
+          ? (response.data['data']['children'] as List? ?? const [])
+          : const [];
 
       final children = relations
           .map((rel) {
@@ -77,7 +77,10 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
   }
 
   Future<void> _loadSubjects(String childId) async {
-    setState(() => _isLoadingSubjects = true);
+    setState(() {
+      _isLoadingSubjects = true;
+      _subjects = [];
+    });
     try {
       final response = await _api.get(ApiConstants.classesByStudent(childId));
       final classes = (response.data is Map && response.data['data'] is Map)
@@ -88,20 +91,20 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
           .map((c) => Subject.fromJson(Map<String, dynamic>.from(c as Map)))
           .toList();
 
-      if (!mounted) return;
+      if (!mounted || childId != _selectedChildId) return;
       setState(() {
         _subjects = subjects;
       });
     } catch (e) {
       debugPrint('Failed to load subjects: $e');
-      if (mounted) {
+      if (mounted && childId == _selectedChildId) {
         setState(() => _subjects = []);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load subjects: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to load subjects: $e')));
       }
     } finally {
-      if (mounted) {
+      if (mounted && childId == _selectedChildId) {
         setState(() => _isLoadingSubjects = false);
       }
     }
@@ -243,32 +246,32 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
               child: _isLoadingSubjects
                   ? const Center(child: CircularProgressIndicator())
                   : _subjects.isEmpty
-                      ? const Center(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 32),
-                            child: Text(
-                              'No subjects assigned yet.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF666666),
-                              ),
-                            ),
-                          ),
-                        )
-                      : RefreshIndicator(
-                          onRefresh: () => _loadSubjects(_selectedChildId),
-                          child: ListView.builder(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 10,
-                            ),
-                            itemCount: _subjects.length,
-                            itemBuilder: (context, index) {
-                              return _buildSubjectCard(_subjects[index]);
-                            },
+                  ? const Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 32),
+                        child: Text(
+                          'No subjects assigned yet.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF666666),
                           ),
                         ),
+                      ),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: () => _loadSubjects(_selectedChildId),
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                        itemCount: _subjects.length,
+                        itemBuilder: (context, index) {
+                          return _buildSubjectCard(_subjects[index]);
+                        },
+                      ),
+                    ),
             ),
           ],
         ),
