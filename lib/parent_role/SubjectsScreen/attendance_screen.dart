@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/core/constants/api_constants.dart';
@@ -50,17 +51,20 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         },
       );
 
-      final rawList = (response.data is Map &&
+      final rawList =
+          (response.data is Map &&
               response.data['data'] is Map &&
               response.data['data']['attendanceRecords'] is List)
           ? (response.data['data']['attendanceRecords'] as List)
           : const [];
 
       final records = rawList
-          .map((j) => AttendanceRecord.fromJson(
-                Map<String, dynamic>.from(j as Map),
-                studentNameFallback: widget.studentName,
-              ))
+          .map(
+            (j) => AttendanceRecord.fromJson(
+              Map<String, dynamic>.from(j as Map),
+              studentNameFallback: widget.studentName,
+            ),
+          )
           .toList();
 
       if (!mounted) return;
@@ -90,9 +94,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       setState(() {
         _errorMessage = 'Failed to load attendance';
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load attendance: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to load attendance: $e')));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -107,9 +111,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           children: [
             // ── Header ──
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Row(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: AppPageHeader(
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
@@ -120,8 +123,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         color: AppColors.primaryMid,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.arrow_back,
-                          color: Colors.white, size: 24),
+                      child: const Icon(
+                        Icons.arrow_back,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -140,8 +146,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             // ── Attendance Table ──
             Expanded(
               child: Container(
-                margin:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
@@ -189,8 +197,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   ),
                 ),
                 SizedBox(width: 4),
-                Icon(Icons.calendar_month_rounded,
-                    color: Colors.white, size: 16),
+                Icon(
+                  Icons.calendar_month_rounded,
+                  color: Colors.white,
+                  size: 16,
+                ),
               ],
             ),
           ),
@@ -238,8 +249,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         padding: const EdgeInsets.symmetric(vertical: 10),
         itemCount: _records.length,
         separatorBuilder: (context, index) => const SizedBox(height: 10),
-        itemBuilder: (context, index) =>
-            _buildAttendanceRow(_records[index]),
+        itemBuilder: (context, index) => _buildAttendanceRow(_records[index]),
       ),
     );
   }
@@ -254,8 +264,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             child: Text(
               text,
               textAlign: TextAlign.center,
-              style:
-                  const TextStyle(fontSize: 13, color: Color(0xFF666666)),
+              style: const TextStyle(fontSize: 13, color: Color(0xFF666666)),
             ),
           ),
         ),
@@ -315,8 +324,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             flex: 2,
             child: Center(
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: statusBgColor,
                   borderRadius: BorderRadius.circular(6),

@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
@@ -52,6 +53,7 @@ class _PolicyContentScreenState extends ConsumerState<PolicyContentScreen>
       appBar: AppBar(
         title: Text(title),
         actions: [
+          const AppHomeButton(),
           IconButton(
             onPressed: () => ref.invalidate(policyContentProvider(widget.type)),
             tooltip: 'Refresh',

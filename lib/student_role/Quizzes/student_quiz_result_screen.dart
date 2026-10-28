@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import '../../core/widgets/app_back_button.dart';
 import 'package:opalmer_education/core/models/student_models.dart';
@@ -12,7 +13,10 @@ class StudentQuizResultScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     if (result.gradeStatus != 'released') {
       return Scaffold(
-        appBar: AppBar(title: const Text('Assessment submitted')),
+        appBar: AppBar(
+          actions: [const AppHomeButton()],
+          title: const Text('Assessment submitted'),
+        ),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -54,7 +58,10 @@ class StudentQuizResultScreen extends StatelessWidget {
         child: SafeArea(
           child: Column(
             children: [
-              const Align(alignment: Alignment.centerLeft, child: AppBackButton()),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: AppBackButton(),
+              ),
               // Celebratory Header
               const Text(
                 "Quiz Completed🏆",

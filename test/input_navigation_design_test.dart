@@ -239,6 +239,8 @@ void main() {
     await _open(
       tester,
       AppShellRoot(
+        role: 'teacher',
+        onHome: () {},
         child: Scaffold(
           body: ChatDashboardHeader(
             onOpenCallHistory: () {},

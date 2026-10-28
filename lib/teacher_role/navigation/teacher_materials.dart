@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -59,6 +60,7 @@ class TeacherMaterialsScreen extends ConsumerWidget {
         '${classData.id}${homework == null ? '' : '|${homework!['_id']}'}';
     return Scaffold(
       appBar: AppBar(
+        actions: [const AppHomeButton()],
         title: Text(homework == null ? 'Resources' : 'Homework Help'),
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -285,7 +287,10 @@ class _AddTeachingResourceState extends ConsumerState<AddTeachingResource> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Add Resource')),
+    appBar: AppBar(
+      actions: [const AppHomeButton()],
+      title: const Text('Add Resource'),
+    ),
     body: ListView(
       padding: const EdgeInsets.all(20),
       children: [
@@ -493,7 +498,10 @@ class _TeacherAnnouncementsScreenState
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Announcements')),
+    appBar: AppBar(
+      actions: [const AppHomeButton()],
+      title: const Text('Announcements'),
+    ),
     body: ListView(
       padding: const EdgeInsets.all(20),
       children: [

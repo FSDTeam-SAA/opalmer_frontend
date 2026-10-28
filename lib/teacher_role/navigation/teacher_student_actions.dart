@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/models/teacher_class_model.dart';
@@ -121,7 +122,10 @@ class StudentAssignmentsScreen extends ConsumerWidget {
   });
   @override
   Widget build(BuildContext context, WidgetRef ref) => Scaffold(
-    appBar: AppBar(title: const Text('Student Assignments')),
+    appBar: AppBar(
+      actions: [const AppHomeButton()],
+      title: const Text('Student Assignments'),
+    ),
     body: ref
         .watch(classHomeworkProvider(classData.id))
         .when(
@@ -186,7 +190,10 @@ class StudentAssessmentsScreen extends ConsumerWidget {
   });
   @override
   Widget build(BuildContext context, WidgetRef ref) => Scaffold(
-    appBar: AppBar(title: const Text('Student Assessments')),
+    appBar: AppBar(
+      actions: [const AppHomeButton()],
+      title: const Text('Student Assessments'),
+    ),
     body: ref
         .watch(studentQuizResultsProvider(student['_id'].toString()))
         .when(

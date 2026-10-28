@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -28,7 +29,7 @@ class LessonOverviewScreen extends StatelessWidget {
                   horizontal: 20,
                   vertical: 16,
                 ),
-                child: Row(
+                child: AppPageHeader(
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pop(context),

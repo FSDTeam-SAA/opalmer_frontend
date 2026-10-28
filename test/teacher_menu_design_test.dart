@@ -189,8 +189,8 @@ void main() {
 
     await tester.tap(find.byKey(const ValueKey('teacher-header-menu')));
     await tester.pumpAndSettle();
-    expect(find.text('AchieverPlus'), findsOneWidget);
-    expect(find.byType(BrandLogo), findsOneWidget);
+    expect(find.text('AchieverPlus'), findsNothing);
+    expect(find.byType(BrandLogo), findsNothing);
     expect(find.byKey(const ValueKey('teacher-nav-Menu')), findsNothing);
     expect(find.text('TEACHING'), findsOneWidget);
     expect(activityLoads, 0);

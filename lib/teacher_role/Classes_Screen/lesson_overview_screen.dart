@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -14,7 +15,8 @@ class LessonOverviewScreen extends StatelessWidget {
         ? lesson['created_at'].toString().split('T')[0]
         : "TBD";
     final Map<String, dynamic>? document = lesson['document'];
-    final String? docUrl = document != null && document['url'].toString().isNotEmpty
+    final String? docUrl =
+        document != null && document['url'].toString().isNotEmpty
         ? document['url']
         : null;
 
@@ -27,7 +29,7 @@ class LessonOverviewScreen extends StatelessWidget {
             // ── Header ──
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Row(
+              child: AppPageHeader(
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),

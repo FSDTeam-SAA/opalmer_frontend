@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import '../../core/widgets/app_back_button.dart';
 
@@ -26,7 +27,8 @@ class ChatDashboardHeader extends StatelessWidget {
         SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            child: Row(
+            child: AppPageHeader(
+              homeColor: Colors.white,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const AppBackButton(),

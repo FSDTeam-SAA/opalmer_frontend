@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/notification/notification.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -52,7 +53,7 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
                   horizontal: 20,
                   vertical: 16,
                 ),
-                child: Row(
+                child: AppPageHeader(
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pop(context),

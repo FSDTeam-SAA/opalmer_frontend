@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -7,15 +8,37 @@ import 'package:opalmer_education/core/services/secure_storage_service.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/parent_role/SubjectsScreen/models/subject.dart';
 import 'package:opalmer_education/parent_role/SubjectsScreen/subject_detail_screen.dart';
+import 'homework_screen.dart';
+import 'attendance_screen.dart';
+import 'lessons_screen.dart';
+import 'behavior_record_screen.dart';
+import 'academic_documents_screen.dart';
+import 'grading_progress_screen.dart';
+
+enum ParentStudyFeature {
+  subjects('Subjects', Icons.school_outlined),
+  homework('Homework & Groups', Icons.assignment_outlined),
+  attendance('Attendance', Icons.how_to_reg_outlined),
+  lessons('Lessons', Icons.menu_book_outlined),
+  behavior('Behavior Records', Icons.star_outline),
+  documents('Academic Documents', Icons.folder_open_outlined),
+  grades('Grades & Progress', Icons.insights_outlined);
+
+  final String title;
+  final IconData icon;
+  const ParentStudyFeature(this.title, this.icon);
+}
 
 class SubjectsScreen extends StatefulWidget {
   final String initialChildId;
   final String? initialChildName;
+  final ParentStudyFeature feature;
 
   const SubjectsScreen({
     super.key,
-    required this.initialChildId,
+    this.initialChildId = '',
     this.initialChildName,
+    this.feature = ParentStudyFeature.subjects,
   });
 
   @override
@@ -37,7 +60,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
     super.initState();
     _selectedChildId = widget.initialChildId;
     _loadChildren();
-    _loadSubjects(_selectedChildId);
+    if (_selectedChildId.isNotEmpty) _loadSubjects(_selectedChildId);
   }
 
   Future<void> _loadChildren() async {
@@ -67,11 +90,20 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
       setState(() {
         _children = children;
       });
+      if (_selectedChildId.isEmpty && children.isNotEmpty) {
+        _selectedChildId = children.first.id;
+        await _loadSubjects(_selectedChildId);
+      } else if (children.isEmpty) {
+        setState(() => _isLoadingSubjects = false);
+      }
     } catch (e) {
       debugPrint('Failed to load children list: $e');
     } finally {
       if (mounted) {
-        setState(() => _isLoadingChildren = false);
+        setState(() {
+          _isLoadingChildren = false;
+          if (_selectedChildId.isEmpty) _isLoadingSubjects = false;
+        });
       }
     }
   }
@@ -124,16 +156,47 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
   }
 
   void _openSubjectDetail(Subject subject) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SubjectDetailScreen(
-          subject: subject,
-          studentId: _selectedChildId,
-          studentName: _selectedChildName(),
-        ),
+    final childId = _selectedChildId;
+    final childName = _selectedChildName();
+    final page = switch (widget.feature) {
+      ParentStudyFeature.subjects => SubjectDetailScreen(
+        subject: subject,
+        studentId: childId,
+        studentName: childName,
       ),
-    );
+      ParentStudyFeature.homework => HomeworkScreen(
+        childId: childId,
+        classId: subject.id,
+        subjectName: subject.name,
+      ),
+      ParentStudyFeature.attendance => AttendanceScreen(
+        subjectName: subject.name,
+        classId: subject.id,
+        studentId: childId,
+        studentName: childName,
+      ),
+      ParentStudyFeature.lessons => LessonsScreen(
+        childId: childId,
+        classId: subject.id,
+        subjectName: subject.name,
+      ),
+      ParentStudyFeature.behavior => BehaviorRecordScreen(
+        subjectName: subject.name,
+        childId: childId,
+        childName: childName,
+      ),
+      ParentStudyFeature.documents => AcademicDocumentsScreen(
+        subjectName: subject.name,
+        childId: childId,
+        childName: childName,
+      ),
+      ParentStudyFeature.grades => GradingProgressScreen(
+        subjectName: subject.name,
+        childId: childId,
+        classId: subject.id,
+      ),
+    };
+    Navigator.push(context, MaterialPageRoute(builder: (context) => page));
   }
 
   ImageProvider? _avatarProvider(String url) {
@@ -163,7 +226,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
             // ── Header ──
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Row(
+              child: AppPageHeader(
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
@@ -182,8 +245,8 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  const Text(
-                    "Subjects",
+                  Text(
+                    widget.feature.title,
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -198,7 +261,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
             SizedBox(
               height: 70,
               child: _isLoadingChildren && _children.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: SizedBox(
                         width: 24,
                         height: 24,
@@ -246,11 +309,13 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
               child: _isLoadingSubjects
                   ? const Center(child: CircularProgressIndicator())
                   : _subjects.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Padding(
                         padding: EdgeInsets.symmetric(horizontal: 32),
                         child: Text(
-                          'No subjects assigned yet.',
+                          _children.isEmpty
+                              ? 'No linked students. Open My Students to link your child.'
+                              : 'No subjects assigned yet.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 14,

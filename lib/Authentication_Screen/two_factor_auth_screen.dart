@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import '../core/services/api_client.dart';
 
@@ -85,7 +86,10 @@ class _TwoFactorAuthScreenState extends State<TwoFactorAuthScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Two-Factor Authentication')),
+    appBar: AppBar(
+      actions: [const AppHomeButton()],
+      title: const Text('Two-Factor Authentication'),
+    ),
     body: _loading
         ? const Center(child: CircularProgressIndicator())
         : ListView(

@@ -62,6 +62,8 @@ class _MainShellState extends ConsumerState<MainShell> {
         ),
       ),
       body: AppShellRoot(
+        role: 'teacher',
+        onHome: () => _selectTab(0),
         child: IndexedStack(index: currentIndex, children: pages),
       ),
       bottomNavigationBar: CustomBottomNavigationBar(

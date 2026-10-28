@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -106,6 +107,7 @@ class _StudentEditProfileScreenState
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        actions: [const AppHomeButton()],
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: AppColors.textPrimary,

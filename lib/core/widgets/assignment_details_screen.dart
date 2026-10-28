@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
@@ -158,7 +159,7 @@ class _AssignmentDetailsScreenState
         context,
         MaterialPageRoute(
           builder: (_) => Scaffold(
-            appBar: AppBar(title: Text(name)),
+            appBar: AppBar(actions: [const AppHomeButton()], title: Text(name)),
             body: PdfPreview(
               build: (_) async {
                 final response = await dioForDownloadUrl(url).get<List<int>>(
@@ -263,7 +264,10 @@ class _AssignmentDetailsScreenState
     final editable =
         _student && (_submission == null || _submission?['status'] == 'draft');
     return Scaffold(
-      appBar: AppBar(title: const Text('Assignment')),
+      appBar: AppBar(
+        actions: [const AppHomeButton()],
+        title: const Text('Assignment'),
+      ),
       body: homework == null
           ? Center(
               child: _error == null

@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/core/services/api_client.dart';
 
@@ -94,7 +95,10 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
   Widget build(BuildContext context) {
     final result = _result;
     return Scaffold(
-      appBar: AppBar(title: const Text('Review submission')),
+      appBar: AppBar(
+        actions: [const AppHomeButton()],
+        title: const Text('Review submission'),
+      ),
       body: result == null
           ? Center(
               child: _error == null

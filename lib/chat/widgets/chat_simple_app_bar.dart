@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/widgets/app_home_button.dart';
 
 class ChatSimpleAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -50,7 +51,7 @@ class ChatSimpleAppBar extends StatelessWidget implements PreferredSizeWidget {
           color: Colors.black,
         ),
       ),
-      actions: actions,
+      actions: [...actions, const AppHomeButton()],
     );
   }
 }

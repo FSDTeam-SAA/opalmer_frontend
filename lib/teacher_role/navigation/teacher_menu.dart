@@ -1,10 +1,11 @@
+import '../../core/widgets/access_guide_screen.dart';
+import '../../core/widgets/drawer_logout_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../chat/models/chat_role.dart';
 import '../../chat/screens/chat_dashboard.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/widgets/brand_logo.dart';
 import '../../notification/notification.dart';
 import '../Classes_Screen/classes_screen.dart';
 import '../Quiz_Screen/create_quiz.dart';
@@ -165,6 +166,12 @@ class _TeacherMenuScreenState extends ConsumerState<TeacherMenuScreen> {
     ]),
     _MenuGroup('ACCOUNT', const Color(0xFF777080), [
       _MenuItem(
+        'How to use',
+        Icons.help_outline,
+        page: () => const AccessGuideScreen(role: 'teacher'),
+        keywords: 'guide instructions help',
+      ),
+      _MenuItem(
         'Profile & settings',
         Icons.settings_outlined,
         page: () => const ProfileScreen(),
@@ -200,41 +207,7 @@ class _TeacherMenuScreenState extends ConsumerState<TeacherMenuScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(22, 14, 12, 10),
-              child: Row(
-                children: [
-                  const SizedBox(
-                    width: 42,
-                    height: 42,
-                    child: BrandLogo(size: 42),
-                  ),
-                  const SizedBox(width: 10),
-                  const Expanded(
-                    child: Text(
-                      'AchieverPlus',
-                      style: TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.5,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: 'Close menu',
-                    onPressed:
-                        widget.onClose ?? () => Navigator.maybePop(context),
-                    icon: const Icon(
-                      Icons.close_rounded,
-                      size: 21,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(22, 0, 22, 18),
+              padding: const EdgeInsets.fromLTRB(22, 16, 12, 18),
               child: Row(
                 children: [
                   CircleAvatar(
@@ -250,28 +223,25 @@ class _TeacherMenuScreenState extends ConsumerState<TeacherMenuScreen> {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        const Text(
-                          'Teacher workspace',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppColors.textTertiary,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Close menu',
+                    onPressed:
+                        widget.onClose ?? () => Navigator.maybePop(context),
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      size: 21,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -410,6 +380,7 @@ class _TeacherMenuScreenState extends ConsumerState<TeacherMenuScreen> {
                 ],
               ),
             ),
+            const DrawerLogoutButton(),
           ],
         ),
       ),

@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/providers/student_provider.dart';
@@ -23,8 +24,7 @@ class StudentLessonsScreen extends ConsumerWidget {
         },
         child: lessonsAsync.when(
           data: (lessons) => _buildContent(context, lessons),
-          loading: () =>
-              const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: CircularProgressIndicator()),
           error: (err, _) => _buildError(context, ref),
         ),
       ),
@@ -54,8 +54,7 @@ class StudentLessonsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 16),
-            ...todayLessons
-                .map((l) => _buildLessonCard(context, lesson: l)),
+            ...todayLessons.map((l) => _buildLessonCard(context, lesson: l)),
           ],
           if (archivedLessons.isNotEmpty) ...[
             const SizedBox(height: 32),
@@ -78,8 +77,7 @@ class StudentLessonsScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 16),
-            ...archivedLessons
-                .map((l) => _buildLessonCard(context, lesson: l)),
+            ...archivedLessons.map((l) => _buildLessonCard(context, lesson: l)),
           ],
           const SizedBox(height: 100),
         ],
@@ -132,8 +130,7 @@ class StudentLessonsScreen extends ConsumerWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
         SizedBox(height: MediaQuery.of(context).size.height * 0.18),
-        const Icon(Icons.error_outline,
-            size: 56, color: Colors.redAccent),
+        const Icon(Icons.error_outline, size: 56, color: Colors.redAccent),
         const SizedBox(height: 12),
         const Center(
           child: Padding(
@@ -162,6 +159,7 @@ class StudentLessonsScreen extends ConsumerWidget {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
+      actions: [const AppHomeButton()],
       backgroundColor: Colors.white,
       elevation: 0,
       leading: Padding(
@@ -195,13 +193,10 @@ class StudentLessonsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildLessonCard(
-    BuildContext context, {
-    required LessonModel lesson,
-  }) {
-    final dateStr = lesson.createdAt != null 
-      ? "Created: ${lesson.createdAt!.toString().split(' ')[0]}" 
-      : "Open Date";
+  Widget _buildLessonCard(BuildContext context, {required LessonModel lesson}) {
+    final dateStr = lesson.createdAt != null
+        ? "Created: ${lesson.createdAt!.toString().split(' ')[0]}"
+        : "Open Date";
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -258,7 +253,8 @@ class StudentLessonsScreen extends ConsumerWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => StudentLessonOverviewScreen(lesson: lesson),
+                      builder: (context) =>
+                          StudentLessonOverviewScreen(lesson: lesson),
                     ),
                   );
                 },

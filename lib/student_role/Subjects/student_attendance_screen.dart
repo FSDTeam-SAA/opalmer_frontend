@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/models/student_models.dart';
@@ -27,7 +28,9 @@ class StudentAttendanceScreen extends ConsumerWidget {
               child: attendanceAsync.when(
                 data: (records) {
                   if (records.isEmpty) {
-                    return const Center(child: Text("No attendance records found"));
+                    return const Center(
+                      child: Text("No attendance records found"),
+                    );
                   }
                   return ListView.builder(
                     padding: const EdgeInsets.only(top: 8, bottom: 20),
@@ -36,9 +39,9 @@ class StudentAttendanceScreen extends ConsumerWidget {
                       final record = records[index];
                       final date = record.date.toString().split(' ')[0];
                       return _buildAttendanceRow(
-                        date, 
-                        studentName, 
-                        record.status
+                        date,
+                        studentName,
+                        record.status,
                       );
                     },
                   );
@@ -55,6 +58,7 @@ class StudentAttendanceScreen extends ConsumerWidget {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
+      actions: [const AppHomeButton()],
       backgroundColor: Colors.white,
       elevation: 0,
       leading: Padding(
@@ -68,7 +72,11 @@ class StudentAttendanceScreen extends ConsumerWidget {
                 color: AppColors.primaryMid,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+              child: const Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
         ),
@@ -102,10 +110,18 @@ class StudentAttendanceScreen extends ConsumerWidget {
               children: const [
                 Text(
                   "Date",
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
                 SizedBox(width: 4),
-                Icon(Icons.calendar_month_outlined, color: Colors.white, size: 14),
+                Icon(
+                  Icons.calendar_month_outlined,
+                  color: Colors.white,
+                  size: 14,
+                ),
               ],
             ),
           ),
@@ -113,7 +129,11 @@ class StudentAttendanceScreen extends ConsumerWidget {
             child: Text(
               "Students Name",
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
             ),
           ),
           const SizedBox(
@@ -121,7 +141,11 @@ class StudentAttendanceScreen extends ConsumerWidget {
             child: Text(
               "Status",
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
             ),
           ),
         ],
@@ -145,13 +169,14 @@ class StudentAttendanceScreen extends ConsumerWidget {
             child: Text(
               name,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Color(0xFF333333), fontSize: 14, fontWeight: FontWeight.w500),
+              style: const TextStyle(
+                color: Color(0xFF333333),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
-          SizedBox(
-            width: 90,
-            child: Center(child: _buildStatusBadge(status)),
-          ),
+          SizedBox(width: 90, child: Center(child: _buildStatusBadge(status))),
         ],
       ),
     );

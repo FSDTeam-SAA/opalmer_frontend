@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import '../navigation/teacher_workspace.dart';
 import '../../core/widgets/data_image.dart';
@@ -89,6 +90,7 @@ class QuizDetailScreen extends ConsumerWidget {
           ),
         ),
         actions: [
+          const AppHomeButton(),
           Padding(
             padding: const EdgeInsets.only(right: 20),
             child: Center(

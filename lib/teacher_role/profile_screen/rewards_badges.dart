@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/models/badge_model.dart';
@@ -14,6 +15,7 @@ class RewardsBadgesScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        actions: [const AppHomeButton()],
         backgroundColor: Colors.white,
         elevation: 0,
         leadingWidth: 70,
@@ -22,8 +24,11 @@ class RewardsBadgesScreen extends ConsumerWidget {
           child: Center(
             child: GestureDetector(
               onTap: () => Navigator.pop(context),
-              child:
-                  const Icon(Icons.arrow_back, color: Colors.black, size: 24),
+              child: const Icon(
+                Icons.arrow_back,
+                color: Colors.black,
+                size: 24,
+              ),
             ),
           ),
         ),
@@ -45,8 +50,7 @@ class RewardsBadgesScreen extends ConsumerWidget {
         },
         child: badgesAsync.when(
           data: (badges) => _buildList(badges),
-          loading: () =>
-              const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: CircularProgressIndicator()),
           error: (err, _) => _buildError(context, ref, err),
         ),
       ),
@@ -80,8 +84,7 @@ class RewardsBadgesScreen extends ConsumerWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
         SizedBox(height: MediaQuery.of(context).size.height * 0.2),
-        const Icon(Icons.error_outline,
-            size: 56, color: Colors.redAccent),
+        const Icon(Icons.error_outline, size: 56, color: Colors.redAccent),
         const SizedBox(height: 12),
         const Center(
           child: Padding(
@@ -194,11 +197,7 @@ class _StatusChip extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: fg,
-        ),
+        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: fg),
       ),
     );
   }
@@ -247,8 +246,7 @@ class _ProgressBar extends StatelessWidget {
       builder: (context, constraints) {
         final double width = constraints.maxWidth;
         final double tickRatio = badge.targetThreshold.clamp(0.0, 1.0);
-        final double progressRatio =
-            (badge.progress ?? 0).clamp(0.0, 1.0);
+        final double progressRatio = (badge.progress ?? 0).clamp(0.0, 1.0);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -264,8 +262,7 @@ class _ProgressBar extends StatelessWidget {
                   ),
                 ),
                 Positioned(
-                  left: (width * tickRatio - 18)
-                      .clamp(0.0, width - 36),
+                  left: (width * tickRatio - 18).clamp(0.0, width - 36),
                   child: Text(
                     badge.targetLabel,
                     style: TextStyle(
