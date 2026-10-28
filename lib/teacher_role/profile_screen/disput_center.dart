@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'support.dart';
 
@@ -84,6 +85,7 @@ class _DisputCenterScreenState extends State<DisputCenterScreen> {
             color: Colors.black87,
           ),
         ),
+        actions: const [AppHomeButton()],
         // actions: [
         //           Padding(
         //             padding: const EdgeInsets.only(right: 20),

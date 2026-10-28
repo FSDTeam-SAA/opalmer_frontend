@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 
@@ -9,6 +10,7 @@ class BlockListScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        actions: [const AppHomeButton()],
         backgroundColor: Colors.white,
         elevation: 0,
         leadingWidth: 70,

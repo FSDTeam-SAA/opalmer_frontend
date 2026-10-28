@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -80,7 +81,10 @@ class _AddHomeworkScreenState extends ConsumerState<AddHomeworkScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Create assignment')),
+    appBar: AppBar(
+      actions: [const AppHomeButton()],
+      title: const Text('Create assignment'),
+    ),
     body: ListView(
       padding: const EdgeInsets.all(24),
       children: [

@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/parent_role/ProfileScreen/models/support_screen.dart';
 
@@ -85,6 +86,7 @@ class _ParentDisputeCenterScreenState extends State<ParentDisputeCenterScreen> {
             color: Colors.black87,
           ),
         ),
+        actions: const [AppHomeButton()],
         // actions: [
         //   Padding(
         //     padding: const EdgeInsets.only(right: 20),

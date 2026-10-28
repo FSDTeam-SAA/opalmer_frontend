@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import '../core/providers/auth_provider.dart';
 import '../core/models/student_models.dart';
@@ -123,7 +124,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
   Widget _buildHeader(int unread) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Row(
+      child: AppPageHeader(
         children: [
           GestureDetector(
             onTap: () => Navigator.pop(context),

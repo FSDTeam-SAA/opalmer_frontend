@@ -1,3 +1,4 @@
+import '../../core/widgets/dashboard_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/models/student_models.dart';
@@ -5,13 +6,13 @@ import 'package:opalmer_education/core/providers/auth_provider.dart';
 import 'package:opalmer_education/core/providers/student_provider.dart';
 import 'package:opalmer_education/core/providers/navigation_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
-import 'package:opalmer_education/student_role/Subjects/subjects_screen.dart';
 import 'package:opalmer_education/student_role/Subjects/widgets/subject_card.dart';
 import 'package:opalmer_education/notification/notification.dart';
 import 'package:opalmer_education/student_role/Quizzes/student_quiz_questions_screen.dart';
 
 class StudentHomeDashboard extends ConsumerWidget {
-  const StudentHomeDashboard({Key? key}) : super(key: key);
+  final VoidCallback? onOpenMenu;
+  const StudentHomeDashboard({super.key, this.onOpenMenu});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -40,79 +41,16 @@ class StudentHomeDashboard extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, String studentName) {
-    return Stack(
-      children: [
-        // Wave Background
-        Container(
-          width: double.infinity,
-          height: 220,
-          child: Image.asset(
-            'assets/images/Home_dashboard_header.png',
-            fit: BoxFit.cover,
-          ),
-        ),
-
-        // Gradient overlay to match the image precisely if needed,
-        // but the asset should already have it.
-        SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Hi, $studentName 👋",
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "Your learning starts here.",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white.withValues(alpha: 0.9),
-                      ),
-                    ),
-                  ],
-                ),
-                // Notification Bell
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const NotificationScreen(),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 1),
-                    ),
-                    child: const Icon(
-                      Icons.notifications_none_rounded,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+  Widget _buildHeader(BuildContext context, String studentName) =>
+      DashboardHeader(
+        name: studentName,
+        workspace: 'Student workspace',
+        subtitle: 'Ready to learn something new today?',
+        onOpenMenu: onOpenMenu,
+        onNotifications: () => Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const NotificationScreen())),
+      );
 
   Widget _buildSectionHeader(
     BuildContext context,
@@ -188,14 +126,17 @@ class StudentHomeDashboard extends ConsumerWidget {
                 children: [
                   const Icon(Icons.error_outline, color: Colors.red, size: 28),
                   const SizedBox(height: 8),
-                  const Text('Session expired. Please log in again.', style: TextStyle(color: Colors.red)),
+                  const Text(
+                    'Session expired. Please log in again.',
+                    style: TextStyle(color: Colors.red),
+                  ),
                   TextButton(
                     onPressed: () {
                       ref.read(authServiceProvider).logout();
                       ref.read(authStateProvider.notifier).state = null;
                     },
                     child: const Text('Log Out'),
-                  )
+                  ),
                 ],
               ),
             );
@@ -225,7 +166,10 @@ class StudentHomeDashboard extends ConsumerWidget {
           return const Center(
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 40),
-              child: Text("No quizzes available", style: TextStyle(color: Colors.grey)),
+              child: Text(
+                "No quizzes available",
+                style: TextStyle(color: Colors.grey),
+              ),
             ),
           );
         }
@@ -266,14 +210,17 @@ class StudentHomeDashboard extends ConsumerWidget {
                 children: [
                   const Icon(Icons.error_outline, color: Colors.red, size: 28),
                   const SizedBox(height: 8),
-                  const Text('Session expired. Please log in again.', style: TextStyle(color: Colors.red)),
+                  const Text(
+                    'Session expired. Please log in again.',
+                    style: TextStyle(color: Colors.red),
+                  ),
                   TextButton(
                     onPressed: () {
                       ref.read(authServiceProvider).logout();
                       ref.read(authStateProvider.notifier).state = null;
                     },
                     child: const Text('Log Out'),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -351,7 +298,9 @@ class StudentHomeDashboard extends ConsumerWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      quiz.metaLine.isNotEmpty ? quiz.metaLine : "${quiz.questionCount} Questions • ${quiz.durationMinutes} min",
+                      quiz.metaLine.isNotEmpty
+                          ? quiz.metaLine
+                          : "${quiz.questionCount} Questions • ${quiz.durationMinutes} min",
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.grey.shade500,
@@ -362,7 +311,11 @@ class StudentHomeDashboard extends ConsumerWidget {
                 ),
               ),
               if (isCompleted)
-                const Icon(Icons.check_circle, color: Color(0xFF4AA678), size: 24),
+                const Icon(
+                  Icons.check_circle,
+                  color: Color(0xFF4AA678),
+                  size: 24,
+                ),
             ],
           ),
           const SizedBox(height: 20),
@@ -410,8 +363,12 @@ class StudentHomeDashboard extends ConsumerWidget {
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: isCompleted ? Colors.grey.shade100 : AppColors.primaryMid,
-                foregroundColor: isCompleted ? Colors.grey.shade700 : Colors.white,
+                backgroundColor: isCompleted
+                    ? Colors.grey.shade100
+                    : AppColors.primaryMid,
+                foregroundColor: isCompleted
+                    ? Colors.grey.shade700
+                    : Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -420,7 +377,10 @@ class StudentHomeDashboard extends ConsumerWidget {
               ),
               child: Text(
                 isCompleted ? "Retake Quiz" : "Start Learning",
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                ),
               ),
             ),
           ),

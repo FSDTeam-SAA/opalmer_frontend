@@ -1,3 +1,5 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
+import '../../core/widgets/access_guide_screen.dart';
 import 'package:flutter/material.dart';
 import '../../core/widgets/app_back_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -46,7 +48,8 @@ class _ParentProfileScreenState extends ConsumerState<ParentProfileScreen> {
                   padding: const EdgeInsets.only(top: 75, left: 20, right: 20),
                   alignment: Alignment.topLeft,
 
-                  child: Row(
+                  child: AppPageHeader(
+                    homeColor: Colors.white,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
                     children: [
@@ -207,6 +210,17 @@ class _ParentProfileScreenState extends ConsumerState<ParentProfileScreen> {
                               ),
                             );
                           },
+                        ),
+                        _buildSettingsTile(
+                          icon: Icons.menu_book_outlined,
+                          title: 'How to use',
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const AccessGuideScreen(role: 'parent'),
+                            ),
+                          ),
                         ),
                         _buildSettingsTile(
                           icon: Icons.help_outline_rounded,

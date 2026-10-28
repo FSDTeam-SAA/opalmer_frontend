@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/models/teacher_class_model.dart';
@@ -59,6 +60,7 @@ class TeacherClassPicker extends ConsumerWidget {
     final lastId = ref.watch(teacherLastClassProvider);
     return Scaffold(
       appBar: AppBar(
+        actions: [const AppHomeButton()],
         title: Text(feature.title),
         automaticallyImplyLeading: !embedded,
       ),
@@ -224,7 +226,10 @@ class TeacherStudentPicker extends ConsumerWidget {
   });
   @override
   Widget build(BuildContext context, WidgetRef ref) => Scaffold(
-    appBar: AppBar(title: Text(feature.title)),
+    appBar: AppBar(
+      actions: [const AppHomeButton()],
+      title: Text(feature.title),
+    ),
     body: ref
         .watch(classStudentsProvider(classData.id))
         .when(
@@ -292,7 +297,10 @@ class TeacherGradebook extends ConsumerWidget {
   const TeacherGradebook({super.key, required this.classData});
   @override
   Widget build(BuildContext context, WidgetRef ref) => Scaffold(
-    appBar: AppBar(title: const Text('Gradebook')),
+    appBar: AppBar(
+      actions: [const AppHomeButton()],
+      title: const Text('Gradebook'),
+    ),
     body: ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -405,7 +413,10 @@ class TeacherReportsScreen extends ConsumerWidget {
   const TeacherReportsScreen({super.key, required this.classData});
   @override
   Widget build(BuildContext context, WidgetRef ref) => Scaffold(
-    appBar: AppBar(title: const Text('Reports & Data')),
+    appBar: AppBar(
+      actions: [const AppHomeButton()],
+      title: const Text('Reports & Data'),
+    ),
     body: ListView(
       padding: const EdgeInsets.all(20),
       children: [
@@ -495,7 +506,10 @@ class TeacherHelpAssignments extends ConsumerWidget {
   });
   @override
   Widget build(BuildContext context, WidgetRef ref) => Scaffold(
-    appBar: AppBar(title: const Text('Homework Help')),
+    appBar: AppBar(
+      actions: [const AppHomeButton()],
+      title: const Text('Homework Help'),
+    ),
     body: ref
         .watch(classHomeworkProvider(classData.id))
         .when(

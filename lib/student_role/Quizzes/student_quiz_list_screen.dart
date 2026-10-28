@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/models/student_models.dart';
@@ -18,7 +19,9 @@ class StudentQuizListScreen extends ConsumerWidget {
       body: quizzesAsync.when(
         data: (quizzes) {
           if (quizzes.isEmpty) {
-            return const Center(child: Text("No quizzes available at the moment."));
+            return const Center(
+              child: Text("No quizzes available at the moment."),
+            );
           }
           return ListView.builder(
             padding: const EdgeInsets.all(24),
@@ -51,6 +54,7 @@ class StudentQuizListScreen extends ConsumerWidget {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
+      actions: [const AppHomeButton()],
       backgroundColor: Colors.white,
       elevation: 0,
       leading: Padding(

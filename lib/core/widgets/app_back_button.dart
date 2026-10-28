@@ -1,11 +1,47 @@
 import 'package:flutter/material.dart';
+import '../navigation/role_navigation.dart';
 
 /// Marks tab content so a previous authentication route is never a tab's back target.
-class AppShellRoot extends InheritedWidget {
-  const AppShellRoot({super.key, required super.child});
+class AppShellRoot extends StatefulWidget {
+  final Widget child;
+  final String role;
+  final VoidCallback onHome;
+  const AppShellRoot({
+    super.key,
+    required this.child,
+    required this.role,
+    required this.onHome,
+  });
+  @override
+  State<AppShellRoot> createState() => _AppShellRootState();
+}
+
+class _AppShellRootState extends State<AppShellRoot> {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    roleNavigation.attach(
+      this,
+      ModalRoute.of(context)!,
+      widget.role,
+      widget.onHome,
+    );
+  }
 
   @override
-  bool updateShouldNotify(AppShellRoot oldWidget) => false;
+  void dispose() {
+    roleNavigation.detach(this);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => _ShellContent(child: widget.child);
+}
+
+class _ShellContent extends InheritedWidget {
+  const _ShellContent({required super.child});
+  @override
+  bool updateShouldNotify(_ShellContent oldWidget) => false;
 }
 
 /// Shows back navigation for pushed pages and respects each route's PopScope.
@@ -15,7 +51,7 @@ class AppBackButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (context.dependOnInheritedWidgetOfExactType<AppShellRoot>() != null ||
+    if (context.dependOnInheritedWidgetOfExactType<_ShellContent>() != null ||
         !Navigator.of(context).canPop()) {
       return const SizedBox.shrink();
     }

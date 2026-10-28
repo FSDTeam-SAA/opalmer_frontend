@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:opalmer_education/core/widgets/assignment_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/core/constants/api_constants.dart';
@@ -97,7 +98,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
             // ── Header ──
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Row(
+              child: AppPageHeader(
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),

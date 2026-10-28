@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers/teacher_provider.dart';
@@ -24,7 +25,10 @@ class TeacherActivityScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Activity')),
+    appBar: AppBar(
+      actions: [const AppHomeButton()],
+      title: const Text('Activity'),
+    ),
     body: const SingleChildScrollView(child: TeacherActivity()),
   );
 }

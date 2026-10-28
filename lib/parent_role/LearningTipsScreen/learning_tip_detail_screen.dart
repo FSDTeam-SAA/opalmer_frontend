@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/parent_role/LearningTipsScreen/models/learning_tip.dart';
 
@@ -21,7 +22,7 @@ class LearningTipDetailScreen extends StatelessWidget {
                   horizontal: 20,
                   vertical: 16,
                 ),
-                child: Row(
+                child: AppPageHeader(
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pop(context),

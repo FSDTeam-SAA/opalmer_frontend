@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'scan_document.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,16 +8,23 @@ import '../../core/providers/teacher_provider.dart';
 class GradingProgressScreen extends ConsumerStatefulWidget {
   final String studentId;
   final String classId;
-  const GradingProgressScreen({super.key, required this.studentId, required this.classId});
+  const GradingProgressScreen({
+    super.key,
+    required this.studentId,
+    required this.classId,
+  });
 
   @override
-  ConsumerState<GradingProgressScreen> createState() => _GradingProgressScreenState();
+  ConsumerState<GradingProgressScreen> createState() =>
+      _GradingProgressScreenState();
 }
 
 class _GradingProgressScreenState extends ConsumerState<GradingProgressScreen> {
   @override
   Widget build(BuildContext context) {
-    final resultsAsync = ref.watch(studentQuizResultsProvider(widget.studentId));
+    final resultsAsync = ref.watch(
+      studentQuizResultsProvider(widget.studentId),
+    );
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
       appBar: AppBar(
@@ -49,6 +57,7 @@ class _GradingProgressScreenState extends ConsumerState<GradingProgressScreen> {
           ),
         ),
         actions: [
+          const AppHomeButton(),
           Padding(
             padding: const EdgeInsets.only(right: 20),
             child: Center(
@@ -83,25 +92,39 @@ class _GradingProgressScreenState extends ConsumerState<GradingProgressScreen> {
       body: SafeArea(
         child: resultsAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, _) => Center(child: TextButton(
-            onPressed: () => ref.invalidate(studentQuizResultsProvider(widget.studentId)),
-            child: const Text('Unable to load grading results. Retry'),
-          )),
+          error: (_, _) => Center(
+            child: TextButton(
+              onPressed: () =>
+                  ref.invalidate(studentQuizResultsProvider(widget.studentId)),
+              child: const Text('Unable to load grading results. Retry'),
+            ),
+          ),
           data: (results) {
             final reviewed = results.where((result) {
               final quiz = result['quizId'];
               final progress = result['progress'];
-              return quiz is Map && quiz['classId']?.toString() == widget.classId &&
-                  progress is Map && progress['status'] == 'completed' &&
+              return quiz is Map &&
+                  quiz['classId']?.toString() == widget.classId &&
+                  progress is Map &&
+                  progress['status'] == 'completed' &&
                   ['reviewed', 'released'].contains(result['gradeStatus']) &&
-                  result['percentage'] is num && (result['percentage'] as num).isFinite &&
-                  result['percentage'] >= 0 && result['percentage'] <= 100;
+                  result['percentage'] is num &&
+                  (result['percentage'] as num).isFinite &&
+                  result['percentage'] >= 0 &&
+                  result['percentage'] <= 100;
             }).toList();
-            if (reviewed.isEmpty) return const Center(child: Text('No reviewed grading results for this student in this class.'));
+            if (reviewed.isEmpty)
+              return const Center(
+                child: Text(
+                  'No reviewed grading results for this student in this class.',
+                ),
+              );
             return RefreshIndicator(
               onRefresh: () async {
                 ref.invalidate(studentQuizResultsProvider(widget.studentId));
-                await ref.read(studentQuizResultsProvider(widget.studentId).future);
+                await ref.read(
+                  studentQuizResultsProvider(widget.studentId).future,
+                );
               },
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -109,10 +132,18 @@ class _GradingProgressScreenState extends ConsumerState<GradingProgressScreen> {
                 itemCount: reviewed.length,
                 itemBuilder: (context, index) {
                   final result = reviewed[index];
-                  final date = DateTime.tryParse(result['submittedAt']?.toString() ?? result['updatedAt']?.toString() ?? '');
+                  final date = DateTime.tryParse(
+                    result['submittedAt']?.toString() ??
+                        result['updatedAt']?.toString() ??
+                        '',
+                  );
                   return _buildProgressCard(
-                    title: result['quizId']['title']?.toString() ?? 'Untitled assessment',
-                    date: date == null ? 'Date unavailable' : DateFormat('dd/MM/yyyy').format(date.toLocal()),
+                    title:
+                        result['quizId']['title']?.toString() ??
+                        'Untitled assessment',
+                    date: date == null
+                        ? 'Date unavailable'
+                        : DateFormat('dd/MM/yyyy').format(date.toLocal()),
                     progress: (result['percentage'] as num).toDouble() / 100,
                     indicatorColor: const Color(0xFF4AA678),
                   );

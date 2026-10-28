@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/core/widgets/data_avatar.dart';
 import 'package:opalmer_education/chat/screens/call.dart';
@@ -63,6 +64,7 @@ class _SupportScreenState extends State<SupportScreen> {
           ],
         ),
         actions: [
+          const AppHomeButton(),
           _buildActionIcon(
             icon: Icons.translate,
             onTap: () {

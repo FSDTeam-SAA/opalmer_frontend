@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -119,6 +120,7 @@ class _OCRResultScreenState extends State<OCRResultScreen>
               ),
             ),
             actions: [
+              const AppHomeButton(),
               _buildActionButton(
                 icon: _isEditing ? Icons.save_rounded : Icons.edit_rounded,
                 onPressed: () {

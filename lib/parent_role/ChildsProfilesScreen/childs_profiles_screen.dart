@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/core/widgets/data_avatar.dart';
@@ -147,7 +148,8 @@ class _ChildsProfilesScreenState extends State<ChildsProfilesScreen> {
                         horizontal: 20,
                         vertical: 10,
                       ),
-                      child: Row(
+                      child: AppPageHeader(
+                        homeColor: Colors.white,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [

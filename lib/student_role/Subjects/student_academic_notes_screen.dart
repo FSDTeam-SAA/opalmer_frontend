@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,29 +13,36 @@ class StudentAcademicNotesScreen extends ConsumerStatefulWidget {
   const StudentAcademicNotesScreen({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<StudentAcademicNotesScreen> createState() => _StudentAcademicNotesScreenState();
+  ConsumerState<StudentAcademicNotesScreen> createState() =>
+      _StudentAcademicNotesScreenState();
 }
 
-class _StudentAcademicNotesScreenState extends ConsumerState<StudentAcademicNotesScreen> {
+class _StudentAcademicNotesScreenState
+    extends ConsumerState<StudentAcademicNotesScreen> {
   String? _downloadingId;
   double _progress = 0;
 
-  Future<void> _downloadAndOpenFile(BuildContext context, String url, String id, String dateStr) async {
+  Future<void> _downloadAndOpenFile(
+    BuildContext context,
+    String url,
+    String id,
+    String dateStr,
+  ) async {
     try {
       setState(() {
         _downloadingId = id;
         _progress = 0;
       });
 
-      final directory = Platform.isAndroid 
-          ? await getExternalStorageDirectory() 
+      final directory = Platform.isAndroid
+          ? await getExternalStorageDirectory()
           : await getApplicationDocumentsDirectory();
-      
+
       final filePath = "${directory!.path}/Academic_Note_$dateStr.pdf";
 
       final dio = dioForDownloadUrl(url);
       await dio.download(
-        url, 
+        url,
         filePath,
         onReceiveProgress: (received, total) {
           if (total != -1) {
@@ -55,9 +63,9 @@ class _StudentAcademicNotesScreenState extends ConsumerState<StudentAcademicNote
       }
     } catch (e) {
       setState(() => _downloadingId = null);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Download failed: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Download failed: $e")));
     }
   }
 
@@ -82,8 +90,11 @@ class _StudentAcademicNotesScreenState extends ConsumerState<StudentAcademicNote
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.article_rounded,
-                            size: 64, color: Colors.grey.shade200),
+                        Icon(
+                          Icons.article_rounded,
+                          size: 64,
+                          color: Colors.grey.shade200,
+                        ),
                         const SizedBox(height: 16),
                         Text(
                           "No academic notes found",
@@ -133,6 +144,7 @@ class _StudentAcademicNotesScreenState extends ConsumerState<StudentAcademicNote
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
+      actions: [const AppHomeButton()],
       backgroundColor: Colors.white,
       elevation: 0,
       centerTitle: true,
@@ -165,7 +177,13 @@ class _StudentAcademicNotesScreenState extends ConsumerState<StudentAcademicNote
     );
   }
 
-  Widget _buildDocumentCard(BuildContext context, AcademicDocumentModel doc, String title, String dateStr, bool isDownloading) {
+  Widget _buildDocumentCard(
+    BuildContext context,
+    AcademicDocumentModel doc,
+    String title,
+    String dateStr,
+    bool isDownloading,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -219,41 +237,43 @@ class _StudentAcademicNotesScreenState extends ConsumerState<StudentAcademicNote
                   : "Tap to download & open",
               style: TextStyle(
                 fontSize: 12,
-                color: isDownloading ? AppColors.primaryMid : Colors.grey.shade500,
+                color: isDownloading
+                    ? AppColors.primaryMid
+                    : Colors.grey.shade500,
                 fontWeight: FontWeight.w500,
               ),
             ),
           ],
         ),
         trailing: isDownloading
-          ? SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                value: _progress,
-                strokeWidth: 3,
-                color: AppColors.primaryMid,
-              ),
-            )
-          : GestureDetector(
-              onTap: () {
-                if (doc.url != null) {
-                  _downloadAndOpenFile(context, doc.url!, doc.id, dateStr);
-                }
-              },
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: const BoxDecoration(
+            ? SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  value: _progress,
+                  strokeWidth: 3,
                   color: AppColors.primaryMid,
-                  shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.file_download_outlined,
-                  color: Colors.white,
-                  size: 20,
+              )
+            : GestureDetector(
+                onTap: () {
+                  if (doc.url != null) {
+                    _downloadAndOpenFile(context, doc.url!, doc.id, dateStr);
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: AppColors.primaryMid,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.file_download_outlined,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
               ),
-            ),
       ),
     );
   }
