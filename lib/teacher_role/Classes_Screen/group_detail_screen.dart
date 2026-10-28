@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'student_profile.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,14 +33,17 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
 
     try {
       final apiClient = ref.read(apiClientProvider);
-      final List<dynamic> participants = List.from(_currentRoom['participants']);
-      
+      final List<dynamic> participants = List.from(
+        _currentRoom['participants'],
+      );
+
       // Remove the participant with this userId
       participants.removeWhere((p) => p['userId'] == studentId);
 
-      final response = await apiClient.patch('/rooms/${_currentRoom['_id']}', data: {
-        'participants': participants,
-      });
+      final response = await apiClient.patch(
+        '/rooms/${_currentRoom['_id']}',
+        data: {'participants': participants},
+      );
 
       if (response.statusCode == 200 && response.data['success'] == true) {
         setState(() {
@@ -56,9 +60,9 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -79,7 +83,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             // ── Header ──
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Row(
+              child: AppPageHeader(
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
@@ -149,13 +153,14 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                     // Members List
                     studentsAsync.when(
                       data: (students) {
-                        final participants = _currentRoom['participants'] as List;
-                        
+                        final participants =
+                            _currentRoom['participants'] as List;
+
                         // Map of studentId -> studentData for quick lookup
                         final studentMap = {
                           for (var s in students)
                             if (s['studentId'] != null)
-                              s['studentId']['_id']: s['studentId']
+                              s['studentId']['_id']: s['studentId'],
                         };
 
                         return ListView.builder(
@@ -165,33 +170,40 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                           itemBuilder: (context, index) {
                             final userId = participants[index]['userId'];
                             final student = studentMap[userId];
-                            
+
                             // Skip if it's the teacher or student not found in this class
                             if (student == null) return const SizedBox();
 
                             return GestureDetector(
                               onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => StudentProfileScreen(
-                                        studentData: student,
-                                        classId: widget.classId,
-                                      ),
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => StudentProfileScreen(
+                                      studentData: student,
+                                      classId: widget.classId,
                                     ),
-                                  );
+                                  ),
+                                );
                               },
                               child: _buildMemberCard(
                                 id: userId,
-                                name: student['username'] ?? student['name'] ?? 'Unknown',
-                                avatarUrl: student['avatar'] is Map ? student['avatar']['url'] : student['avatar'],
+                                name:
+                                    student['username'] ??
+                                    student['name'] ??
+                                    'Unknown',
+                                avatarUrl: student['avatar'] is Map
+                                    ? student['avatar']['url']
+                                    : student['avatar'],
                               ),
                             );
                           },
                         );
                       },
-                      loading: () => const Center(child: CircularProgressIndicator()),
-                      error: (err, stack) => Center(child: Text("Error loading members: $err")),
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (err, stack) =>
+                          Center(child: Text("Error loading members: $err")),
                     ),
 
                     const SizedBox(height: 24),
@@ -206,27 +218,32 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     homeworkAsync.when(
                       data: (homeworkList) {
                         if (homeworkList.isEmpty) {
-                          return const Center(child: Text("No homework found."));
+                          return const Center(
+                            child: Text("No homework found."),
+                          );
                         }
                         // For now just showing the first homework from the class as a placeholder
                         final hw = homeworkList[0];
                         return _buildHomeworkCard(
                           title: hw['title'] ?? 'No Title',
                           description: hw['description'] ?? 'No Description',
-                          dueDate: hw['created_at'] != null 
-                              ? "Created: ${hw['created_at'].toString().split('T')[0]}" 
+                          dueDate: hw['created_at'] != null
+                              ? "Created: ${hw['created_at'].toString().split('T')[0]}"
                               : "Date: TBD",
                           showOptions: true,
                         );
                       },
-                      loading: () => const SizedBox(height: 100, child: Center(child: CircularProgressIndicator())),
+                      loading: () => const SizedBox(
+                        height: 100,
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
                       error: (err, stack) => Center(child: Text("Error: $err")),
                     ),
-                    
+
                     const SizedBox(height: 32),
 
                     // Archived Homework Header
@@ -261,9 +278,10 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                             final hw = homeworkList[index + 1];
                             return _buildHomeworkCard(
                               title: hw['title'] ?? 'No Title',
-                              description: hw['description'] ?? 'No Description',
-                              dueDate: hw['created_at'] != null 
-                                  ? "Created: ${hw['created_at'].toString().split('T')[0]}" 
+                              description:
+                                  hw['description'] ?? 'No Description',
+                              dueDate: hw['created_at'] != null
+                                  ? "Created: ${hw['created_at'].toString().split('T')[0]}"
                                   : "Date: TBD",
                               showOptions: false,
                             );
@@ -307,13 +325,19 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
           Container(
             width: 44,
             height: 44,
-            decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFF3F4F6)),
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Color(0xFFF3F4F6),
+            ),
             clipBehavior: Clip.hardEdge,
             child: avatarUrl != null && avatarUrl.isNotEmpty
                 ? Image.network(
                     avatarUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const Icon(Icons.person_outline, color: Color(0xFF871DAD)),
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.person_outline,
+                      color: Color(0xFF871DAD),
+                    ),
                   )
                 : const Icon(Icons.person_outline, color: Color(0xFF871DAD)),
           ),
@@ -337,7 +361,14 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                 borderRadius: BorderRadius.circular(6),
               ),
               child: _isLoading
-                  ? const SizedBox(height: 14, width: 14, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  ? const SizedBox(
+                      height: 14,
+                      width: 14,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
                   : const Text(
                       "Remove",
                       style: TextStyle(
@@ -442,4 +473,3 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
     );
   }
 }
-

@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/core/widgets/learning_tip_card.dart';
 import 'package:opalmer_education/parent_role/LearningTipsScreen/models/learning_tip.dart';
@@ -58,7 +59,7 @@ class _LearningTipsScreenState extends State<LearningTipsScreen> {
             // Custom Header matching design exactly
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Row(
+              child: AppPageHeader(
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
@@ -93,45 +94,45 @@ class _LearningTipsScreenState extends State<LearningTipsScreen> {
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _tips.isEmpty
-                      ? const Center(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 32),
-                            child: Text(
-                              'No learning tips available yet.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF666666),
-                              ),
-                            ),
-                          ),
-                        )
-                      : RefreshIndicator(
-                          onRefresh: _loadTips,
-                          child: ListView.builder(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 8,
-                            ),
-                            itemCount: _tips.length,
-                            itemBuilder: (context, index) {
-                              final tip = _tips[index];
-                              return LearningTipCard(
-                                title: tip.title,
-                                imageUrl: tip.imageUrl,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          LearningTipDetailScreen(tip: tip),
-                                    ),
-                                  );
-                                },
-                              );
-                            },
+                  ? const Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 32),
+                        child: Text(
+                          'No learning tips available yet.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF666666),
                           ),
                         ),
+                      ),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: _loadTips,
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 8,
+                        ),
+                        itemCount: _tips.length,
+                        itemBuilder: (context, index) {
+                          final tip = _tips[index];
+                          return LearningTipCard(
+                            title: tip.title,
+                            imageUrl: tip.imageUrl,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      LearningTipDetailScreen(tip: tip),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
             ),
           ],
         ),

@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import '../navigation/teacher_workspace.dart';
 import '../../core/widgets/data_avatar.dart';
@@ -23,6 +24,7 @@ class AttendedStudentsScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        actions: [const AppHomeButton()],
         backgroundColor: Colors.white,
         elevation: 0,
         leadingWidth: 70,

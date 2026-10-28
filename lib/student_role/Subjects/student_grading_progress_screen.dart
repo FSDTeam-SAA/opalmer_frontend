@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/providers/student_provider.dart';
@@ -24,17 +25,17 @@ class StudentGradingProgressScreen extends ConsumerWidget {
             itemCount: results.length,
             itemBuilder: (context, index) {
               final res = results[index];
-              final dateStr = res.createdAt != null 
-                ? "${res.createdAt!.day}/${res.createdAt!.month}/${res.createdAt!.year}" 
-                : "N/A";
-              
+              final dateStr = res.createdAt != null
+                  ? "${res.createdAt!.day}/${res.createdAt!.month}/${res.createdAt!.year}"
+                  : "N/A";
+
               // Cycling through colors for UI variety like in the mockup
               final List<Color> indicatorColors = [
                 const Color(0xFF4AA678),
                 const Color(0xFF4A90E2),
                 const Color(0xFFFEBD43),
               ];
-              
+
               return _buildProgressCard(
                 title: res.quizTitle,
                 date: dateStr,
@@ -52,6 +53,7 @@ class StudentGradingProgressScreen extends ConsumerWidget {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
+      actions: [const AppHomeButton()],
       backgroundColor: Colors.white,
       elevation: 0,
       leading: Padding(

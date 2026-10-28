@@ -1,3 +1,4 @@
+import '../../core/widgets/dashboard_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/models/student_models.dart';
@@ -202,131 +203,19 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Keep navigation in the header; classes remain the first content.
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                bottom: Radius.circular(28),
-              ),
-              child: Stack(
-                children: [
-                  const Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: AppColors.primaryGradient,
-                      ),
-                    ),
-                  ),
-                  Positioned.fill(
-                    child: Opacity(
-                      opacity: 0.45,
-                      child: Image.asset(
-                        'assets/images/Home_dashboard_header.png',
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  SafeArea(
-                    bottom: false,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Material(
-                                color: Colors.white.withValues(alpha: 0.14),
-                                borderRadius: BorderRadius.circular(13),
-                                child: IconButton(
-                                  key: const ValueKey('teacher-header-menu'),
-                                  tooltip: 'Open menu',
-                                  icon: const Icon(
-                                    Icons.menu_rounded,
-                                    size: 23,
-                                    color: Colors.white,
-                                  ),
-                                  onPressed:
-                                      widget.onOpenMenu ??
-                                      () => openTeacherPage(
-                                        context,
-                                        const TeacherMenuScreen(),
-                                      ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              const Expanded(
-                                child: Text(
-                                  'Teacher workspace',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                              AnimatedBuilder(
-                                animation: _bellShake,
-                                builder: (context, child) => Transform.rotate(
-                                  angle: _bellShake.value,
-                                  child: child,
-                                ),
-                                child: Material(
-                                  color: Colors.white.withValues(alpha: 0.14),
-                                  borderRadius: BorderRadius.circular(13),
-                                  child: IconButton(
-                                    tooltip: 'Notifications',
-                                    icon: const Icon(
-                                      Icons.notifications_none_rounded,
-                                      size: 23,
-                                      color: Colors.white,
-                                    ),
-                                    onPressed: () => openTeacherPage(
-                                      context,
-                                      const NotificationScreen(),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 18),
-                          FadeTransition(
-                            opacity: _headerFade,
-                            child: SlideTransition(
-                              position: _headerSlide,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "Hi, ${user?.username ?? 'Teacher'}",
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: -0.6,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    'Your classes, all in one place.',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.white.withValues(
-                                        alpha: 0.85,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            DashboardHeader(
+              name: user?.username ?? 'Teacher',
+              workspace: 'Teacher workspace',
+              subtitle: 'Inspire progress, one lesson at a time.',
+              menuKey: const ValueKey('teacher-header-menu'),
+              onOpenMenu:
+                  widget.onOpenMenu ??
+                  () => openTeacherPage(context, const TeacherMenuScreen()),
+              onNotifications: () =>
+                  openTeacherPage(context, const NotificationScreen()),
+              greetingOpacity: _headerFade,
+              greetingSlide: _headerSlide,
+              notificationRotation: _bellShake,
             ),
             // Class statistics and assessments stay directly below the header.
             Padding(

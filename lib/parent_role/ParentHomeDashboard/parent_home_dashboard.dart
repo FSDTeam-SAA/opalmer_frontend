@@ -8,7 +8,7 @@ import 'package:opalmer_education/core/services/api_client.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/core/widgets/pressable_card.dart';
 import 'package:opalmer_education/core/widgets/learning_tip_card.dart';
-import 'package:opalmer_education/core/widgets/animated_wave_header.dart';
+import 'package:opalmer_education/core/widgets/dashboard_header.dart';
 import 'package:opalmer_education/parent_role/LearningTipsScreen/models/learning_tip.dart';
 import 'package:opalmer_education/parent_role/services/learning_tips_service.dart';
 import 'package:opalmer_education/notification/notification.dart';
@@ -19,7 +19,8 @@ import 'package:opalmer_education/parent_role/ChildsProfilesScreen/models/child_
 import 'package:opalmer_education/parent_role/SubjectsScreen/subjects_screen.dart';
 
 class ParentHomeDashboard extends ConsumerStatefulWidget {
-  const ParentHomeDashboard({super.key});
+  final VoidCallback? onOpenMenu;
+  const ParentHomeDashboard({super.key, this.onOpenMenu});
 
   @override
   ConsumerState<ParentHomeDashboard> createState() =>
@@ -129,95 +130,14 @@ class _ParentHomeDashboardState extends ConsumerState<ParentHomeDashboard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ── Header ──
-          Stack(
-            children: [
-              const AnimatedWaveHeader(height: 200),
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _isLoading
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation(
-                                          Colors.white,
-                                        ),
-                                      ),
-                                    )
-                                  : Text(
-                                      "Hi, ${user?.username ?? 'User'} 👋",
-                                      style: const TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                        letterSpacing: -0.5,
-                                      ),
-                                    ),
-                              const SizedBox(height: 4),
-                              Text(
-                                "Check your Children's activities",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                  shadows: [
-                                    Shadow(
-                                      color: Colors.black.withValues(
-                                        alpha: 0.1,
-                                      ),
-                                      offset: const Offset(0, 1),
-                                      blurRadius: 2,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          // Notification bell
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const NotificationScreen(),
-                                ),
-                              );
-                            },
-                            child: Container(
-                              width: 36,
-                              height: 36,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white,
-                              ),
-                              child: Image.asset(
-                                'assets/images/home_dashboard/notification.png',
-                                height: 24,
-                                width: 24,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+          DashboardHeader(
+            name: _isLoading ? '...' : user?.username ?? 'Parent',
+            workspace: 'Parent workspace',
+            subtitle: "Stay connected with your child's learning.",
+            onOpenMenu: widget.onOpenMenu,
+            onNotifications: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const NotificationScreen()),
+            ),
           ),
 
           // Content below header gracefully fills remaining space

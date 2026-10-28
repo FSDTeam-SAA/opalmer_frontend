@@ -65,7 +65,10 @@ class AuthService {
       debugPrint('AuthService: Response data: ${e.response?.data}');
 
       final errorData = UserModel.recursiveSafeMap(e.response?.data);
-      final message = errorData['message']?.toString() ?? 'Login failed';
+      final message = e.response == null
+          ? 'Cannot connect to the server. Please check your connection and try again.'
+          : errorData['message']?.toString() ??
+                'Login failed. Please try again.';
       throw Exception(message);
     } catch (e) {
       debugPrint('AuthService: Unexpected error during login: ${e.toString()}');

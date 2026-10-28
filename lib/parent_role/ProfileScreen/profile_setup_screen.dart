@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
@@ -204,7 +205,8 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
+                        AppPageHeader(
+                          homeColor: Colors.white,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             const Text(

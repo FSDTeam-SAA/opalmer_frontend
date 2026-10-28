@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
@@ -8,17 +9,24 @@ import 'package:open_filex/open_filex.dart';
 
 class StudentLessonOverviewScreen extends StatefulWidget {
   final LessonModel lesson;
-  const StudentLessonOverviewScreen({Key? key, required this.lesson}) : super(key: key);
+  const StudentLessonOverviewScreen({Key? key, required this.lesson})
+    : super(key: key);
 
   @override
-  State<StudentLessonOverviewScreen> createState() => _StudentLessonOverviewScreenState();
+  State<StudentLessonOverviewScreen> createState() =>
+      _StudentLessonOverviewScreenState();
 }
 
-class _StudentLessonOverviewScreenState extends State<StudentLessonOverviewScreen> {
+class _StudentLessonOverviewScreenState
+    extends State<StudentLessonOverviewScreen> {
   bool _isDownloading = false;
   double _downloadProgress = 0;
 
-  Future<void> _downloadAndOpenFile(BuildContext context, String url, String fileName) async {
+  Future<void> _downloadAndOpenFile(
+    BuildContext context,
+    String url,
+    String fileName,
+  ) async {
     try {
       setState(() {
         _isDownloading = true;
@@ -26,16 +34,16 @@ class _StudentLessonOverviewScreenState extends State<StudentLessonOverviewScree
       });
 
       // 1. Get Directory
-      final directory = Platform.isAndroid 
-          ? await getExternalStorageDirectory() 
+      final directory = Platform.isAndroid
+          ? await getExternalStorageDirectory()
           : await getApplicationDocumentsDirectory();
-      
+
       final filePath = "${directory!.path}/$fileName.pdf";
 
       // 2. Download
       final dio = dioForDownloadUrl(url);
       await dio.download(
-        url, 
+        url,
         filePath,
         onReceiveProgress: (received, total) {
           if (total != -1) {
@@ -57,17 +65,17 @@ class _StudentLessonOverviewScreenState extends State<StudentLessonOverviewScree
       }
     } catch (e) {
       setState(() => _isDownloading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Download failed: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Download failed: $e")));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final dateStr = widget.lesson.createdAt != null 
-      ? "${widget.lesson.createdAt!.day}/${widget.lesson.createdAt!.month}/${widget.lesson.createdAt!.year}" 
-      : "N/A";
+    final dateStr = widget.lesson.createdAt != null
+        ? "${widget.lesson.createdAt!.day}/${widget.lesson.createdAt!.month}/${widget.lesson.createdAt!.year}"
+        : "N/A";
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -110,7 +118,10 @@ class _StudentLessonOverviewScreenState extends State<StudentLessonOverviewScree
                   ),
                   const SizedBox(width: 16),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.primaryMid.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
@@ -130,7 +141,8 @@ class _StudentLessonOverviewScreenState extends State<StudentLessonOverviewScree
             const SizedBox(height: 32),
 
             // PDF Material Section
-            if (widget.lesson.documentUrl != null && widget.lesson.documentUrl!.isNotEmpty) ...[
+            if (widget.lesson.documentUrl != null &&
+                widget.lesson.documentUrl!.isNotEmpty) ...[
               const Text(
                 "Learning Material",
                 style: TextStyle(
@@ -142,7 +154,13 @@ class _StudentLessonOverviewScreenState extends State<StudentLessonOverviewScree
               ),
               const SizedBox(height: 16),
               GestureDetector(
-                onTap: _isDownloading ? null : () => _downloadAndOpenFile(context, widget.lesson.documentUrl!, widget.lesson.objective),
+                onTap: _isDownloading
+                    ? null
+                    : () => _downloadAndOpenFile(
+                        context,
+                        widget.lesson.documentUrl!,
+                        widget.lesson.objective,
+                      ),
                 child: Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -191,13 +209,15 @@ class _StudentLessonOverviewScreenState extends State<StudentLessonOverviewScree
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              _isDownloading 
-                                ? "Downloading... ${(_downloadProgress * 100).toInt()}%" 
-                                : "Tap to download PDF",
+                              _isDownloading
+                                  ? "Downloading... ${(_downloadProgress * 100).toInt()}%"
+                                  : "Tap to download PDF",
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
-                                color: _isDownloading ? AppColors.primaryMid : Colors.grey.shade500,
+                                color: _isDownloading
+                                    ? AppColors.primaryMid
+                                    : Colors.grey.shade500,
                               ),
                             ),
                           ],
@@ -211,7 +231,9 @@ class _StudentLessonOverviewScreenState extends State<StudentLessonOverviewScree
                             value: _downloadProgress,
                             strokeWidth: 3,
                             color: AppColors.primaryMid,
-                            backgroundColor: AppColors.primaryMid.withValues(alpha: 0.1),
+                            backgroundColor: AppColors.primaryMid.withValues(
+                              alpha: 0.1,
+                            ),
                           ),
                         )
                       else
@@ -264,6 +286,7 @@ class _StudentLessonOverviewScreenState extends State<StudentLessonOverviewScree
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
+      actions: [const AppHomeButton()],
       backgroundColor: Colors.white,
       elevation: 0,
       centerTitle: true,

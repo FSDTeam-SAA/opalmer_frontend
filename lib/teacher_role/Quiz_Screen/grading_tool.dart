@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import '../../core/widgets/app_back_button.dart';
 import '../../core/widgets/data_image.dart';
@@ -155,7 +156,8 @@ class _GradingToolScreenState extends ConsumerState<GradingToolScreen> {
           fit: BoxFit.cover,
         ),
       ),
-      child: Row(
+      child: AppPageHeader(
+        homeColor: Colors.white,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const AppBackButton(),

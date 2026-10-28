@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/models/student_models.dart';
@@ -63,8 +64,9 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
                         if (homeworkAsync.hasError)
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 60),
-                            child:
-                                Center(child: Text('Error: ${homeworkAsync.error}')),
+                            child: Center(
+                              child: Text('Error: ${homeworkAsync.error}'),
+                            ),
                           ),
                       ],
                     )
@@ -81,8 +83,9 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
                         if (groupWorkAsync.hasError)
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 60),
-                            child:
-                                Center(child: Text('Error: ${groupWorkAsync.error}')),
+                            child: Center(
+                              child: Text('Error: ${groupWorkAsync.error}'),
+                            ),
                           ),
                       ],
                     ),
@@ -97,6 +100,7 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
+      actions: [const AppHomeButton()],
       backgroundColor: Colors.white,
       elevation: 0,
       leading: Padding(
@@ -236,15 +240,16 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
           (h) => HomeworkCard(
             homeworkId: h.id,
             title: h.title,
-            description: h.description ??
+            description:
+                h.description ??
                 (h.fileUrls.isNotEmpty
                     ? "${h.fileUrls.length} file(s) attached"
                     : "No additional description."),
             dueDate: h.dueDate != null
                 ? "Due: ${_formatDate(h.dueDate!)}"
                 : (h.createdAt != null
-                    ? "Assigned: ${_formatDate(h.createdAt!)}"
-                    : "Assigned: N/A"),
+                      ? "Assigned: ${_formatDate(h.createdAt!)}"
+                      : "Assigned: N/A"),
           ),
         ),
       const SizedBox(height: 32),
@@ -284,8 +289,8 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
             dueDate: h.dueDate != null
                 ? "Due: ${_formatDate(h.dueDate!)}"
                 : (h.createdAt != null
-                    ? "Assigned: ${_formatDate(h.createdAt!)}"
-                    : "N/A"),
+                      ? "Assigned: ${_formatDate(h.createdAt!)}"
+                      : "N/A"),
           ),
         ),
       const SizedBox(height: 20),
@@ -321,7 +326,9 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
     final membersList = uniqueMembers.values.toList();
 
     final activeHomework = groupWork.where((h) => h.archived == false).toList();
-    final archivedHomework = groupWork.where((h) => h.archived == true).toList();
+    final archivedHomework = groupWork
+        .where((h) => h.archived == true)
+        .toList();
 
     final List<Widget> items = [];
 
@@ -376,15 +383,16 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
         activeHomework.map(
           (gw) => HomeworkCard(
             title: gw.title,
-            description: gw.description ??
+            description:
+                gw.description ??
                 (gw.fileUrls.isNotEmpty
                     ? "${gw.fileUrls.length} file(s) attached"
                     : "No additional description."),
             dueDate: gw.dueDate != null
                 ? "Due: ${_formatDate(gw.dueDate!)}"
                 : (gw.createdAt != null
-                    ? "Assigned: ${_formatDate(gw.createdAt!)}"
-                    : "Assigned: N/A"),
+                      ? "Assigned: ${_formatDate(gw.createdAt!)}"
+                      : "Assigned: N/A"),
           ),
         ),
       );
@@ -432,8 +440,8 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
             dueDate: gw.dueDate != null
                 ? "Due: ${_formatDate(gw.dueDate!)}"
                 : (gw.createdAt != null
-                    ? "Assigned: ${_formatDate(gw.createdAt!)}"
-                    : "N/A"),
+                      ? "Assigned: ${_formatDate(gw.createdAt!)}"
+                      : "N/A"),
           ),
         ),
       );
@@ -458,5 +466,3 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
     }
   }
 }
-
-

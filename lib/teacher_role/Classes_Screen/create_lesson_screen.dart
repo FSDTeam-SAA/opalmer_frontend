@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'dart:ui';
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
@@ -146,7 +147,7 @@ class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
             // ── Header ──
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Row(
+              child: AppPageHeader(
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),

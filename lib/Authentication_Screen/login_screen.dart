@@ -191,17 +191,42 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     try {
       final loginResponse = await ref
           .read(authServiceProvider)
-          .login(schoolId, password, requestOtp: () async {
-            if (!mounted) return null;
-            final controller = TextEditingController();
-            final code = await showDialog<String>(context: context, builder: (dialogContext) => AlertDialog(
-              title: const Text('Email verification'),
-              content: TextField(controller: controller, keyboardType: TextInputType.number, maxLength: 6, autofillHints: const [AutofillHints.oneTimeCode], decoration: const InputDecoration(labelText: 'Six-digit code')),
-              actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')), FilledButton(onPressed: () => Navigator.pop(dialogContext, controller.text.trim()), child: const Text('Verify'))],
-            ));
-            controller.dispose();
-            return code;
-          });
+          .login(
+            schoolId,
+            password,
+            requestOtp: () async {
+              if (!mounted) return null;
+              final controller = TextEditingController();
+              final code = await showDialog<String>(
+                context: context,
+                builder: (dialogContext) => AlertDialog(
+                  title: const Text('Email verification'),
+                  content: TextField(
+                    controller: controller,
+                    keyboardType: TextInputType.number,
+                    maxLength: 6,
+                    autofillHints: const [AutofillHints.oneTimeCode],
+                    decoration: const InputDecoration(
+                      labelText: 'Six-digit code',
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialogContext),
+                      child: const Text('Cancel'),
+                    ),
+                    FilledButton(
+                      onPressed: () =>
+                          Navigator.pop(dialogContext, controller.text.trim()),
+                      child: const Text('Verify'),
+                    ),
+                  ],
+                ),
+              );
+              controller.dispose();
+              return code;
+            },
+          );
 
       if (loginResponse != null) {
         // Validation: Ensure the user's role matches what was selected
@@ -417,7 +442,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            "School ID",
+                            "ID or Email",
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
@@ -428,7 +453,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           TextField(
                             controller: _schoolIdController,
                             decoration: InputDecoration(
-                              hintText: "Enter your school ID",
+                              hintText: "Enter your ID or email",
                               prefixIcon: Icon(
                                 Icons.check_box_outlined,
                                 color: Colors.grey.shade400,

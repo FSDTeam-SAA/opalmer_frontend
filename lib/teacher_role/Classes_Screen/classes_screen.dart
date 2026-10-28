@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import '../../core/widgets/app_back_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,7 +46,8 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 16),
-                        Row(
+                        AppPageHeader(
+                          homeColor: Colors.white,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [

@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -324,7 +325,8 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Row(
+                                    AppPageHeader(
+                                      homeColor: Colors.white,
                                       children: [
                                         IconButton.filledTonal(
                                           onPressed: busy

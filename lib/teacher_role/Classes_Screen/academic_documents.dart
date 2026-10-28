@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/models/student_models.dart';
@@ -31,6 +32,7 @@ class _AcademicDocumentsScreenState
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
       appBar: AppBar(
+        actions: [const AppHomeButton()],
         backgroundColor: const Color(0xFFFAFAFA),
         elevation: 0,
         leadingWidth: 70,

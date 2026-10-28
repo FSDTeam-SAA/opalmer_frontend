@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/models/student_models.dart';
@@ -90,11 +91,14 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
               : "0%";
         }
         // Match backend logic: Filter out holidays
-        final relevantRecords = records.where((r) => r.status.toLowerCase() != "holiday").toList();
+        final relevantRecords = records
+            .where((r) => r.status.toLowerCase() != "holiday")
+            .toList();
         if (relevantRecords.isEmpty) return "0%";
-        
-        final presentCount =
-            relevantRecords.where((r) => r.status.toLowerCase() == "present").length;
+
+        final presentCount = relevantRecords
+            .where((r) => r.status.toLowerCase() == "present")
+            .length;
         return "${((presentCount / relevantRecords.length) * 100).toInt()}%";
       },
       loading: () => widget.studentClass?.attendancePercentage != null
@@ -263,27 +267,32 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
           Row(
             children: [
               _buildCircleActionIcon(Icons.chat_bubble_rounded, () async {
-                final teacherId = widget.studentClass?.teacherId ?? widget.lesson?.teacherId;
+                final teacherId =
+                    widget.studentClass?.teacherId ?? widget.lesson?.teacherId;
                 if (teacherId != null) {
-                  final room = await ref.read(chatNotifierProvider.notifier).getOrCreateDirectRoom(teacherId);
+                  final room = await ref
+                      .read(chatNotifierProvider.notifier)
+                      .getOrCreateDirectRoom(teacherId);
                   if (room != null && mounted) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ChatScreen(
-                          session: room,
-                          role: ChatRole.student,
-                        ),
+                        builder: (context) =>
+                            ChatScreen(session: room, role: ChatRole.student),
                       ),
                     );
                   } else if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Failed to initialize chat session")),
+                      const SnackBar(
+                        content: Text("Failed to initialize chat session"),
+                      ),
                     );
                   }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Teacher information unavailable")),
+                    const SnackBar(
+                      content: Text("Teacher information unavailable"),
+                    ),
                   );
                 }
               }),
@@ -591,6 +600,7 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
+      actions: [const AppHomeButton()],
       backgroundColor: Colors.white,
       elevation: 0,
       centerTitle: true,

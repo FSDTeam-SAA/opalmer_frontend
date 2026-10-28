@@ -1,3 +1,5 @@
+import 'package:opalmer_education/core/widgets/app_home_button.dart';
+import '../../core/widgets/access_guide_screen.dart';
 import 'package:flutter/material.dart';
 import '../../core/widgets/app_back_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -54,7 +56,8 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                             horizontal: 24,
                             vertical: 16,
                           ),
-                          child: Row(
+                          child: AppPageHeader(
+                            homeColor: Colors.white,
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -189,6 +192,11 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                     "Language",
                     Icons.language_outlined,
                     const LanguageScreen(),
+                  ),
+                  _buildMenuTile(
+                    'How to use',
+                    Icons.menu_book_outlined,
+                    const AccessGuideScreen(role: 'student'),
                   ),
                   _buildMenuTile(
                     "About Us",
