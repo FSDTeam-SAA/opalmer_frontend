@@ -13,6 +13,7 @@ class CallSocketService {
   factory CallSocketService() => _instance;
 
   io.Socket? _socket;
+  String? _token;
 
   final StreamController<IncomingCall> _incomingCallController =
       StreamController<IncomingCall>.broadcast();
@@ -47,9 +48,16 @@ class CallSocketService {
   bool get isConnected => _socket?.connected == true;
 
   void connect({required String token}) {
-    if (_socket?.connected == true) return;
+    if (_socket?.connected == true && _token == token) return;
+    if (_token != token) {
+      _socket?.dispose();
+      _socket = null;
+      _token = token;
+    }
 
-    debugPrint('CallSocket: Attempting connection to ${ApiConstants.socketBaseUrl}');
+    debugPrint(
+      'CallSocket: Attempting connection to ${ApiConstants.socketBaseUrl}',
+    );
 
     _socket ??= io.io(
       ApiConstants.socketBaseUrl,
@@ -73,6 +81,10 @@ class CallSocketService {
     if (_socket == null) return;
 
     _socket!
+      ..off('connect')
+      ..off('disconnect')
+      ..off('connect_error')
+      ..off('error')
       ..off('incoming-call')
       ..off('call-accepted')
       ..off('call-declined')
@@ -174,15 +186,14 @@ class CallSocketService {
     });
   }
 
-  void placeCall({
+  Future<void> placeCall({
     required String roomId,
     required String calleeId,
     required CallMediaType callType,
     String? callLogId,
-  }) {
+  }) async {
     if (_socket?.connected != true) {
-      debugPrint('CallSocket: Cannot place call, socket is NOT connected');
-      return;
+      throw StateError('Calling is disconnected. Please try again.');
     }
 
     final payload = {
@@ -194,9 +205,26 @@ class CallSocketService {
 
     debugPrint('CallSocket: Placing call with payload: $payload');
 
-    _socket?.emitWithAck('call-user', payload, ack: (data) {
-      debugPrint('CallSocket: placeCall server ack: $data');
-    });
+    final result = Completer<void>();
+    _socket!.emitWithAck(
+      'call-user',
+      payload,
+      ack: (data) {
+        if (result.isCompleted) return;
+        if (data is Map && data['success'] == true) {
+          result.complete();
+        } else {
+          result.completeError(
+            StateError(
+              data is Map
+                  ? (data['error'] ?? 'Unable to place call').toString()
+                  : 'Unable to place call',
+            ),
+          );
+        }
+      },
+    );
+    await result.future.timeout(const Duration(seconds: 8));
   }
 
   void acceptCall({
@@ -266,8 +294,9 @@ class CallSocketService {
   }
 
   void disconnect() {
-    debugPrint('CallSocket: disconnect() called from:\n${StackTrace.current}');
-    _socket?.disconnect();
+    _socket?.dispose();
+    _socket = null;
+    _token = null;
   }
 
   Map<String, dynamic>? _asMap(dynamic data) {

@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../theme/app_theme.dart';
 
 class AnimatedWaveHeader extends StatefulWidget {
   final double height;
@@ -37,17 +39,20 @@ class _AnimatedWaveHeaderState extends State<AnimatedWaveHeader>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return CustomPaint(
-          size: Size(double.infinity, widget.height),
-          painter: WavePainter(
-            animationValue: _controller.value,
-            baseColor: widget.baseColor,
-          ),
-        );
-      },
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: AppTheme.statusBarStyle,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return CustomPaint(
+            size: Size(double.infinity, widget.height),
+            painter: WavePainter(
+              animationValue: _controller.value,
+              baseColor: widget.baseColor,
+            ),
+          );
+        },
+      ),
     );
   }
 }

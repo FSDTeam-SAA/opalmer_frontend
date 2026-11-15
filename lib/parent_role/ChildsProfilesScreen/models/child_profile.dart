@@ -8,6 +8,7 @@ class ChildProfile {
   final String name;
   final String gradeAge;
   final double progress;
+  final bool hasProgress;
   final String tagText;
   final Color tagColor;
   final Color barColor;
@@ -21,6 +22,7 @@ class ChildProfile {
     required this.name,
     required this.gradeAge,
     required this.progress,
+    this.hasProgress = true,
     required this.tagText,
     required this.tagColor,
     required this.barColor,
@@ -28,15 +30,22 @@ class ChildProfile {
     required this.imageUrl,
   });
 
-  factory ChildProfile.fromJson(Map<String, dynamic> json, {String? relationId}) {
-    // Default dummy values for missing metrics
-    double prog = (json['progress'] ?? 0).toDouble();
-    String tag = json['tagText'] ?? "Evaluating";
-    
+  factory ChildProfile.fromJson(
+    Map<String, dynamic> json, {
+    String? relationId,
+  }) {
+    final hasProgress = json['progress'] is num;
+    double prog = hasProgress
+        ? (json['progress'] as num).toDouble().clamp(0.0, 1.0)
+        : 0;
+    String tag = hasProgress
+        ? (json['tagText'] ?? 'Evaluating')
+        : 'Awaiting grades';
+
     // Auto-map colors based on tagText
     Color tColor = const Color(0xFF4CB07D);
     Color lBorderColor = const Color(0xFF4CB07D);
-    
+
     if (tag == "Excellent") {
       tColor = const Color(0xFF4CB07D);
       lBorderColor = const Color(0xFF4CB07D);
@@ -56,13 +65,18 @@ class ChildProfile {
       mongoId: json['_id']?.toString(),
       studentId: json['Id'] ?? json['_id'],
       name: json['username'] ?? 'Unknown',
-      gradeAge: 'Grade ${json['gradeLevel'] ?? 'N/A'} - Age ${json['age'] ?? 'N/A'}',
+      gradeAge:
+          'Grade ${json['gradeLevel'] ?? 'N/A'} - Age ${json['age'] ?? 'N/A'}',
       progress: prog,
+      hasProgress: hasProgress,
       tagText: tag,
       tagColor: tColor,
       barColor: AppColors.primaryMid,
       leftBorderColor: lBorderColor,
-      imageUrl: (json['avatar'] != null && json['avatar']['url'] != null && json['avatar']['url'].toString().isNotEmpty)
+      imageUrl:
+          (json['avatar'] != null &&
+              json['avatar']['url'] != null &&
+              json['avatar']['url'].toString().isNotEmpty)
           ? json['avatar']['url']
           : '',
     );
@@ -79,8 +93,7 @@ final List<ChildProfile> mockChildProfiles = [
     tagColor: const Color(0xFF4CB07D),
     barColor: AppColors.primaryMid,
     leftBorderColor: const Color(0xFF4CB07D),
-    imageUrl:
-        "",
+    imageUrl: "",
   ),
   ChildProfile(
     name: "Alex Johnson",
@@ -90,8 +103,7 @@ final List<ChildProfile> mockChildProfiles = [
     tagColor: const Color(0xFFF4B84F),
     barColor: AppColors.primaryMid,
     leftBorderColor: const Color(0xFFF4B84F),
-    imageUrl:
-        "",
+    imageUrl: "",
   ),
   ChildProfile(
     name: "Mia Johnson",
@@ -101,7 +113,6 @@ final List<ChildProfile> mockChildProfiles = [
     tagColor: const Color(0xFF4CB07D),
     barColor: AppColors.primaryMid,
     leftBorderColor: const Color(0xFF3892A8),
-    imageUrl:
-        "",
+    imageUrl: "",
   ),
 ];

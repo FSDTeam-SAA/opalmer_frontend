@@ -51,8 +51,10 @@ class NotificationModel {
   String get title {
     switch (type.toLowerCase()) {
       case 'quiz':
+        return 'New Assessment';
       case 'quiz_result':
       case 'grade':
+      case 'assignment_grade':
         return 'New Grades Posted';
       case 'homework':
         return 'New Homework';
@@ -69,7 +71,17 @@ class NotificationModel {
       case 'exam':
         return 'Upcoming Exam';
       case 'announcement':
+      case 'admin_announcement':
         return 'Announcement';
+      case 'academicdocument':
+      case 'academic_document':
+        return 'Academic Document';
+      case 'homework_help':
+        return 'Homework Help';
+      case 'submission':
+        return 'Assignment Submitted';
+      case 'class':
+        return 'Class Update';
       default:
         return 'Notification';
     }

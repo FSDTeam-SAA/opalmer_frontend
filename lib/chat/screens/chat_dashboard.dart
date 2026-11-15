@@ -6,6 +6,7 @@ import 'package:opalmer_education/chat/widgets/chat_session_slidable_item.dart';
 import 'package:opalmer_education/notification/notification.dart';
 import 'package:opalmer_education/core/constants/api_constants.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
+import '../../parent_role/providers/parent_children_provider.dart';
 import 'package:opalmer_education/core/services/api_client.dart';
 import 'package:opalmer_education/core/services/secure_storage_service.dart';
 
@@ -61,6 +62,9 @@ class _ChatDashboardState extends ConsumerState<ChatDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(parentChildrenRevisionProvider, (_, _) {
+      if (widget.role == ChatRole.parent) _loadParentTeachers();
+    });
     final currentUserId = ref.watch(authStateProvider)?.id;
     final directRooms = _roomsForType(ChatSessionType.direct);
 

@@ -9,11 +9,18 @@ class AppTheme {
     statusBarIconBrightness: Brightness.light,
     statusBarBrightness: Brightness.dark,
   );
+  static const lightSurfaceStatusBarStyle = SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.dark,
+    statusBarBrightness: Brightness.light,
+  );
 
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
-      appBarTheme: const AppBarTheme(systemOverlayStyle: statusBarStyle),
+      appBarTheme: const AppBarTheme(
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
+      ),
       fontFamily:
           'SF Pro Display', // Defaulting to the one seen in UserRoleScreen
       scaffoldBackgroundColor: AppColors.scaffoldBg,

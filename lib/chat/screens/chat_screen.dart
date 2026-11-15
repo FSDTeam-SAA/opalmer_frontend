@@ -29,6 +29,7 @@ class ChatScreen extends ConsumerStatefulWidget {
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  bool _sending = false;
 
   @override
   void initState() {
@@ -45,13 +46,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     super.dispose();
   }
 
-  void _sendMessage() {
+  Future<void> _sendMessage() async {
     final text = _messageController.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty || _sending) return;
 
-    ref
+    setState(() => _sending = true);
+    final sent = await ref
         .read(chatNotifierProvider.notifier)
         .sendMessage(widget.session.id, text);
+    if (!mounted) return;
+    setState(() => _sending = false);
+    if (!sent) return;
     _messageController.clear();
 
     Timer(const Duration(milliseconds: 300), () {
@@ -121,23 +126,37 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final messages = ref.watch(chatMessagesProvider(widget.session.id));
     final currentUser = ref.watch(authStateProvider);
     final chatState = ref.watch(chatNotifierProvider);
+    final room =
+        chatState.rooms
+            .where((room) => room.id == widget.session.id)
+            .firstOrNull ??
+        widget.session;
+    final blocked = room.isBlocked || room.blockedBy.isNotEmpty;
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: ChatScreenAppBar(
         title: widget.session.title,
         avatarUrl: widget.session.avatarUrl,
-        showActions: widget.session.type == ChatSessionType.direct,
+        showActions: widget.session.type == ChatSessionType.direct && !blocked,
         onBack: () => Navigator.pop(context),
-        onOpenProfile: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  BlockUserScreen(userName: widget.session.title),
-            ),
-          );
-        },
+        onOpenProfile: widget.session.type != ChatSessionType.direct
+            ? null
+            : () async {
+                if (widget.session.type != ChatSessionType.direct) return;
+                final changed = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BlockUserScreen(
+                      userName: widget.session.title,
+                      roomId: widget.session.id,
+                      isBlocked: room.blockedBy.contains(currentUser?.id),
+                    ),
+                  ),
+                );
+                if (changed == true && mounted)
+                  await ref.read(chatNotifierProvider.notifier).loadRooms();
+              },
         onOpenLanguage: () {
           Navigator.push(
             context,
@@ -162,6 +181,21 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ),
       body: Column(
         children: [
+          if (blocked)
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: Text(
+                'Messaging is blocked in this conversation. Tap the name to manage your block.',
+              ),
+            ),
+          if (chatState.error != null)
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text(
+                chatState.error!,
+                style: const TextStyle(color: Colors.red),
+              ),
+            ),
           Expanded(
             child: ChatMessagesPanel(
               isLoading: chatState.isLoading,
@@ -174,6 +208,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ChatMessageInputBar(
             controller: _messageController,
             onSend: _sendMessage,
+            enabled: !blocked,
+            isSending: _sending,
           ),
         ],
       ),

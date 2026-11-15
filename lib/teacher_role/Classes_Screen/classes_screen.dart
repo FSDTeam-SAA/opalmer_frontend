@@ -146,29 +146,18 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
         padding: const EdgeInsets.only(
           bottom: 80.0,
         ), // Extra padding for bottom navigation
-        child: GestureDetector(
-          onTap: () {
+        child: FloatingActionButton.extended(
+          tooltip: 'Create class',
+          backgroundColor: const Color(0xFF871DAD),
+          foregroundColor: Colors.white,
+          onPressed: () {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const AddClassScreen()),
             );
           },
-          child: Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: const Color(0xFF871DAD),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: const Icon(Icons.add, color: Colors.white, size: 32),
-          ),
+          icon: const Icon(Icons.add),
+          label: const Text('Create class'),
         ),
       ),
     );

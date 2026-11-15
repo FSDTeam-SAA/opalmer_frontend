@@ -110,6 +110,16 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   }
 
   Future<void> _saveChanges() async {
+    if (_isSaving) return;
+    final email = _emailController.text.trim();
+    final validation = _nameController.text.trim().isEmpty
+        ? 'Enter your name.'
+        : email.isNotEmpty && !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)
+        ? 'Enter a valid email address.' : null;
+    if (validation != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(validation)));
+      return;
+    }
     final user = ref.read(authStateProvider);
     if (user == null || user.id.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(

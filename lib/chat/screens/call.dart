@@ -74,7 +74,8 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     _buildSessionController();
 
     final permissionsGranted = await _requestPermissions();
-    if (!permissionsGranted || !mounted) {
+    if (!mounted) return;
+    if (!permissionsGranted) {
       setState(() {
         _isLoading = false;
         _statusText = 'Camera or microphone permission is required.';

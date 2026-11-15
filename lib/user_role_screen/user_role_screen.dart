@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/authentication_screen/login_screen.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
@@ -67,101 +68,104 @@ class _UserRoleScreenState extends ConsumerState<UserRoleScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.primaryVeryLight,
-      body: Stack(
-        children: [
-          // ── Header background image ──
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Image.asset(
-              'assets/images/header_design.png',
-              width: double.infinity,
-              fit: BoxFit.fitWidth,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: AppColors.primaryVeryLight,
+        body: Stack(
+          children: [
+            // ── Header background image ──
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Image.asset(
+                'assets/images/header_design.png',
+                width: double.infinity,
+                fit: BoxFit.fitWidth,
+              ),
             ),
-          ),
 
-          SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 24),
+            SafeArea(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 24),
 
-                // Title — same as Figma: bold, large, white
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 24),
-                  child: Text(
-                    "Account Type",
-                    style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                  // Title — same as Figma: bold, large, white
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24),
+                    child: Text(
+                      "Account Type",
+                      style: TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 8),
+                  const SizedBox(height: 8),
 
-                // Subtitle
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Text(
-                    "Choose your role to access the right\nfeatures.",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white.withValues(alpha: 0.9),
-                      height: 1.4,
+                  // Subtitle
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Text(
+                      "Choose your role to access the right\nfeatures.",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white.withValues(alpha: 0.9),
+                        height: 1.4,
+                      ),
                     ),
                   ),
-                ),
 
-                const SizedBox(height: 80),
+                  const SizedBox(height: 80),
 
-                // Role Cards
-                Expanded(
-                  child: FadeTransition(
-                    opacity: _fadeAnim,
-                    child: SlideTransition(
-                      position: _slideAnim,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Column(
-                          children: [
-                            for (int i = 0; i < roles.length; i++) ...[
-                              _buildRoleCard(
-                                role: roles[i]['role']!,
-                                emoji: roles[i]['emoji']!,
-                                desc: roles[i]['desc']!,
-                                index: i,
-                              ),
-                              if (i < roles.length - 1)
-                                const SizedBox(height: 14),
+                  // Role Cards
+                  Expanded(
+                    child: FadeTransition(
+                      opacity: _fadeAnim,
+                      child: SlideTransition(
+                        position: _slideAnim,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Column(
+                            children: [
+                              for (int i = 0; i < roles.length; i++) ...[
+                                _buildRoleCard(
+                                  role: roles[i]['role']!,
+                                  emoji: roles[i]['emoji']!,
+                                  desc: roles[i]['desc']!,
+                                  index: i,
+                                ),
+                                if (i < roles.length - 1)
+                                  const SizedBox(height: 14),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
 
-                // Continue Button
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                  child: PrimaryButton(
-                    text: "CONTINUE",
-                    onPressed: _onContinue,
-                    icon: const Icon(
-                      Icons.arrow_forward_rounded,
-                      color: Colors.white,
-                      size: 20,
+                  // Continue Button
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                    child: PrimaryButton(
+                      text: "CONTINUE",
+                      onPressed: _onContinue,
+                      icon: const Icon(
+                        Icons.arrow_forward_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

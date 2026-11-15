@@ -12,6 +12,7 @@ class ChatSocketService {
   factory ChatSocketService() => _instance;
 
   io.Socket? _socket;
+  String? _token;
   final StreamController<MessageModel> _messageController = StreamController<MessageModel>.broadcast();
   final StreamController<ChatSocketConnectionStatus> _statusController = StreamController<ChatSocketConnectionStatus>.broadcast();
   
@@ -22,7 +23,9 @@ class ChatSocketService {
   Stream<ChatSocketConnectionStatus> get statusStream => _statusController.stream;
 
   void connect({required String token}) {
-    if (_socket?.connected == true) return;
+    if (_socket?.connected == true && _token == token) return;
+    _socket?.dispose();
+    _token = token;
 
     _status = ChatSocketConnectionStatus.connecting;
     _statusController.add(_status);
@@ -88,6 +91,7 @@ class ChatSocketService {
     _socket?.disconnect();
     _socket?.dispose();
     _socket = null;
+    _token = null;
     _status = ChatSocketConnectionStatus.disconnected;
     _statusController.add(_status);
   }

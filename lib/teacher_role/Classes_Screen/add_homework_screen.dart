@@ -9,7 +9,8 @@ import '../../core/services/attachment_service.dart';
 
 class AddHomeworkScreen extends ConsumerStatefulWidget {
   final String classId;
-  const AddHomeworkScreen({super.key, required this.classId});
+  final Map<String, dynamic>? homework;
+  const AddHomeworkScreen({super.key, required this.classId, this.homework});
   @override
   ConsumerState<AddHomeworkScreen> createState() => _AddHomeworkScreenState();
 }
@@ -25,6 +26,19 @@ class _AddHomeworkScreenState extends ConsumerState<AddHomeworkScreen> {
       _draft = false,
       _busy = false;
   String? _error;
+  bool get _editing => widget.homework != null;
+  @override
+  void initState() {
+    super.initState();
+    final homework = widget.homework;
+    if (homework == null) return;
+    _title.text = homework['title']?.toString() ?? '';
+    _instructions.text = homework['description']?.toString() ?? '';
+    _points.text = '${homework['pointsPossible'] ?? 100}';
+    _due = DateTime.tryParse(homework['dueDate']?.toString() ?? '')?.toLocal();
+    _draft = homework['status'] == 'draft';
+  }
+
   @override
   void dispose() {
     _title.dispose();
@@ -35,7 +49,10 @@ class _AddHomeworkScreenState extends ConsumerState<AddHomeworkScreen> {
 
   Future<void> _save() async {
     final points = double.tryParse(_points.text);
-    if (_title.text.trim().isEmpty || points == null || points <= 0) {
+    if (_title.text.trim().isEmpty ||
+        points == null ||
+        points <= 0 ||
+        points > 10000) {
       setState(() => _error = 'Enter a title and valid points possible.');
       return;
     }
@@ -62,13 +79,19 @@ class _AddHomeworkScreenState extends ConsumerState<AddHomeworkScreen> {
           MapEntry('file', await AttachmentService.multipart(file)),
         );
       }
-      await ref
-          .read(apiClientProvider)
-          .post(
-            '/homework/create',
-            data: data,
-            options: AttachmentService.uploadOptions,
-          );
+      final api = ref.read(apiClientProvider);
+      if (_editing) {
+        await api.put(
+          '/homework/update/${widget.homework!['_id']}',
+          data: data,
+        );
+      } else {
+        await api.post(
+          '/homework/create',
+          data: data,
+          options: AttachmentService.uploadOptions,
+        );
+      }
       ref.invalidate(classHomeworkProvider(widget.classId));
       if (mounted) Navigator.pop(context, true);
     } catch (error) {
@@ -83,7 +106,7 @@ class _AddHomeworkScreenState extends ConsumerState<AddHomeworkScreen> {
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
       actions: [const AppHomeButton()],
-      title: const Text('Create assignment'),
+      title: Text(_editing ? 'Edit assignment' : 'Create assignment'),
     ),
     body: ListView(
       padding: const EdgeInsets.all(24),
@@ -115,7 +138,9 @@ class _AddHomeworkScreenState extends ConsumerState<AddHomeworkScreen> {
           onTap: () async {
             final date = await showDatePicker(
               context: context,
-              firstDate: DateTime.now(),
+              firstDate: _due != null && _due!.isBefore(DateTime.now())
+                  ? _due!
+                  : DateTime.now(),
               lastDate: DateTime.now().add(const Duration(days: 730)),
               initialDate: _due ?? DateTime.now(),
             );
@@ -168,6 +193,10 @@ class _AddHomeworkScreenState extends ConsumerState<AddHomeworkScreen> {
                   }
                 },
         ),
+        if (_editing && (widget.homework!['file'] as List?)?.isNotEmpty == true)
+          const Text(
+            'Existing attachments will be kept. Adding new files replaces them.',
+          ),
         ..._files.map(
           (file) => ListTile(
             title: Text(file.name),
@@ -200,6 +229,8 @@ class _AddHomeworkScreenState extends ConsumerState<AddHomeworkScreen> {
           child: Text(
             _busy
                 ? 'Saving...'
+                : _editing
+                ? 'Save changes'
                 : _draft
                 ? 'Save draft'
                 : 'Publish assignment',

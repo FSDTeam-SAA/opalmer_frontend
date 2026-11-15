@@ -38,7 +38,8 @@ class _StudentLessonOverviewScreenState
           ? await getExternalStorageDirectory()
           : await getApplicationDocumentsDirectory();
 
-      final filePath = "${directory!.path}/$fileName.pdf";
+      final filePath =
+          "${directory!.path}/Lesson_${widget.lesson.id.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_')}.pdf";
 
       // 2. Download
       final dio = dioForDownloadUrl(url);
@@ -46,7 +47,7 @@ class _StudentLessonOverviewScreenState
         url,
         filePath,
         onReceiveProgress: (received, total) {
-          if (total != -1) {
+          if (mounted && total > 0) {
             setState(() {
               _downloadProgress = received / total;
             });
@@ -54,16 +55,18 @@ class _StudentLessonOverviewScreenState
         },
       );
 
+      if (!mounted) return;
       setState(() => _isDownloading = false);
 
       // 3. Open File
       final result = await OpenFilex.open(filePath);
-      if (result.type != ResultType.done) {
+      if (mounted && result.type != ResultType.done) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Could not open file: ${result.message}")),
         );
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isDownloading = false);
       ScaffoldMessenger.of(
         context,

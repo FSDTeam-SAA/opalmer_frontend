@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/services/grading_service.dart';
+import 'auth_provider.dart';
 
 final gradingServiceProvider = Provider((ref) => GradingService());
 
@@ -7,12 +8,14 @@ final teacherSessionsProvider = FutureProvider.family<List<dynamic>, String?>((
   ref,
   classId,
 ) async {
+  if (ref.watch(authStateProvider) == null) return [];
   final service = ref.watch(gradingServiceProvider);
   return service.getTeacherSessions(classId: classId);
 });
 
 final sessionDetailsProvider =
     FutureProvider.family<Map<String, dynamic>, String>((ref, sessionId) async {
+      if (ref.watch(authStateProvider) == null) return {};
       final service = ref.watch(gradingServiceProvider);
       return service.getSessionDetails(sessionId);
     });
@@ -21,12 +24,14 @@ final sessionQuestionsProvider = FutureProvider.family<List<dynamic>, String>((
   ref,
   sessionId,
 ) async {
+  if (ref.watch(authStateProvider) == null) return [];
   final service = ref.watch(gradingServiceProvider);
   return service.getSessionQuestions(sessionId);
 });
 
 final attendedSubmittedStudentsProvider =
     FutureProvider.family<Map<String, dynamic>, String>((ref, sessionId) async {
+      if (ref.watch(authStateProvider) == null) return {};
       final service = ref.watch(gradingServiceProvider);
       return service.getAttendedSubmittedStudents(sessionId);
     });
@@ -139,5 +144,6 @@ class GradingNotifier extends StateNotifier<AsyncValue<void>> {
 
 final gradingActionProvider =
     StateNotifierProvider<GradingNotifier, AsyncValue<void>>((ref) {
+      ref.watch(authStateProvider);
       return GradingNotifier(ref.watch(gradingServiceProvider), ref);
     });

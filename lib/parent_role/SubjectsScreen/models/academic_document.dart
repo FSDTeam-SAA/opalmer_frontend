@@ -28,7 +28,7 @@ class AcademicDocument {
     return AcademicDocument(
       id: (json['_id'] ?? json['id'] ?? '').toString(),
       title: _documentTitle(url, publicId),
-      downloadUrl: url,
+      downloadUrl: _readNestedText(document, 'downloadUrl', fallback: url),
       teacherName: _readNestedText(teacher, 'username', fallback: 'Teacher'),
       studentName: _readNestedText(
         student,

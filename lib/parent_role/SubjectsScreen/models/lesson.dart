@@ -1,3 +1,5 @@
+import '../../../core/services/download_client.dart';
+
 class Lesson {
   final String id;
   final String objective;
@@ -29,19 +31,15 @@ class Lesson {
   String get documentTitle {
     if (documentUrl.isEmpty) return 'No document attached';
 
-    final uri = Uri.tryParse(documentUrl);
-    final segments = uri?.pathSegments;
-    if (segments != null && segments.isNotEmpty) {
-      final fileName = Uri.decodeComponent(segments.last);
-      if (fileName.isNotEmpty) return fileName;
-    }
+    final fileName = downloadFileName(documentUrl);
+    if (fileName.isNotEmpty) return fileName;
 
     return 'Lesson document';
   }
 
   static String _documentUrl(dynamic document) {
     if (document is Map) {
-      return (document['url'] ?? '').toString();
+      return (document['downloadUrl'] ?? document['url'] ?? '').toString();
     }
     if (document is String) {
       return document;

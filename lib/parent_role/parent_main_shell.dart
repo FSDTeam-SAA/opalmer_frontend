@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'providers/parent_children_provider.dart';
 import '../core/widgets/app_back_button.dart';
 import '../core/navigation/role_menu.dart';
 import 'package:opalmer_education/chat/models/chat_role.dart';
@@ -8,16 +10,23 @@ import 'package:opalmer_education/parent_role/ParentHomeDashboard/parent_home_da
 import 'package:opalmer_education/parent_role/ChildsProfilesScreen/childs_profiles_screen.dart';
 import 'package:opalmer_education/parent_role/ProfileScreen/parent_profile_screen.dart';
 
-class ParentMainShell extends StatefulWidget {
+class ParentMainShell extends ConsumerStatefulWidget {
   const ParentMainShell({super.key});
 
   @override
-  State<ParentMainShell> createState() => _ParentMainShellState();
+  ConsumerState<ParentMainShell> createState() => _ParentMainShellState();
 }
 
-class _ParentMainShellState extends State<ParentMainShell> {
+class _ParentMainShellState extends ConsumerState<ParentMainShell> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   int _currentIndex = 0;
+
+  void _selectTab(int index) {
+    if (index == 0 || index == 1) {
+      ref.read(parentChildrenRevisionProvider.notifier).state++;
+    }
+    setState(() => _currentIndex = index);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +47,7 @@ class _ParentMainShellState extends State<ParentMainShell> {
         onClose: () => _scaffoldKey.currentState?.closeDrawer(),
         onSelectTab: (index) {
           _scaffoldKey.currentState?.closeDrawer();
-          setState(() => _currentIndex = index);
+          _selectTab(index);
         },
         onOpenPage: (page) {
           _scaffoldKey.currentState?.closeDrawer();
@@ -47,16 +56,12 @@ class _ParentMainShellState extends State<ParentMainShell> {
       ),
       body: AppShellRoot(
         role: 'parent',
-        onHome: () => setState(() => _currentIndex = 0),
+        onHome: () => _selectTab(0),
         child: IndexedStack(index: _currentIndex, children: pages),
       ),
       bottomNavigationBar: ParentBottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+        onTap: _selectTab,
       ),
     );
   }

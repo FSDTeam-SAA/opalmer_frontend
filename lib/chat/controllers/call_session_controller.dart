@@ -16,6 +16,8 @@ class CallSessionController {
   final void Function(String value) _onStatusChanged;
   final VoidCallback _onConnected;
   final Future<void> Function(String message) _onRemoteEnd;
+  final Future<RTCPeerConnection> Function(Map<String, dynamic>)
+  _createPeerConnection;
 
   StreamSubscription<CallAcceptedEvent>? _callAcceptedSubscription;
   StreamSubscription<CallDeclinedEvent>? _callDeclinedSubscription;
@@ -32,6 +34,28 @@ class CallSessionController {
   bool _connected = false;
   bool _listenersBound = false;
   bool _remoteEndHandled = false;
+  bool _disposed = false;
+  bool _offerSent = false;
+  bool _hasRemoteDescription = false;
+  final List<Map<String, dynamic>> _pendingCandidates = [];
+  Future<void> _signalTail = Future<void>.value();
+
+  Future<void> _queueSignal(Future<void> Function() action) {
+    _signalTail = _signalTail.then((_) async {
+      if (_disposed) return;
+      try {
+        await action();
+      } catch (error) {
+        if (!_disposed) {
+          debugPrint('Call signalling failed: $error');
+          _onStatusChanged(
+            'Unable to connect audio. Please end the call and retry.',
+          );
+        }
+      }
+    });
+    return _signalTail;
+  }
 
   CallSessionController({
     required CallSocketService callSocketService,
@@ -44,6 +68,8 @@ class CallSessionController {
     required void Function(String value) onStatusChanged,
     required VoidCallback onConnected,
     required Future<void> Function(String message) onRemoteEnd,
+    Future<RTCPeerConnection> Function(Map<String, dynamic>)?
+    peerConnectionFactory,
   }) : _callSocketService = callSocketService,
        _roomId = roomId,
        _peerName = peerName,
@@ -53,7 +79,10 @@ class CallSessionController {
        _remoteRenderer = remoteRenderer,
        _onStatusChanged = onStatusChanged,
        _onConnected = onConnected,
-       _onRemoteEnd = onRemoteEnd;
+       _onRemoteEnd = onRemoteEnd,
+       _createPeerConnection =
+           peerConnectionFactory ??
+           ((configuration) => createPeerConnection(configuration));
 
   bool get hasRemoteVideo => _remoteRenderer.srcObject != null && _isVideoCall;
   bool get hasLocalVideo => _localRenderer.srcObject != null && _isVideoCall;
@@ -64,7 +93,15 @@ class CallSessionController {
       'video': _isVideoCall ? <String, dynamic>{'facingMode': 'user'} : false,
     };
 
-    _localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
+    final stream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
+    if (_disposed) {
+      for (final track in stream.getTracks()) {
+        await track.stop();
+      }
+      await stream.dispose();
+      return;
+    }
+    _localStream = stream;
     if (_isVideoCall) {
       _localRenderer.srcObject = _localStream;
     }
@@ -95,12 +132,12 @@ class CallSessionController {
 
     _allUsersSubscription = _callSocketService.allUsers.listen((users) {
       if (!_isCaller || users.isEmpty) return;
-      unawaited(_createOffer(users.first));
+      unawaited(_queueSignal(() => _createOffer(users.first)));
     });
 
     _userJoinedSubscription = _callSocketService.userJoined.listen((socketId) {
       if (!_isCaller) return;
-      unawaited(_createOffer(socketId));
+      unawaited(_queueSignal(() => _createOffer(socketId)));
     });
 
     _userLeftSubscription = _callSocketService.userLeft.listen((socketId) {
@@ -111,14 +148,18 @@ class CallSessionController {
 
     _userSignalSubscription = _callSocketService.userSignal.listen((event) {
       if (_isCaller) return;
-      unawaited(_handleSignal(event.socketId, event.signal));
+      unawaited(
+        _queueSignal(() => _handleSignal(event.socketId, event.signal)),
+      );
     });
 
     _returnedSignalSubscription = _callSocketService.returnedSignal.listen((
       event,
     ) {
       if (!_isCaller) return;
-      unawaited(_handleSignal(event.socketId, event.signal));
+      unawaited(
+        _queueSignal(() => _handleSignal(event.socketId, event.signal)),
+      );
     });
   }
 
@@ -164,8 +205,15 @@ class CallSessionController {
       ],
     };
 
-    final peerConnection = await createPeerConnection(configuration);
+    final peerConnection = await _createPeerConnection(configuration);
+    if (_disposed) {
+      await peerConnection.close();
+      throw StateError('Call already ended');
+    }
     _peerSocketId = remoteSocketId;
+    _offerSent = false;
+    _hasRemoteDescription = false;
+    _pendingCandidates.clear();
 
     final stream = _localStream;
     if (stream != null) {
@@ -199,10 +247,10 @@ class CallSessionController {
       if (_isVideoCall) {
         _remoteRenderer.srcObject = event.streams.first;
       }
-      _markConnected();
     };
 
     peerConnection.onConnectionState = (state) {
+      if (_disposed) return;
       if (state == RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
         _markConnected();
       }
@@ -210,7 +258,8 @@ class CallSessionController {
       if (state == RTCPeerConnectionState.RTCPeerConnectionStateDisconnected ||
           state == RTCPeerConnectionState.RTCPeerConnectionStateFailed ||
           state == RTCPeerConnectionState.RTCPeerConnectionStateClosed) {
-        if (_connected) {
+        if (_connected ||
+            state == RTCPeerConnectionState.RTCPeerConnectionStateFailed) {
           unawaited(_handleRemoteEnd('$_peerName disconnected.'));
         }
       }
@@ -221,11 +270,12 @@ class CallSessionController {
   }
 
   Future<void> _createOffer(String remoteSocketId) async {
-    if (_peerSocketId == remoteSocketId && _connected) return;
+    if (_peerSocketId == remoteSocketId && _offerSent) return;
 
     final peerConnection = await _ensurePeerConnection(remoteSocketId);
     final offer = await peerConnection.createOffer();
     await peerConnection.setLocalDescription(offer);
+    _offerSent = true;
 
     _callSocketService.sendSignal(
       targetSocketId: remoteSocketId,
@@ -250,6 +300,7 @@ class CallSessionController {
         await peerConnection.setRemoteDescription(
           RTCSessionDescription(signal['sdp']?.toString(), 'offer'),
         );
+        await _flushCandidates(peerConnection);
         final answer = await peerConnection.createAnswer();
         await peerConnection.setLocalDescription(answer);
 
@@ -264,27 +315,47 @@ class CallSessionController {
         await peerConnection.setRemoteDescription(
           RTCSessionDescription(signal['sdp']?.toString(), 'answer'),
         );
+        await _flushCandidates(peerConnection);
         _onStatusChanged('Connecting...');
         break;
       case 'candidate':
-        final candidateIndex = signal['sdpMLineIndex'];
-        final lineIndex = candidateIndex is int
-            ? candidateIndex
-            : int.tryParse(candidateIndex?.toString() ?? '');
-
-        await peerConnection.addCandidate(
-          RTCIceCandidate(
-            signal['candidate']?.toString(),
-            signal['sdpMid']?.toString(),
-            lineIndex,
-          ),
-        );
+        if (!_hasRemoteDescription) {
+          _pendingCandidates.add(Map<String, dynamic>.from(signal));
+          return;
+        }
+        await _addCandidate(peerConnection, signal);
         break;
     }
   }
 
+  Future<void> _flushCandidates(RTCPeerConnection peerConnection) async {
+    _hasRemoteDescription = true;
+    for (final signal in _pendingCandidates) {
+      await _addCandidate(peerConnection, signal);
+    }
+    _pendingCandidates.clear();
+  }
+
+  Future<void> _addCandidate(
+    RTCPeerConnection peerConnection,
+    Map<String, dynamic> signal,
+  ) async {
+    final candidateIndex = signal['sdpMLineIndex'];
+    final lineIndex = candidateIndex is int
+        ? candidateIndex
+        : int.tryParse(candidateIndex?.toString() ?? '');
+
+    await peerConnection.addCandidate(
+      RTCIceCandidate(
+        signal['candidate']?.toString(),
+        signal['sdpMid']?.toString(),
+        lineIndex,
+      ),
+    );
+  }
+
   void _markConnected() {
-    if (_connected) return;
+    if (_connected || _disposed) return;
 
     _connected = true;
     _remoteEndHandled = false;
@@ -299,6 +370,8 @@ class CallSessionController {
   }
 
   Future<void> dispose() async {
+    if (_disposed) return;
+    _disposed = true;
     await _callAcceptedSubscription?.cancel();
     await _callDeclinedSubscription?.cancel();
     await _callEndedSubscription?.cancel();
@@ -307,6 +380,7 @@ class CallSessionController {
     await _userLeftSubscription?.cancel();
     await _userSignalSubscription?.cancel();
     await _returnedSignalSubscription?.cancel();
+    await _signalTail;
 
     await _peerConnection?.close();
     _peerConnection = null;

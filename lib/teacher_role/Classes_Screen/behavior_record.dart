@@ -92,40 +92,43 @@ class _BehaviorRecordScreenState extends ConsumerState<BehaviorRecordScreen> {
           error: (err, stack) => Center(child: Text("Error: $err")),
         ),
       ),
-      floatingActionButton: GestureDetector(
-        onTap: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => TeacherContextFrame.carry(
-                context,
-                AddBehaviorScreen(
-                  studentId: widget.studentId,
-                  student: widget.student,
-                  classId: widget.classId,
+      floatingActionButton: Tooltip(
+        message: 'Add behavior log',
+        child: GestureDetector(
+          onTap: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => TeacherContextFrame.carry(
+                  context,
+                  AddBehaviorScreen(
+                    studentId: widget.studentId,
+                    student: widget.student,
+                    classId: widget.classId,
+                  ),
                 ),
               ),
+            );
+            if (result == true) {
+              ref.invalidate(studentBehaviorsProvider(widget.studentId));
+            }
+          },
+          child: Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: const Color(0xFF871DAD),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-          );
-          if (result == true) {
-            ref.invalidate(studentBehaviorsProvider(widget.studentId));
-          }
-        },
-        child: Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: const Color(0xFF871DAD),
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            child: const Icon(Icons.add, color: Colors.white, size: 32),
           ),
-          child: const Icon(Icons.add, color: Colors.white, size: 32),
         ),
       ),
     );
@@ -245,56 +248,64 @@ class _BehaviorRecordScreenState extends ConsumerState<BehaviorRecordScreen> {
                   ],
                 ),
               ),
-              GestureDetector(
-                onTap: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => TeacherContextFrame.carry(
-                        context,
-                        AddBehaviorScreen(
-                          studentId: widget.studentId,
-                          student: widget.student,
-                          classId: widget.classId,
-                          behaviorId: behavior['_id'],
-                          initialMessage: behavior['message'],
-                          initialState: behavior['state'],
+              Tooltip(
+                message: 'Edit behavior log',
+                child: GestureDetector(
+                  onTap: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => TeacherContextFrame.carry(
+                          context,
+                          AddBehaviorScreen(
+                            studentId: widget.studentId,
+                            student: widget.student,
+                            classId: widget.classId,
+                            behaviorId: behavior['_id'],
+                            initialMessage: behavior['message'],
+                            initialState: behavior['state'],
+                          ),
                         ),
                       ),
+                    );
+                    if (result == true) {
+                      ref.invalidate(
+                        studentBehaviorsProvider(widget.studentId),
+                      );
+                    }
+                  },
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF871DAD),
+                      shape: BoxShape.circle,
                     ),
-                  );
-                  if (result == true) {
-                    ref.invalidate(studentBehaviorsProvider(widget.studentId));
-                  }
-                },
-                child: Container(
-                  width: 34,
-                  height: 34,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF871DAD),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.edit_outlined,
-                    color: Colors.white,
-                    size: 16,
+                    child: const Icon(
+                      Icons.edit_outlined,
+                      color: Colors.white,
+                      size: 16,
+                    ),
                   ),
                 ),
               ),
               const SizedBox(width: 10),
-              GestureDetector(
-                onTap: () => _handleDelete(behavior['_id']),
-                child: Container(
-                  width: 34,
-                  height: 34,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFEF4444), // Red for delete
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.delete_outline,
-                    color: Colors.white,
-                    size: 16,
+              Tooltip(
+                message: 'Delete behavior log',
+                child: GestureDetector(
+                  onTap: () => _handleDelete(behavior['_id']),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFEF4444), // Red for delete
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.delete_outline,
+                      color: Colors.white,
+                      size: 16,
+                    ),
                   ),
                 ),
               ),

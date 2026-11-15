@@ -154,8 +154,10 @@ Widget resourceTile(BuildContext context, dynamic item) => Card(
           dense: true,
           title: Text('${item['file']['filename'] ?? 'Open file'}'),
           trailing: const Icon(Icons.open_in_new),
-          onTap: () =>
-              openTeachingResource(context, item['file']['url'].toString()),
+          onTap: () => openTeachingResource(
+            context,
+            (item['file']['downloadUrl'] ?? item['file']['url']).toString(),
+          ),
         ),
       if ((item['link'] as String? ?? '').isNotEmpty)
         ListTile(

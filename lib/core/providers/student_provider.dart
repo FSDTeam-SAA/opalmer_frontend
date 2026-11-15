@@ -11,10 +11,12 @@ final studentServiceProvider = Provider<StudentService>(
 final studentDashboardDataProvider = FutureProvider<Map<String, dynamic>>((
   ref,
 ) async {
+  if (ref.watch(authStateProvider)?.type != 'student') return {};
   return await ref.watch(studentServiceProvider).getStudentDashboardData();
 });
 
 final studentLessonsProvider = FutureProvider<List<LessonModel>>((ref) async {
+  if (ref.watch(authStateProvider)?.type != 'student') return [];
   return await ref.watch(studentServiceProvider).getLessons();
 });
 
@@ -148,6 +150,7 @@ final studentGroupWorkProvider = FutureProvider<List<GroupWorkModel>>((
 
 final studentAcademicDocumentsProvider =
     FutureProvider<List<AcademicDocumentModel>>((ref) async {
+      if (ref.watch(authStateProvider)?.type != 'student') return [];
       return await ref.watch(studentServiceProvider).getAcademicDocuments();
     });
 

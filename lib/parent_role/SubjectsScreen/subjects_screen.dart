@@ -54,6 +54,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
   List<Subject> _subjects = [];
   bool _isLoadingChildren = true;
   bool _isLoadingSubjects = true;
+  String? _loadError;
 
   @override
   void initState() {
@@ -64,9 +65,10 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
   }
 
   Future<void> _loadChildren() async {
+    if (mounted) setState(() => _loadError = null);
     try {
       final userData = await _storage.getUserData();
-      if (userData == null) return;
+      if (userData == null) throw StateError('Sign in required');
       final parentId =
           (jsonDecode(userData)['id'] ?? jsonDecode(userData)['_id'])
               .toString();
@@ -98,6 +100,10 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
       }
     } catch (e) {
       debugPrint('Failed to load children list: $e');
+      if (mounted)
+        setState(
+          () => _loadError = 'Unable to load students. Please try again.',
+        );
     } finally {
       if (mounted) {
         setState(() {
@@ -111,6 +117,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
   Future<void> _loadSubjects(String childId) async {
     setState(() {
       _isLoadingSubjects = true;
+      _loadError = null;
       _subjects = [];
     });
     try {
@@ -130,7 +137,10 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
     } catch (e) {
       debugPrint('Failed to load subjects: $e');
       if (mounted && childId == _selectedChildId) {
-        setState(() => _subjects = []);
+        setState(() {
+          _subjects = [];
+          _loadError = 'Unable to load subjects. Please try again.';
+        });
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Failed to load subjects: $e')));
@@ -275,26 +285,33 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                       itemBuilder: (context, index) {
                         final child = _children[index];
                         final bool isSelected = _selectedChildId == child.id;
-                        return GestureDetector(
-                          onTap: () => _onSelectChild(child.id),
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 12),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isSelected
-                                    ? AppColors.primaryMid
-                                    : Colors.transparent,
-                                width: 2,
+                        return Semantics(
+                          label: 'Select ${child.name}',
+                          button: true,
+                          selected: isSelected,
+                          child: GestureDetector(
+                            onTap: () => _onSelectChild(child.id),
+                            child: Container(
+                              margin: const EdgeInsets.only(right: 12),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: isSelected
+                                      ? AppColors.primaryMid
+                                      : Colors.transparent,
+                                  width: 2,
+                                ),
                               ),
-                            ),
-                            child: CircleAvatar(
-                              radius: 28,
-                              backgroundImage: _avatarProvider(child.imageUrl),
-                              backgroundColor: Colors.grey.shade200,
-                              child: child.imageUrl.isEmpty
-                                  ? _initialFallback(child.name)
-                                  : null,
+                              child: CircleAvatar(
+                                radius: 28,
+                                backgroundImage: _avatarProvider(
+                                  child.imageUrl,
+                                ),
+                                backgroundColor: Colors.grey.shade200,
+                                child: child.imageUrl.isEmpty
+                                    ? _initialFallback(child.name)
+                                    : null,
+                              ),
                             ),
                           ),
                         );
@@ -308,6 +325,15 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
             Expanded(
               child: _isLoadingSubjects
                   ? const Center(child: CircularProgressIndicator())
+                  : _loadError != null
+                  ? Center(
+                      child: TextButton(
+                        onPressed: () => _selectedChildId.isEmpty
+                            ? _loadChildren()
+                            : _loadSubjects(_selectedChildId),
+                        child: Text('$_loadError Retry'),
+                      ),
+                    )
                   : _subjects.isEmpty
                   ? Center(
                       child: Padding(

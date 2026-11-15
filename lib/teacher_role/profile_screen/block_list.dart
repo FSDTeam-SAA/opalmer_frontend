@@ -1,91 +1,99 @@
-import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
-import 'package:opalmer_education/core/theme/app_colors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/providers/auth_provider.dart';
+import '../../core/providers/teacher_provider.dart';
+import '../../core/services/attachment_service.dart';
+import '../../core/widgets/app_home_button.dart';
 
-class BlockListScreen extends StatelessWidget {
+class BlockListScreen extends ConsumerStatefulWidget {
   const BlockListScreen({super.key});
+  @override
+  ConsumerState<BlockListScreen> createState() => _BlockListScreenState();
+}
+
+class _BlockListScreenState extends ConsumerState<BlockListScreen> {
+  List<dynamic>? _rooms;
+  String? _error;
+  final _busy = <String>{};
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final response = await ref.read(apiClientProvider).get('/rooms/my-rooms');
+      final userId = ref.read(authStateProvider)?.id;
+      if (mounted)
+        setState(() {
+          _rooms = (response.data['data'] as List)
+              .where(
+                (room) => (room['blockedBy'] as List? ?? []).contains(userId),
+              )
+              .toList();
+          _error = null;
+        });
+    } catch (error) {
+      if (mounted)
+        setState(() => _error = AttachmentService.errorMessage(error));
+    }
+  }
+
+  Future<void> _unblock(String id) async {
+    if (_busy.contains(id)) return;
+    setState(() => _busy.add(id));
+    try {
+      await ref
+          .read(apiClientProvider)
+          .patch('/rooms/$id/block', data: {'blocked': false});
+      await _load();
+    } catch (error) {
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AttachmentService.errorMessage(error))),
+        );
+    } finally {
+      if (mounted) setState(() => _busy.remove(id));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final userId = ref.watch(authStateProvider)?.id;
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        actions: [const AppHomeButton()],
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leadingWidth: 70,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 20),
-          child: Center(
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: const BoxDecoration(
-                  color: AppColors.primaryMid,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
+        title: const Text('Block list'),
+        actions: const [AppHomeButton()],
+      ),
+      body: _error != null
+          ? Center(
+              child: TextButton(onPressed: _load, child: Text('$_error Retry')),
+            )
+          : _rooms == null
+          ? const Center(child: CircularProgressIndicator())
+          : _rooms!.isEmpty
+          ? const Center(child: Text('No blocked users'))
+          : ListView(
+              children: _rooms!.map((room) {
+                final peers = (room['participants'] as List)
+                    .map((p) => p['userId'])
+                    .whereType<Map>()
+                    .where((user) => user['_id'] != userId);
+                final name = peers.isEmpty
+                    ? 'Participant unavailable'
+                    : peers.first['username']?.toString() ?? 'Participant';
+                final id = room['_id'].toString();
+                return ListTile(
+                  leading: const Icon(Icons.person_off_outlined),
+                  title: Text(name),
+                  trailing: TextButton(
+                    onPressed: _busy.contains(id) ? null : () => _unblock(id),
+                    child: const Text('Unblock'),
+                  ),
+                );
+              }).toList(),
             ),
-          ),
-        ),
-        title: const Text(
-          "Block List",
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 88,
-                height: 88,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryMid.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.block_outlined,
-                  size: 40,
-                  color: AppColors.primaryMid,
-                ),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'No blocked users',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF222222),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Users you block will appear here. This feature is coming soon.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
-                  height: 1.45,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

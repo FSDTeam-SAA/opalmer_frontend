@@ -9,7 +9,7 @@ import 'core/theme/app_theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setSystemUIOverlayStyle(AppTheme.statusBarStyle);
+  SystemChrome.setSystemUIOverlayStyle(AppTheme.lightSurfaceStatusBarStyle);
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       builder: (context, child) {
         return AnnotatedRegion<SystemUiOverlayStyle>(
-          value: AppTheme.statusBarStyle,
+          value: AppTheme.lightSurfaceStatusBarStyle,
           child: AppCallListener(child: child ?? const SizedBox.shrink()),
         );
       },

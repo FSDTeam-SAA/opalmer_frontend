@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 class LessonModel {
   final String id;
+  final String title;
   final String studentId;
   final String? teacherId;
   final String? classId;
@@ -15,6 +16,7 @@ class LessonModel {
 
   LessonModel({
     required this.id,
+    this.title = '',
     required this.studentId,
     this.teacherId,
     this.classId,
@@ -29,15 +31,26 @@ class LessonModel {
   factory LessonModel.fromJson(Map<String, dynamic> json) {
     return LessonModel(
       id: json['_id'] ?? '',
-      studentId: json['studentId'] is Map ? json['studentId']['_id'] : (json['studentId'] ?? ''),
-      teacherId: json['teacherId'] is Map ? json['teacherId']['_id'] : json['teacherId'],
-      classId: json['classId'] is Map ? json['classId']['_id'] : json['classId'],
+      title: json['title']?.toString() ?? '',
+      studentId: json['studentId'] is Map
+          ? json['studentId']['_id']
+          : (json['studentId'] ?? ''),
+      teacherId: json['teacherId'] is Map
+          ? json['teacherId']['_id']
+          : json['teacherId'],
+      classId: json['classId'] is Map
+          ? json['classId']['_id']
+          : json['classId'],
       objective: json['objective'] ?? '',
       note: json['note'] ?? '',
-      documentUrl: json['document']?['url'],
+      documentUrl: json['document']?['downloadUrl'] ?? json['document']?['url'],
       isArchived: json['isArchived'] ?? false,
-      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
-      teacher: json['teacherId'] is Map ? UserModel.fromJson(json['teacherId']) : null,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
+          : null,
+      teacher: json['teacherId'] is Map
+          ? UserModel.fromJson(json['teacherId'])
+          : null,
     );
   }
 }
@@ -70,7 +83,11 @@ class HomeworkModel {
     List<String> urls = [];
     if (rawFiles is List) {
       urls = rawFiles
-          .map((f) => f is Map ? (f['url']?.toString() ?? '') : f.toString())
+          .map(
+            (f) => f is Map
+                ? ((f['downloadUrl'] ?? f['url'])?.toString() ?? '')
+                : f.toString(),
+          )
           .where((url) => url.isNotEmpty)
           .toList();
     }
@@ -85,7 +102,9 @@ class HomeworkModel {
           : (json['userId']?.toString() ?? ''),
       title: json['title']?.toString() ?? '',
       description: json['description']?.toString(),
-      dueDate: json['dueDate'] != null ? DateTime.tryParse(json['dueDate'].toString()) : null,
+      dueDate: json['dueDate'] != null
+          ? DateTime.tryParse(json['dueDate'].toString())
+          : null,
       fileUrls: urls,
       archived: json['archived'] ?? false,
       createdAt: json['created_at'] != null
@@ -107,6 +126,7 @@ class QuizModel {
   final String? teacherName;
   final int questionCount;
   final int durationMinutes;
+  final String attemptStatus;
   final String status;
   final String? image;
 
@@ -122,6 +142,7 @@ class QuizModel {
     this.teacherName,
     this.questionCount = 0,
     this.durationMinutes = 0,
+    this.attemptStatus = 'not_started',
     this.status = '',
     this.image,
   });
@@ -177,11 +198,16 @@ class QuizModel {
       classId: resolvedClassId,
       classSubject: resolvedClassSubject,
       classGrade: resolvedClassGrade,
-      teacherId: json['teacherId'] is Map ? json['teacherId']['_id'] : json['teacherId'],
+      teacherId: json['teacherId'] is Map
+          ? json['teacherId']['_id']
+          : json['teacherId'],
       teacherName: tName,
-      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
+          : null,
       questionCount: parseInt(json['questionCount']),
       durationMinutes: parseInt(json['time']),
+      attemptStatus: json['resultStatus']?.toString() ?? 'not_started',
       status: json['status']?.toString() ?? '',
       image: json['image']?.toString(),
     );
@@ -195,7 +221,9 @@ class QuizModel {
       parts.add(classSubject!.trim());
     }
     if (questionCount > 0) {
-      parts.add('$questionCount ${questionCount == 1 ? 'Question' : 'Questions'}');
+      parts.add(
+        '$questionCount ${questionCount == 1 ? 'Question' : 'Questions'}',
+      );
     }
     if (durationMinutes > 0) parts.add('$durationMinutes min');
     if (parts.isEmpty) return (description ?? '').trim();
@@ -240,11 +268,7 @@ class QuizQA {
   final String quizId;
   final List<QuizQuestion> questions;
 
-  QuizQA({
-    required this.id,
-    required this.quizId,
-    required this.questions,
-  });
+  QuizQA({required this.id, required this.quizId, required this.questions});
 
   factory QuizQA.fromJson(Map<String, dynamic> json) {
     var qs = json['questions'] as List? ?? [];
@@ -272,7 +296,9 @@ class AttendanceRecord {
   factory AttendanceRecord.fromJson(Map<String, dynamic> json) {
     return AttendanceRecord(
       id: json['_id'] ?? '',
-      date: json['date'] != null ? DateTime.parse(json['date']) : DateTime.now(),
+      date: json['date'] != null
+          ? DateTime.parse(json['date'])
+          : DateTime.now(),
       status: (json['status'] ?? json['present'] ?? 'Absent').toString(),
       note: json['note'],
     );
@@ -335,7 +361,7 @@ class QuizResultModel {
     String title = "Unknown Quiz";
     String? qId;
     String? cId;
-    
+
     if (json['quizId'] is Map) {
       title = json['quizId']['title'] ?? "Unknown Quiz";
       qId = json['quizId']['_id'];
@@ -350,9 +376,13 @@ class QuizResultModel {
       classId: cId,
       quizTitle: title,
       score: (json['score'] ?? 0).toInt(),
-      percentage: (json['percentage'] ?? 0).toDouble() / 100.0, // Scale to 0.0-1.0 for progress bar
+      percentage:
+          (json['percentage'] ?? 0).toDouble() /
+          100.0, // Scale to 0.0-1.0 for progress bar
       status: json['progress']?['status'] ?? 'completed',
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : null,
     );
   }
 }
@@ -401,7 +431,8 @@ class QuizAnswerSummary {
     return QuizAnswerSummary(
       question: json['question'] ?? '',
       selectedAnswer: json['selectedAnswer'] ?? '',
-      correctAnswer: json['correctAnswer'], // Might need to be added to backend response
+      correctAnswer:
+          json['correctAnswer'], // Might need to be added to backend response
       isCorrect: json['isCorrect'] ?? false,
     );
   }
@@ -513,10 +544,13 @@ class AcademicDocumentModel {
       teacherId: json['teacherId'] is Map
           ? json['teacherId']['_id']
           : json['teacherId']?.toString(),
-      teacherName:
-          json['teacherId'] is Map ? json['teacherId']['username'] : null,
-      url: (json['document'] is Map
-              ? json['document']['url']?.toString()
+      teacherName: json['teacherId'] is Map
+          ? json['teacherId']['username']
+          : null,
+      url:
+          (json['document'] is Map
+              ? (json['document']['downloadUrl'] ?? json['document']['url'])
+                    ?.toString()
               : null) ??
           (json['url'] is Map
               ? json['url']['url']?.toString()
@@ -533,11 +567,7 @@ class GroupMemberModel {
   final String username;
   final String? avatar;
 
-  GroupMemberModel({
-    required this.id,
-    required this.username,
-    this.avatar,
-  });
+  GroupMemberModel({required this.id, required this.username, this.avatar});
 
   factory GroupMemberModel.fromJson(Map<String, dynamic> json) {
     return GroupMemberModel(
@@ -578,9 +608,11 @@ class GroupWorkModel {
     List<GroupMemberModel> members = [];
     if (rawMembers is List) {
       members = rawMembers
-          .map((e) => e is Map<String, dynamic>
-              ? GroupMemberModel.fromJson(e)
-              : GroupMemberModel(id: e.toString(), username: 'Member'))
+          .map(
+            (e) => e is Map<String, dynamic>
+                ? GroupMemberModel.fromJson(e)
+                : GroupMemberModel(id: e.toString(), username: 'Member'),
+          )
           .toList();
     }
 
@@ -588,24 +620,31 @@ class GroupWorkModel {
     List<String> urls = [];
     if (rawFiles is List) {
       urls = rawFiles
-          .map((f) => f is Map ? (f['url']?.toString() ?? '') : f.toString())
+          .map(
+            (f) => f is Map
+                ? ((f['downloadUrl'] ?? f['url'])?.toString() ?? '')
+                : f.toString(),
+          )
           .where((url) => url.isNotEmpty)
           .toList();
     }
 
     return GroupWorkModel(
       id: (json['_id'] ?? json['id'] ?? '').toString(),
-      classId: json['classId'] is Map 
-          ? (json['classId']['_id']?.toString() ?? '') 
+      classId: json['classId'] is Map
+          ? (json['classId']['_id']?.toString() ?? '')
           : (json['classId']?.toString() ?? ''),
       members: members,
       title: json['title']?.toString() ?? '',
       description: json['description']?.toString(),
-      dueDate: json['dueDate'] != null ? DateTime.tryParse(json['dueDate'].toString()) : null,
+      dueDate: json['dueDate'] != null
+          ? DateTime.tryParse(json['dueDate'].toString())
+          : null,
       fileUrls: urls,
       archived: json['archived'] ?? false,
-      createdAt:
-          json['created_at'] != null ? DateTime.tryParse(json['created_at'].toString()) : null,
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'].toString())
+          : null,
     );
   }
 }

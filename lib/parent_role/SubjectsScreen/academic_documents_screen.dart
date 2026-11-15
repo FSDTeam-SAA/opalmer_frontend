@@ -298,8 +298,7 @@ class _AcademicDocumentsScreenState extends State<AcademicDocumentsScreen> {
   static _AcademicDocumentType _documentType(String url) {
     if (url.isEmpty) return _AcademicDocumentType.none;
 
-    final uri = Uri.tryParse(url);
-    final path = (uri?.path ?? url).toLowerCase();
+    final path = downloadFileName(url).toLowerCase();
 
     if (path.endsWith('.pdf')) return _AcademicDocumentType.pdf;
 
@@ -396,9 +395,13 @@ class _AcademicDocumentViewerDialogState
       ).showSnackBar(SnackBar(content: Text(savedTo ?? 'Downloaded')));
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Download failed: $error')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Unable to download this document. Close it and try again.',
+          ),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _isDownloading = false);
     }
@@ -481,7 +484,9 @@ class _AcademicDocumentViewerDialogState
           useActions: false,
           pdfFileName: _safeFileName(widget.title, widget.url),
           loadingWidget: const Center(child: CircularProgressIndicator()),
-          onError: (context, error) => _PreviewError(message: error.toString()),
+          onError: (context, error) => const _PreviewError(
+            message: 'Unable to load this document. Close it and try again.',
+          ),
         );
       case _AcademicDocumentType.image:
         return Container(
@@ -512,10 +517,7 @@ class _AcademicDocumentViewerDialogState
   }
 
   static String _safeFileName(String title, String url) {
-    final uri = Uri.tryParse(url);
-    final urlName = uri?.pathSegments.isNotEmpty == true
-        ? Uri.decodeComponent(uri!.pathSegments.last)
-        : '';
+    final urlName = downloadFileName(url);
     final fallback = title.trim().isNotEmpty
         ? title.trim()
         : 'academic-document';

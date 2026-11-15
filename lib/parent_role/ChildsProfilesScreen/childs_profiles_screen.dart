@@ -1,6 +1,8 @@
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/parent_children_provider.dart';
 import 'package:opalmer_education/core/widgets/data_avatar.dart';
 import 'package:opalmer_education/core/services/api_client.dart';
 import 'package:opalmer_education/core/services/secure_storage_service.dart';
@@ -12,14 +14,15 @@ import 'package:opalmer_education/parent_role/ChildsProfilesScreen/add_child.dar
 import 'package:opalmer_education/parent_role/SubjectsScreen/subjects_screen.dart';
 import 'package:opalmer_education/parent_role/ChildsProfilesScreen/models/child_profile.dart';
 
-class ChildsProfilesScreen extends StatefulWidget {
+class ChildsProfilesScreen extends ConsumerStatefulWidget {
   const ChildsProfilesScreen({super.key});
 
   @override
-  State<ChildsProfilesScreen> createState() => _ChildsProfilesScreenState();
+  ConsumerState<ChildsProfilesScreen> createState() =>
+      _ChildsProfilesScreenState();
 }
 
-class _ChildsProfilesScreenState extends State<ChildsProfilesScreen> {
+class _ChildsProfilesScreenState extends ConsumerState<ChildsProfilesScreen> {
   final ApiClient _apiClient = ApiClient();
   final SecureStorageService _storage = SecureStorageService();
   List<ChildProfile> _profiles = [];
@@ -108,7 +111,7 @@ class _ChildsProfilesScreenState extends State<ChildsProfilesScreen> {
             const SnackBar(content: Text('Child relation removed.')),
           );
         }
-        _loadProfiles();
+        if (mounted) ref.read(parentChildrenRevisionProvider.notifier).state++;
       }
     } catch (e) {
       if (mounted) {
@@ -124,6 +127,7 @@ class _ChildsProfilesScreenState extends State<ChildsProfilesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(parentChildrenRevisionProvider, (_, _) => _loadProfiles());
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
       body: Stack(
@@ -245,6 +249,7 @@ class _ChildsProfilesScreenState extends State<ChildsProfilesScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        tooltip: 'Link student',
         heroTag: 'child_profiles_fab',
         onPressed: () async {
           final result = await showDialog(
@@ -252,8 +257,8 @@ class _ChildsProfilesScreenState extends State<ChildsProfilesScreen> {
             barrierDismissible: false,
             builder: (context) => const AddChildDialog(),
           );
-          if (result == true) {
-            _loadProfiles();
+          if (result == true && mounted) {
+            ref.read(parentChildrenRevisionProvider.notifier).state++;
           }
         },
         backgroundColor: AppColors.primaryMid,
@@ -386,13 +391,14 @@ class _ChildsProfilesScreenState extends State<ChildsProfilesScreen> {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            GestureDetector(
-                              onTap: () {
+                            IconButton(
+                              tooltip: 'Unlink ${profile.name}',
+                              onPressed: () {
                                 if (profile.relationId != null) {
                                   _deleteRelation(profile.relationId!);
                                 }
                               },
-                              child: const Icon(
+                              icon: const Icon(
                                 Icons.remove_circle_outline,
                                 color: Colors.redAccent,
                                 size: 20,
@@ -416,7 +422,9 @@ class _ChildsProfilesScreenState extends State<ChildsProfilesScreen> {
                         ),
                         const Spacer(),
                         Text(
-                          "${(profile.progress * 100).toInt()}%",
+                          profile.hasProgress
+                              ? "${(profile.progress * 100).toInt()}%"
+                              : 'Awaiting grades',
                           style: TextStyle(
                             fontSize: 11,
                             color: AppColors.primaryMid,
@@ -426,15 +434,16 @@ class _ChildsProfilesScreenState extends State<ChildsProfilesScreen> {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    LinearProgressIndicator(
-                      value: profile.progress,
-                      backgroundColor: Colors.grey.shade200,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        profile.barColor,
+                    if (profile.hasProgress)
+                      LinearProgressIndicator(
+                        value: profile.progress,
+                        backgroundColor: Colors.grey.shade200,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          profile.barColor,
+                        ),
+                        minHeight: 4,
+                        borderRadius: BorderRadius.circular(2),
                       ),
-                      minHeight: 4,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
                   ],
                 ),
               ),

@@ -1,5 +1,3 @@
-
-
 enum MessageDeliveryStatus { sending, sent, delivered, read, failed }
 
 class MessageAttachment {
@@ -18,10 +16,10 @@ class MessageAttachment {
   factory MessageAttachment.fromJson(Map<String, dynamic> json) {
     return MessageAttachment(
       filename: json['filename'] ?? '',
-      url: json['url'] ?? '',
+      url: json['downloadUrl'] ?? json['url'] ?? '',
       publicId: json['public_id'],
-      uploadedAt: json['uploadedAt'] != null 
-          ? DateTime.tryParse(json['uploadedAt'].toString()) 
+      uploadedAt: json['uploadedAt'] != null
+          ? DateTime.tryParse(json['uploadedAt'].toString())
           : null,
     );
   }
@@ -69,8 +67,8 @@ class MessageModel {
       chatSessionId: json['roomId'] ?? '',
       senderId: json['userId'] ?? '',
       text: json['message'] ?? '',
-      timestamp: json['created_at'] != null 
-          ? DateTime.parse(json['created_at'].toString()) 
+      timestamp: json['created_at'] != null
+          ? DateTime.parse(json['created_at'].toString())
           : DateTime.now(),
       attachments: (json['file'] as List? ?? [])
           .map((item) => MessageAttachment.fromJson(item))
@@ -78,8 +76,8 @@ class MessageModel {
       deliveryStatus: _parseStatus(json['status']),
       isEdited: json['isEdited'] ?? false,
       isDeleted: json['isDeleted'] ?? false,
-      deletedAt: json['deletedAt'] != null 
-          ? DateTime.tryParse(json['deletedAt'].toString()) 
+      deletedAt: json['deletedAt'] != null
+          ? DateTime.tryParse(json['deletedAt'].toString())
           : null,
       readBy: (json['readBy'] as List? ?? [])
           .map((id) => id.toString())

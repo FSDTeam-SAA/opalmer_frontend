@@ -61,11 +61,7 @@ class CallNotifier extends StateNotifier<CallState> {
 
   CallNotifier(this._ref) : super(const CallState()) {
     _ref.listen<UserModel?>(authStateProvider, (previous, next) {
-      if (previous != null && next == null) {
-        _socketService.disconnect();
-      } else if (next != null) {
-        unawaited(_handleAuthChange(next));
-      }
+      unawaited(_handleAuthChange(next));
     }, fireImmediately: true);
   }
 
@@ -77,7 +73,7 @@ class CallNotifier extends StateNotifier<CallState> {
     }
 
     final token = await _storage.getToken();
-    if (token == null) return;
+    if (token == null || _ref.read(authStateProvider)?.id != user.id) return;
 
     _socketService.connect(token: token);
     _bindSocketListeners();
@@ -135,14 +131,15 @@ class CallNotifier extends StateNotifier<CallState> {
     required String receiverId,
     required CallMediaType callType,
   }) async {
+    String? callLogId;
     try {
-      final callLogId = await _apiService.createCallLog(
+      callLogId = await _apiService.createCallLog(
         roomId: roomId,
         receiverId: receiverId,
         callType: callMediaTypeValue(callType),
       );
 
-      _socketService.placeCall(
+      await _socketService.placeCall(
         roomId: roomId,
         calleeId: receiverId,
         callType: callType,
@@ -158,6 +155,16 @@ class CallNotifier extends StateNotifier<CallState> {
 
       return callLogId;
     } catch (error) {
+      if (callLogId != null) {
+        try {
+          await _apiService.endCallLog(
+            callLogId: callLogId,
+            status: 'cancelled',
+          );
+        } catch (_) {
+          // Preserve the original failure so the caller can retry.
+        }
+      }
       state = state.copyWith(error: error.toString());
       rethrow;
     }

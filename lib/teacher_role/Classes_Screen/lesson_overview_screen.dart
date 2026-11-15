@@ -17,7 +17,7 @@ class LessonOverviewScreen extends StatelessWidget {
     final Map<String, dynamic>? document = lesson['document'];
     final String? docUrl =
         document != null && document['url'].toString().isNotEmpty
-        ? document['url']
+        ? (document['downloadUrl'] ?? document['url'])
         : null;
 
     return Scaffold(

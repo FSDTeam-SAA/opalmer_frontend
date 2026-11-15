@@ -216,7 +216,7 @@ class StudentLessonsScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            lesson.objective,
+            lesson.title.isEmpty ? lesson.objective : lesson.title,
             style: const TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.bold,
@@ -224,6 +224,10 @@ class StudentLessonsScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 8),
+          if (lesson.title.isNotEmpty) ...[
+            Text(lesson.objective),
+            const SizedBox(height: 8),
+          ],
           Text(
             lesson.note,
             maxLines: 2,

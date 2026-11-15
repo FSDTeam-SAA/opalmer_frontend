@@ -175,24 +175,30 @@ class _CallControls extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _CallControlButton(
+            label: isMuted ? 'Unmute microphone' : 'Mute microphone',
             icon: isMuted ? Icons.mic_off : Icons.mic,
             onTap: onToggleMute,
           ),
           if (isVideoCall)
             _CallControlButton(
+              label: 'Switch camera',
               icon: Icons.flip_camera_android_outlined,
               onTap: onSwitchCamera,
             ),
-          GestureDetector(
-            onTap: onEndCall,
-            child: Container(
-              width: 56,
-              height: 56,
-              decoration: const BoxDecoration(
-                color: Color(0xFFEA4335),
-                shape: BoxShape.circle,
+          Semantics(
+            label: 'End call',
+            button: true,
+            child: GestureDetector(
+              onTap: onEndCall,
+              child: Container(
+                width: 56,
+                height: 56,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFEA4335),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.call_end, color: Colors.white),
               ),
-              child: const Icon(Icons.call_end, color: Colors.white),
             ),
           ),
         ],
@@ -202,23 +208,32 @@ class _CallControls extends StatelessWidget {
 }
 
 class _CallControlButton extends StatelessWidget {
+  final String label;
   final IconData icon;
   final VoidCallback onTap;
 
-  const _CallControlButton({required this.icon, required this.onTap});
+  const _CallControlButton({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 52,
-        height: 52,
-        decoration: const BoxDecoration(
-          color: Color(0xFF444444),
-          shape: BoxShape.circle,
+    return Semantics(
+      label: label,
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 52,
+          height: 52,
+          decoration: const BoxDecoration(
+            color: Color(0xFF444444),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: Colors.white),
         ),
-        child: Icon(icon, color: Colors.white),
       ),
     );
   }

@@ -122,7 +122,27 @@ class _StudentQuizQuestionsScreenState
     await _saveTail;
   }
 
+  Future<void> _confirmSubmission(List<QuizQuestion> questions) async {
+    final remaining = questions.length - _answers.length;
+    if (remaining > 0) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialog) => AlertDialog(
+          title: const Text('Submit with unanswered questions?'),
+          content: Text('$remaining question(s) are unanswered. You cannot change your answers after submitting.'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialog, false), child: const Text('Keep answering')),
+            FilledButton(onPressed: () => Navigator.pop(dialog, true), child: const Text('Submit anyway')),
+          ],
+        ),
+      );
+      if (confirmed != true || !mounted || _isSubmitting) return;
+    }
+    await _submitQuiz(questions);
+  }
+
   Future<void> _submitQuiz(List<QuizQuestion> questions) async {
+    if (_isSubmitting || !mounted) return;
     final user = ref.read(authStateProvider);
     if (user == null) return;
 
@@ -156,6 +176,7 @@ class _StudentQuizQuestionsScreenState
       if (result != null && mounted) {
         // Invalidate providers so the dashboard and other screens fetch fresh data
         ref.invalidate(studentQuizResultsProvider);
+        ref.invalidate(studentQuizzesProvider);
         ref.invalidate(studentClassesProvider);
 
         Navigator.pushReplacement(
@@ -542,7 +563,7 @@ class _StudentQuizQuestionsScreenState
         child: ElevatedButton(
           onPressed: (_isSubmitting || _isInitializing)
               ? null
-              : () => _submitQuiz(questions),
+              : () => _confirmSubmission(questions),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryMid,
             shape: RoundedRectangleBorder(

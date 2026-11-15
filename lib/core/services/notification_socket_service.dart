@@ -14,26 +14,36 @@ class NotificationSocketService {
 
   io.Socket? _socket;
   String? _joinedUserId;
+  String? _token;
+  int _generation = 0;
   NotificationCallback? onNotification;
+  void Function(Map<String, dynamic> event)? onDataChanged;
 
   bool get isConnected => _socket?.connected ?? false;
 
   Future<void> connect(String userId) async {
+    final generation = ++_generation;
     final token = await SecureStorageService().getToken();
-    if (token == null || token.isEmpty) { disconnect(); return; }
-    if (_socket != null && _joinedUserId == userId) {
+    if (generation != _generation) return;
+    if (token == null || token.isEmpty) {
+      disconnect();
+      return;
+    }
+    if (_socket != null && _joinedUserId == userId && _token == token) {
       if (!_socket!.connected) _socket!.connect();
       return;
     }
 
     _socket?.dispose();
     _joinedUserId = userId;
+    _token = token;
 
     final socket = io.io(
       ApiConstants.socketBaseUrl,
       io.OptionBuilder()
           .setTransports(['websocket'])
           .setAuth({'token': token})
+          .enableForceNew()
           .enableAutoConnect()
           .enableReconnection()
           .setReconnectionDelay(2000)
@@ -41,15 +51,18 @@ class NotificationSocketService {
     );
 
     socket.onConnect((_) {
-      debugPrint('NotificationSocket: connected, joining $userId');
-      socket.emit('joinNotification', userId);
+      debugPrint(
+        'NotificationSocket: connected to authenticated notification stream',
+      );
     });
 
     socket.on('newNotification', (data) {
+      if (_socket != socket || _joinedUserId != userId) return;
       if (data is Map) {
         try {
-          final notification =
-              NotificationModel.fromJson(Map<String, dynamic>.from(data));
+          final notification = NotificationModel.fromJson(
+            Map<String, dynamic>.from(data),
+          );
           onNotification?.call(notification);
         } catch (e) {
           debugPrint('NotificationSocket: failed to parse payload: $e');
@@ -57,19 +70,25 @@ class NotificationSocketService {
       }
     });
 
-    socket.onDisconnect(
-        (_) => debugPrint('NotificationSocket: disconnected'));
+    socket.on('dataChanged', (data) {
+      if (_socket != socket || _joinedUserId != userId || data is! Map) return;
+      onDataChanged?.call(Map<String, dynamic>.from(data));
+    });
+
+    socket.onDisconnect((_) => debugPrint('NotificationSocket: disconnected'));
     socket.onConnectError(
-        (err) => debugPrint('NotificationSocket: connect error: $err'));
-    socket.onError(
-        (err) => debugPrint('NotificationSocket: error: $err'));
+      (err) => debugPrint('NotificationSocket: connect error: $err'),
+    );
+    socket.onError((err) => debugPrint('NotificationSocket: error: $err'));
 
     _socket = socket;
   }
 
   void disconnect() {
+    _generation++;
     _socket?.dispose();
     _socket = null;
     _joinedUserId = null;
+    _token = null;
   }
 }

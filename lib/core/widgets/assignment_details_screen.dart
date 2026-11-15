@@ -196,7 +196,7 @@ class _AssignmentDetailsScreenState
               ...((item['files'] as List?) ?? []).map(
                 (file) => TextButton(
                   onPressed: () => _openFile(
-                    '${file['url']}',
+                    '${file['downloadUrl'] ?? file['url']}',
                     '${file['filename'] ?? 'Attachment'}',
                   ),
                   child: Text('${file['filename'] ?? 'Attachment'}'),
@@ -309,7 +309,7 @@ class _AssignmentDetailsScreenState
                       '${file['filename'] ?? 'Homework help / attachment'}',
                     ),
                     onTap: () => _openFile(
-                      '${file['url']}',
+                      '${file['downloadUrl'] ?? file['url']}',
                       '${file['filename'] ?? 'Attachment'}',
                     ),
                   ),
@@ -329,7 +329,7 @@ class _AssignmentDetailsScreenState
                   ...((_submission?['files'] as List?) ?? []).map(
                     (file) => TextButton(
                       onPressed: () => _openFile(
-                        '${file['url']}',
+                        '${file['downloadUrl'] ?? file['url']}',
                         '${file['filename'] ?? 'Attachment'}',
                       ),
                       child: Text('${file['filename'] ?? 'Attachment'}'),

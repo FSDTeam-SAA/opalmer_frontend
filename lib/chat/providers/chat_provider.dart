@@ -52,11 +52,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
 
   void _init() {
     _ref.listen<UserModel?>(authStateProvider, (previous, next) {
-      if (previous != null && next == null) {
-        _socketService.disconnect();
-      } else if (next != null) {
-        unawaited(_handleAuthChange(next));
-      }
+      unawaited(_handleAuthChange(next));
     }, fireImmediately: true);
   }
 
@@ -73,7 +69,10 @@ class ChatNotifier extends StateNotifier<ChatState> {
     }
 
     final token = await _storage.getToken();
-    if (token == null || token.isEmpty) return;
+    if (token == null ||
+        token.isEmpty ||
+        _ref.read(authStateProvider)?.id != user.id)
+      return;
 
     _socketService.connect(token: token);
     _setupListeners();
@@ -113,6 +112,9 @@ class ChatNotifier extends StateNotifier<ChatState> {
     }).toList();
 
     state = state.copyWith(messages: updatedMessages, rooms: updatedRooms);
+    if (!state.rooms.any((room) => room.id == message.chatSessionId)) {
+      unawaited(loadRooms());
+    }
   }
 
   Future<void> loadRooms() async {
@@ -122,6 +124,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
     state = state.copyWith(isLoading: true);
     try {
       final rooms = await _apiService.getRooms(user.id);
+      if (_ref.read(authStateProvider)?.id != user.id) return;
       state = state.copyWith(rooms: rooms, isLoading: false);
 
       // Auto-join all rooms via socket
@@ -142,9 +145,12 @@ class ChatNotifier extends StateNotifier<ChatState> {
   }
 
   Future<void> loadMessages(String roomId) async {
+    final userId = _ref.read(authStateProvider)?.id;
+    if (userId == null) return;
     state = state.copyWith(isLoading: true);
     try {
       final messages = await _apiService.getMessages(roomId);
+      if (_ref.read(authStateProvider)?.id != userId) return;
       final newMessages = messages.reversed.toList();
 
       // Merge with existing messages, avoiding duplicates
@@ -162,16 +168,22 @@ class ChatNotifier extends StateNotifier<ChatState> {
     }
   }
 
-  Future<void> sendMessage(String roomId, String text) async {
+  Future<bool> sendMessage(String roomId, String text) async {
+    final userId = _ref.read(authStateProvider)?.id;
+    if (userId == null) return false;
     try {
       final newMessage = await _apiService.sendMessage(roomId, text);
+      if (_ref.read(authStateProvider)?.id != userId) return false;
       if (newMessage != null) {
         // Optimistically add to local state if socket didn't beat us to it
         _handleNewIncomingMessage(newMessage);
+        state = state.copyWith(error: null);
+        return true;
       }
     } catch (e) {
       state = state.copyWith(error: 'Failed to send message: $e');
     }
+    return false;
   }
 
   Future<ChatSessionModel?> getOrCreateDirectRoom(String otherUserId) async {

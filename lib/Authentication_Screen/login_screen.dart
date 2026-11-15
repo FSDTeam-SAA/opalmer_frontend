@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'password_reset_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/authentication_screen/otp_screen.dart';
 import 'package:opalmer_education/core/providers/role_provider.dart';
@@ -161,14 +163,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   Future<void> _startAnimations() async {
     _headerController.forward();
     await Future.delayed(const Duration(milliseconds: 200));
+    if (!mounted) return;
     _imageController.forward();
     await Future.delayed(const Duration(milliseconds: 200));
+    if (!mounted) return;
     _formController.forward();
   }
 
   Future<void> _onButtonTap() async {
+    if (ref.read(loginLoadingProvider)) return;
     final schoolId = _schoolIdController.text.trim();
-    final password = _passwordController.text.trim();
+    final password = _passwordController.text;
 
     if (schoolId.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -194,6 +199,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           .login(
             schoolId,
             password,
+            expectedType: ref.read(roleProvider) == UserRole.guest
+                ? null
+                : ref.read(roleProvider).name,
             requestOtp: () async {
               if (!mounted) return null;
               final controller = TextEditingController();
@@ -228,6 +236,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             },
           );
 
+      if (!mounted) return;
       if (loginResponse != null) {
         // Validation: Ensure the user's role matches what was selected
         final selectedRole = ref.read(roleProvider);
@@ -263,6 +272,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         // Refresh with the full profile from GET /users/me so cached
         // state matches what the edit form will read/write.
         final fullUser = await ref.read(authServiceProvider).fetchCurrentUser();
+        if (!mounted) return;
         if (fullUser != null) {
           ref.read(authStateProvider.notifier).state = fullUser;
         }
@@ -279,6 +289,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         );
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
       );
@@ -330,81 +341,85 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ── Header with background image ──
-            FadeTransition(
-              opacity: _headerFade,
-              child: SlideTransition(
-                position: _headerSlide,
-                child: Stack(
-                  children: [
-                    // Header background image
-                    Image.asset(
-                      'assets/images/header_design.png',
-                      width: double.infinity,
-                      fit: BoxFit.fitWidth,
-                    ),
+            AnnotatedRegion<SystemUiOverlayStyle>(
+              value: SystemUiOverlayStyle.light,
+              child: FadeTransition(
+                opacity: _headerFade,
+                child: SlideTransition(
+                  position: _headerSlide,
+                  child: Stack(
+                    children: [
+                      // Header background image
+                      Image.asset(
+                        'assets/images/header_design.png',
+                        width: double.infinity,
+                        fit: BoxFit.fitWidth,
+                      ),
 
-                    // Title & Subtitle over header
-                    SafeArea(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 16),
-                            // Top row: Title + Back button
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                const Text(
-                                  "Log In",
-                                  style: TextStyle(
-                                    fontSize: 36,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                // Back button
-                                GestureDetector(
-                                  onTap: () => Navigator.of(context).pop(),
-                                  child: Container(
-                                    width: 42,
-                                    height: 42,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.white.withValues(
-                                        alpha: 0.2,
-                                      ),
-                                      border: Border.all(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.4,
-                                        ),
-                                        width: 1.5,
-                                      ),
-                                    ),
-                                    child: const Icon(
-                                      Icons.arrow_back,
+                      // Title & Subtitle over header
+                      SafeArea(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 16),
+                              // Top row: Title + Back button
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    "Log In",
+                                    style: TextStyle(
+                                      fontSize: 36,
+                                      fontWeight: FontWeight.bold,
                                       color: Colors.white,
-                                      size: 22,
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              "Experience a better learning\nenvironment",
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white.withValues(alpha: 0.9),
-                                height: 1.4,
+                                  // Back button
+                                  GestureDetector(
+                                    onTap: () => Navigator.of(context).pop(),
+                                    child: Container(
+                                      width: 42,
+                                      height: 42,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.white.withValues(
+                                          alpha: 0.2,
+                                        ),
+                                        border: Border.all(
+                                          color: Colors.white.withValues(
+                                            alpha: 0.4,
+                                          ),
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        Icons.arrow_back,
+                                        color: Colors.white,
+                                        size: 22,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 8),
+                              Text(
+                                "Experience a better learning\nenvironment",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  height: 1.4,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -419,7 +434,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                     scale: _imageScale,
                     child: Image.asset(
                       'assets/images/Login_images/login_image.png',
-                      height: 200,
+                      height: MediaQuery.viewInsetsOf(context).bottom > 0
+                          ? 80
+                          : 200,
                       fit: BoxFit.contain,
                     ),
                   ),
@@ -452,6 +469,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           const SizedBox(height: 8),
                           TextField(
                             controller: _schoolIdController,
+                            textInputAction: TextInputAction.next,
+                            onSubmitted: (_) =>
+                                FocusScope.of(context).nextFocus(),
                             decoration: InputDecoration(
                               hintText: "Enter your ID or email",
                               prefixIcon: Icon(
@@ -492,6 +512,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           const SizedBox(height: 8),
                           TextField(
                             controller: _passwordController,
+                            textInputAction: TextInputAction.done,
+                            onSubmitted: (_) => _onButtonTap(),
                             obscureText: _obscurePassword,
                             decoration: InputDecoration(
                               hintText: "Password",
@@ -551,13 +573,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             ),
                           ),
                           const SizedBox(width: 8),
-                          const Text(
-                            "Remember Me",
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: AppColors.textSecondary,
+                          const Expanded(
+                            child: Text(
+                              "Remember Me",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppColors.textSecondary,
+                              ),
                             ),
                           ),
+                          if (!widget.isRegistrationFlow)
+                            TextButton(
+                              onPressed: () async {
+                                final identifier = await Navigator.push<String>(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => PasswordResetScreen(
+                                      initialIdentifier:
+                                          _schoolIdController.text,
+                                    ),
+                                  ),
+                                );
+                                if (identifier != null && mounted) {
+                                  _schoolIdController.text = identifier;
+                                  _passwordController.clear();
+                                }
+                              },
+                              child: const Text('Forgot password?'),
+                            ),
                         ],
                       ),
                     ),

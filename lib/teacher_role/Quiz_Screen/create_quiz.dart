@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/constants/api_constants.dart';
 import 'package:opalmer_education/core/providers/grading_provider.dart';
 import 'package:opalmer_education/core/providers/teacher_provider.dart';
+import '../../core/services/attachment_service.dart';
+import 'edit_quiz.dart';
 
 class CreateQuizScreen extends ConsumerStatefulWidget {
   const CreateQuizScreen({Key? key}) : super(key: key);
@@ -19,6 +21,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
   final TextEditingController _titleController = TextEditingController();
   List<dynamic> _generatedQuestions = [];
   bool _isGenerating = false;
+  bool _isCreatingManual = false;
   String? _selectedClassId;
 
   @override
@@ -52,15 +55,25 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
   }
 
   Future<void> _handleSave({bool publish = false}) async {
+    if (_isCreatingManual || ref.read(gradingActionProvider).isLoading) return;
     if (_selectedClassId == null) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Please select a class")));
       return;
     }
-    if (_titleController.text.isEmpty) {
+    if (_titleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please enter a quiz title")),
+      );
+      return;
+    }
+    if (_timeController.text.trim().isNotEmpty &&
+        (int.tryParse(_timeController.text.trim()) ?? 0) < 1) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Enter a positive whole number of minutes.'),
+        ),
       );
       return;
     }
@@ -103,6 +116,46 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Failed to save quiz")));
+    }
+  }
+
+  Future<void> _writeQuestions() async {
+    if (_isCreatingManual) return;
+    final title = _titleController.text.trim();
+    final time = _timeController.text.trim().isEmpty
+        ? 5
+        : int.tryParse(_timeController.text.trim());
+    if (_selectedClassId == null || title.isEmpty || time == null || time < 1) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Choose a class, enter a title and a positive whole number of minutes.',
+          ),
+        ),
+      );
+      return;
+    }
+    setState(() => _isCreatingManual = true);
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    try {
+      final session = await ref
+          .read(gradingServiceProvider)
+          .createSession(classId: _selectedClassId!, title: title, time: time);
+      ref.invalidate(teacherSessionsProvider);
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => EditQuizScreen(sessionId: session['_id'].toString()),
+        ),
+      );
+    } catch (error) {
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AttachmentService.errorMessage(error))),
+        );
+    } finally {
+      if (mounted) setState(() => _isCreatingManual = false);
     }
   }
 
@@ -201,6 +254,17 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
 
               const SizedBox(height: 16),
               _buildInputLabel("AI Prompt"),
+              TextButton.icon(
+                onPressed: _isCreatingManual || _isGenerating
+                    ? null
+                    : _writeQuestions,
+                icon: const Icon(Icons.edit_note),
+                label: Text(
+                  _isCreatingManual
+                      ? 'Creating draft...'
+                      : 'Write questions manually',
+                ),
+              ),
               const SizedBox(height: 8),
               _buildTextField(
                 hint: "Describe the topic and questions you need…",
@@ -228,7 +292,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
 
               const SizedBox(height: 24),
               const Text(
-                "Generated Questions",
+                "Questions",
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -261,7 +325,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                       ),
                       SizedBox(height: 6),
                       Text(
-                        'Add a prompt above, then tap the sparkle icon.',
+                        'Write questions manually or generate them from an AI prompt.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Color(0xFF787481),
@@ -288,7 +352,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
             ],
           ),
 
-          if (gradingState.isLoading)
+          if (gradingState.isLoading || _isCreatingManual)
             Container(
               color: Colors.black26,
               child: const Center(child: CircularProgressIndicator()),
@@ -308,7 +372,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: gradingState.isLoading
+                  onPressed: gradingState.isLoading || _isCreatingManual
                       ? null
                       : () => _handleSave(publish: false),
                   style: OutlinedButton.styleFrom(
@@ -334,7 +398,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
               const SizedBox(width: 16),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: gradingState.isLoading
+                  onPressed: gradingState.isLoading || _isCreatingManual
                       ? null
                       : () => _handleSave(publish: true),
                   style: ElevatedButton.styleFrom(

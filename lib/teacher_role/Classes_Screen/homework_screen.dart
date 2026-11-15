@@ -1,9 +1,8 @@
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
-import 'package:opalmer_education/core/widgets/assignment_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers/teacher_provider.dart';
-import 'add_homework_screen.dart';
+import 'widgets/teacher_assignment_list.dart';
 import 'group_detail_screen.dart';
 import 'create_group_screen.dart';
 import '../navigation/teacher_workspace.dart';
@@ -139,128 +138,12 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> {
             const SizedBox(height: 24),
 
             Expanded(
-              child: isClassSelected ? _buildClassTab() : _buildGroupsTab(),
+              child: isClassSelected
+                  ? TeacherAssignmentList(classId: widget.classId)
+                  : _buildGroupsTab(),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildClassTab() {
-    final homeworkAsync = ref.watch(classHomeworkProvider(widget.classId));
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Today's Homework
-          const Text(
-            "Today's Homework",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF333333),
-            ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => TeacherContextFrame.carry(
-                      context,
-                      AddHomeworkScreen(classId: widget.classId),
-                    ),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF871DAD),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                elevation: 0,
-              ),
-              child: const Text(
-                "ADD HOMEWORK",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.0,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 32),
-
-          // Archived Homework Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                "Archived Homework",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF333333),
-                ),
-              ),
-              const Icon(
-                Icons.calendar_month_outlined,
-                color: Color(0xFF871DAD),
-                size: 24,
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          homeworkAsync.when(
-            data: (homeworkList) {
-              if (homeworkList.isEmpty) {
-                return const Center(child: Text("No homework found."));
-              }
-              // Separate active and archived if needed, for now just show all
-              return ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: homeworkList.length,
-                itemBuilder: (context, index) {
-                  final hw = homeworkList[index];
-                  return GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => TeacherContextFrame.carry(
-                          context,
-                          AssignmentDetailsScreen(
-                            homeworkId: hw['_id'].toString(),
-                          ),
-                        ),
-                      ),
-                    ),
-                    child: _buildHomeworkCard(
-                      title: hw['title'] ?? 'No Title',
-                      description: hw['description'] ?? 'No Description',
-                      dueDate: hw['created_at'] != null
-                          ? "Created: ${hw['created_at'].toString().split('T')[0]}"
-                          : "Date: TBD",
-                      showOptions: index == 0,
-                    ),
-                  );
-                },
-              );
-            },
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (err, stack) => Center(child: Text("Error: $err")),
-          ),
-        ],
       ),
     );
   }
@@ -308,7 +191,10 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> {
           const SizedBox(height: 24),
 
           groupsAsync.when(
-            data: (groups) {
+            data: (rooms) {
+              final groups = rooms
+                  .where((room) => room['type'] == 'group')
+                  .toList();
               if (groups.isEmpty) {
                 return const Center(child: Text("No groups found."));
               }
@@ -329,95 +215,6 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> {
             },
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (err, stack) => Center(child: Text("Error: $err")),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHomeworkCard({
-    required String title,
-    required String description,
-    required String dueDate,
-    required bool showOptions,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: Color(0xFF222222),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            description,
-            style: TextStyle(
-              color: Colors.grey.shade500,
-              fontSize: 14,
-              height: 1.3,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Divider(color: Colors.grey.shade200, height: 1),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                dueDate,
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-              ),
-              if (showOptions)
-                Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () {},
-                      child: const Text(
-                        "Edit",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF871DAD),
-                          fontWeight: FontWeight.w600,
-                          decoration: TextDecoration.underline,
-                          decorationColor: Color(0xFF871DAD),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    GestureDetector(
-                      onTap: () {},
-                      child: const Text(
-                        "Delete",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFFF94A4A),
-                          fontWeight: FontWeight.w600,
-                          decoration: TextDecoration.underline,
-                          decorationColor: Color(0xFFF94A4A),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-            ],
           ),
         ],
       ),
@@ -465,22 +262,6 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> {
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF94A4A),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: const Text(
-              "Delete",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
           GestureDetector(
             onTap: () {
               Navigator.push(

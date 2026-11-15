@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../providers/parent_children_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
@@ -6,7 +7,7 @@ import 'package:opalmer_education/core/models/user_model.dart';
 import 'package:opalmer_education/core/services/secure_storage_service.dart';
 import 'package:opalmer_education/core/services/api_client.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
-import 'package:opalmer_education/core/widgets/pressable_card.dart';
+import '../widgets/parent_child_summary_card.dart';
 import 'package:opalmer_education/core/widgets/learning_tip_card.dart';
 import 'package:opalmer_education/core/widgets/dashboard_header.dart';
 import 'package:opalmer_education/parent_role/LearningTipsScreen/models/learning_tip.dart';
@@ -122,6 +123,10 @@ class _ParentHomeDashboardState extends ConsumerState<ParentHomeDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(parentChildrenRevisionProvider, (_, _) {
+      _loadProfiles();
+      _loadTips();
+    });
     final user = ref.watch(authStateProvider);
 
     return Scaffold(
@@ -212,7 +217,11 @@ class _ParentHomeDashboardState extends ConsumerState<ParentHomeDashboard> {
                           ),
                         )
                       : SizedBox(
-                          height: 120,
+                          height:
+                              128 *
+                              MediaQuery.textScalerOf(
+                                context,
+                              ).scale(1).clamp(1.0, 2.0),
                           child: ListView(
                             scrollDirection: Axis.horizontal,
                             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -326,166 +335,20 @@ class _ParentHomeDashboardState extends ConsumerState<ParentHomeDashboard> {
     );
   }
 
-  Widget _buildChildCard(ChildProfile profile) {
-    return PressableCard(
-      onTap: () {
-        final childId = profile.mongoId;
-        if (childId == null || childId.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Child id not available yet.')),
-          );
-          return;
-        }
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SubjectsScreen(
-              initialChildId: childId,
-              initialChildName: profile.name,
-            ),
+  Widget _buildChildCard(ChildProfile profile) => ParentChildSummaryCard(
+    profile: profile,
+    onTap: () {
+      final childId = profile.mongoId;
+      if (childId == null || childId.isEmpty) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => SubjectsScreen(
+            initialChildId: childId,
+            initialChildName: profile.name,
           ),
-        );
-      },
-      child: Container(
-        width: 290,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200, width: 1.5),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              offset: const Offset(0, 4),
-              blurRadius: 8,
-            ),
-          ],
         ),
-        child: Row(
-          children: [
-            // Left color bar
-            Container(
-              width: 6,
-              decoration: BoxDecoration(
-                color: profile.leftBorderColor,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(10),
-                  bottomLeft: Radius.circular(10),
-                ),
-              ),
-            ),
-            const SizedBox(width: 14),
-            // Avatar
-            CircleAvatar(
-              radius: 28,
-              backgroundImage: NetworkImage(profile.imageUrl),
-              backgroundColor: Colors.grey.shade200,
-            ),
-            const SizedBox(width: 14),
-            // Details
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 16, bottom: 16, right: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                profile.name,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.black87,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                profile.gradeAge,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'View Student',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: AppColors.primaryMid,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // Excellent Tag
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: profile.tagColor,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            profile.tagText,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
-                    // Progress Bar
-                    Row(
-                      children: [
-                        Text(
-                          "Progress",
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: AppColors.primaryMid,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          "${(profile.progress * 100).toInt()}%",
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey.shade600,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    LinearProgressIndicator(
-                      value: profile.progress,
-                      backgroundColor: Colors.grey.shade200,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        profile.barColor,
-                      ),
-                      minHeight: 4,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+      );
+    },
+  );
 }

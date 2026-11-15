@@ -8,7 +8,7 @@ import 'package:opalmer_education/core/providers/navigation_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/student_role/Subjects/widgets/subject_card.dart';
 import 'package:opalmer_education/notification/notification.dart';
-import 'package:opalmer_education/student_role/Quizzes/student_quiz_questions_screen.dart';
+import '../Quizzes/quiz_summary_card.dart';
 
 class StudentHomeDashboard extends ConsumerWidget {
   final VoidCallback? onOpenMenu;
@@ -185,17 +185,13 @@ class StudentHomeDashboard extends ConsumerWidget {
           itemBuilder: (context, index) {
             final quiz = quizzes[index];
 
-            // Find the best score for this quiz
+            // Only released results are exposed by this provider.
             final quizResult = results.cast<QuizResultModel?>().firstWhere(
               (r) => r?.quizId == quiz.id,
               orElse: () => null,
             );
 
-            return _buildQuizCard(
-              context: context,
-              quiz: quiz,
-              progress: quizResult?.percentage ?? 0.0,
-            );
+            return QuizSummaryCard(quiz: quiz, result: quizResult);
           },
         );
       },
@@ -240,152 +236,4 @@ class StudentHomeDashboard extends ConsumerWidget {
     );
   }
 
-  Widget _buildQuizCard({
-    required BuildContext context,
-    required QuizModel quiz,
-    required double progress,
-  }) {
-    final bool isCompleted = progress >= 1.0;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryMid.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Center(
-                  child: Image.asset(
-                    'assets/images/classes/book_icon.png',
-                    width: 32,
-                    height: 32,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      quiz.title,
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                        letterSpacing: -0.5,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      quiz.metaLine.isNotEmpty
-                          ? quiz.metaLine
-                          : "${quiz.questionCount} Questions • ${quiz.durationMinutes} min",
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey.shade500,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (isCompleted)
-                const Icon(
-                  Icons.check_circle,
-                  color: Color(0xFF4AA678),
-                  size: 24,
-                ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Progress",
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-              Text(
-                "${(progress * 100).toInt()}%",
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.primaryMid,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: LinearProgressIndicator(
-              value: progress,
-              backgroundColor: Colors.grey.shade100,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                isCompleted ? const Color(0xFF4AA678) : AppColors.primaryMid,
-              ),
-              minHeight: 8,
-            ),
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => StudentQuizQuestionsScreen(quiz: quiz),
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isCompleted
-                    ? Colors.grey.shade100
-                    : AppColors.primaryMid,
-                foregroundColor: isCompleted
-                    ? Colors.grey.shade700
-                    : Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-              child: Text(
-                isCompleted ? "Retake Quiz" : "Start Learning",
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

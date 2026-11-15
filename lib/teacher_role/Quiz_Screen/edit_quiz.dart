@@ -53,7 +53,10 @@ class _EditQuizScreenState extends ConsumerState<EditQuizScreen> {
     try {
       final service = ref.read(gradingServiceProvider);
       final session = await service.getSessionDetails(widget.sessionId);
-      final questions = await service.getSessionQuestions(widget.sessionId);
+      final questions =
+          session['status'] == 'draft' && session['questionCount'] == 0
+          ? <dynamic>[]
+          : await service.getSessionQuestions(widget.sessionId);
 
       for (final question in _questions) {
         question.dispose();
@@ -131,9 +134,15 @@ class _EditQuizScreenState extends ConsumerState<EditQuizScreen> {
   }
 
   Future<void> _saveQuiz({required bool publish}) async {
+    if (ref.read(gradingActionProvider).isLoading) return;
     final title = _titleController.text.trim();
     if (title.isEmpty) {
       _showSnack('Please enter a quiz title');
+      return;
+    }
+    final time = int.tryParse(_timeController.text.trim());
+    if (time == null || time < 1) {
+      _showSnack('Enter a positive whole number of minutes.');
       return;
     }
 
@@ -182,7 +191,7 @@ class _EditQuizScreenState extends ConsumerState<EditQuizScreen> {
         .updateExistingSession(
           sessionId: widget.sessionId,
           title: title,
-          time: int.tryParse(_timeController.text.trim()),
+          time: time,
           questions: payload,
           publish: publish,
         );
@@ -332,7 +341,9 @@ class _EditQuizScreenState extends ConsumerState<EditQuizScreen> {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () => _saveQuiz(publish: false),
+                  onPressed: gradingState.isLoading
+                      ? null
+                      : () => _saveQuiz(publish: false),
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(
                       color: Color(0xFF871DAD),
@@ -356,7 +367,9 @@ class _EditQuizScreenState extends ConsumerState<EditQuizScreen> {
               const SizedBox(width: 16),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () => _saveQuiz(publish: _status == 'draft'),
+                  onPressed: gradingState.isLoading
+                      ? null
+                      : () => _saveQuiz(publish: _status == 'draft'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF871DAD),
                     elevation: 0,

@@ -48,7 +48,11 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
 
       final response = await apiClient.post(
         '/rooms',
-        data: {'name': _titleController.text, 'participants': participants},
+        data: {
+          'name': _titleController.text.trim(),
+          'type': 'group',
+          'participants': participants,
+        },
       );
 
       if (response.statusCode == 201 || response.statusCode == 200) {

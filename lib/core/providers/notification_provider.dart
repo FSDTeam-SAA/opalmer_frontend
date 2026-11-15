@@ -4,6 +4,8 @@ import 'package:opalmer_education/core/models/notification_model.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
 import 'package:opalmer_education/core/services/notification_service.dart';
 import 'package:opalmer_education/core/services/notification_socket_service.dart';
+import 'student_provider.dart';
+import '../../parent_role/providers/parent_children_provider.dart';
 
 final notificationServiceProvider = Provider<NotificationService>(
   (ref) => NotificationService(),
@@ -54,7 +56,39 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
 
   void _bindSocket() {
     final socket = _socket;
+    socket.onDataChanged = (event) {
+      final user = _ref.read(authStateProvider);
+      if (user == null) return;
+      final type = event['type']?.toString().toLowerCase();
+      if (type == 'message') return;
+      if (user.type == 'parent') {
+        _ref.read(parentChildrenRevisionProvider.notifier).state++;
+      } else if (user.type == 'student') {
+        if (['grade', 'quiz_result', 'class'].contains(type)) {
+          _ref.invalidate(studentQuizResultsProvider);
+          _ref.invalidate(studentQuizzesProvider);
+          _ref.invalidate(studentClassesProvider);
+        }
+        if ([
+          'homework',
+          'homework_help',
+          'assignment_grade',
+          'class',
+        ].contains(type)) {
+          _ref.invalidate(studentHomeworkProvider);
+        }
+        if (['academicdocument', 'academic_document', 'class'].contains(type)) {
+          _ref.invalidate(studentAcademicDocumentsProvider);
+        }
+        if (['lesson', 'class'].contains(type))
+          _ref.invalidate(studentLessonsProvider);
+        if (type == 'behavior') _ref.invalidate(studentBehaviorsProvider);
+        if (['attendance', 'class'].contains(type))
+          _ref.invalidate(studentAttendanceProvider);
+      }
+    };
     socket.onNotification = (notification) {
+      if (notification.to != _userId) return;
       state = state.copyWith(
         items: [
           notification,
@@ -76,6 +110,7 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
         socket.disconnect();
         state = const NotificationState();
       } else {
+        state = const NotificationState();
         socket.connect(nextId);
       }
     });
@@ -94,8 +129,10 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
       final items = await _ref
           .read(notificationServiceProvider)
           .getNotifications(userId);
+      if (_userId != userId) return;
       state = state.copyWith(loading: false, items: items, clearError: true);
     } catch (e) {
+      if (_userId != userId) return;
       debugPrint('NotificationNotifier: load failed: $e');
       state = state.copyWith(
         loading: false,
@@ -130,7 +167,7 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
       await _ref.read(notificationServiceProvider).markAllAsRead(userId);
     } catch (e) {
       debugPrint('NotificationNotifier: markAllAsRead failed: $e');
-      state = state.copyWith(items: previous);
+      if (_userId == userId) state = state.copyWith(items: previous);
       rethrow;
     }
   }

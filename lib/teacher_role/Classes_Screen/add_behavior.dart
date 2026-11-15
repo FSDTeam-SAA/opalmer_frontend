@@ -47,7 +47,8 @@ class _AddBehaviorScreenState extends ConsumerState<AddBehaviorScreen> {
   }
 
   Future<void> _handleAdd() async {
-    if (_messageController.text.isEmpty) {
+    if (_isLoading) return;
+    if (_messageController.text.trim().isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Please enter a message")));
@@ -59,7 +60,7 @@ class _AddBehaviorScreenState extends ConsumerState<AddBehaviorScreen> {
     final data = {
       "studentId": widget.studentId,
       if (widget.classId != null) "classId": widget.classId,
-      "message": _messageController.text,
+      "message": _messageController.text.trim(),
       "state": _selectedState,
     };
 
@@ -74,7 +75,7 @@ class _AddBehaviorScreenState extends ConsumerState<AddBehaviorScreen> {
             "data": {
               "studentId": widget.studentId,
               if (widget.classId != null) "classId": widget.classId,
-              "message": _messageController.text,
+              "message": _messageController.text.trim(),
               "state": _selectedState,
             },
           }).future,
@@ -146,9 +147,9 @@ class _AddBehaviorScreenState extends ConsumerState<AddBehaviorScreen> {
             ),
           ),
         ),
-        title: const Text(
-          "Add Behavior Log",
-          style: TextStyle(
+        title: Text(
+          widget.behaviorId == null ? "Add Behavior Log" : "Edit Behavior Log",
+          style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
@@ -208,9 +209,9 @@ class _AddBehaviorScreenState extends ConsumerState<AddBehaviorScreen> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text(
-                          "ADD",
-                          style: TextStyle(
+                      : Text(
+                          widget.behaviorId == null ? "ADD" : "UPDATE",
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,

@@ -38,14 +38,15 @@ class _StudentAcademicNotesScreenState
           ? await getExternalStorageDirectory()
           : await getApplicationDocumentsDirectory();
 
-      final filePath = "${directory!.path}/Academic_Note_$dateStr.pdf";
+      final filePath =
+          "${directory!.path}/Academic_Note_${id.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_')}.pdf";
 
       final dio = dioForDownloadUrl(url);
       await dio.download(
         url,
         filePath,
         onReceiveProgress: (received, total) {
-          if (total != -1) {
+          if (mounted && total > 0) {
             setState(() {
               _progress = received / total;
             });
@@ -53,15 +54,17 @@ class _StudentAcademicNotesScreenState
         },
       );
 
+      if (!mounted) return;
       setState(() => _downloadingId = null);
 
       final result = await OpenFilex.open(filePath);
-      if (result.type != ResultType.done) {
+      if (mounted && result.type != ResultType.done) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Could not open file: ${result.message}")),
         );
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() => _downloadingId = null);
       ScaffoldMessenger.of(
         context,

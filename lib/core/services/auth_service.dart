@@ -16,6 +16,7 @@ class AuthService {
     String id,
     String password, {
     Future<String?> Function()? requestOtp,
+    String? expectedType,
   }) async {
     debugPrint('AuthService: Attempting login for ID: $id');
     try {
@@ -45,6 +46,13 @@ class AuthService {
       if (response.statusCode == 200 && dataMap['success'] == true) {
         debugPrint('AuthService: Login successful, saving token and user data');
         final loginResponse = LoginResponse.fromJson(dataMap);
+        final accountType = (loginResponse.user.type ?? loginResponse.user.role)
+            .toLowerCase();
+        if (expectedType != null && accountType != expectedType.toLowerCase()) {
+          throw Exception(
+            'Access Denied: This account is not registered as $expectedType.',
+          );
+        }
 
         // Save token and user data
         if (loginResponse.token.isEmpty || loginResponse.user.id.isEmpty) {
@@ -72,6 +80,7 @@ class AuthService {
       throw Exception(message);
     } catch (e) {
       debugPrint('AuthService: Unexpected error during login: ${e.toString()}');
+      if (e is Exception) rethrow;
       throw Exception('An unexpected error occurred: ${e.toString()}');
     }
   }

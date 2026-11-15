@@ -9,7 +9,10 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:opalmer_education/core/providers/notification_provider.dart';
 import 'package:opalmer_education/notification/notification.dart';
 import 'package:opalmer_education/student_role/Quizzes/student_quiz_list_screen.dart';
-import 'package:opalmer_education/student_role/Quizzes/student_quiz_questions_screen.dart';
+import 'quiz_summary_card.dart';
+import 'quiz_performance.dart';
+import 'package:flutter/services.dart';
+import '../../core/theme/app_theme.dart';
 
 class StudentQuizMainScreen extends ConsumerStatefulWidget {
   const StudentQuizMainScreen({Key? key}) : super(key: key);
@@ -29,60 +32,74 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(context),
-            const SizedBox(height: 24),
-            _buildQuizSection(context, ref, quizzesAsync),
-            const SizedBox(height: 32),
-            _buildStatsSection(quizResultsAsync),
-            const SizedBox(height: 32),
-            _buildProgressSection(quizResultsAsync),
-            const SizedBox(height: 40),
-          ],
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(studentQuizzesProvider);
+          ref.invalidate(studentQuizResultsProvider);
+          await Future.wait([
+            ref.read(studentQuizzesProvider.future),
+            ref.read(studentQuizResultsProvider.future),
+          ]);
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(context),
+              const SizedBox(height: 24),
+              _buildQuizSection(context, ref, quizzesAsync, quizResultsAsync),
+              const SizedBox(height: 32),
+              _buildStatsSection(quizResultsAsync),
+              const SizedBox(height: 32),
+              _buildProgressSection(quizResultsAsync),
+              const SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF871DAD), Color(0xFF9D39C3)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: AppTheme.statusBarStyle,
+      child: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF871DAD), Color(0xFF9D39C3)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(32),
+            bottomRight: Radius.circular(32),
+          ),
         ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(32),
-          bottomRight: Radius.circular(32),
-        ),
-      ),
-      padding: const EdgeInsets.fromLTRB(24, 60, 24, 32),
-      child: AppPageHeader(
-        homeColor: Colors.white,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const AppBackButton(),
-          const Expanded(
-            child: Text(
-              "Quizzes",
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+        padding: const EdgeInsets.fromLTRB(24, 60, 24, 32),
+        child: AppPageHeader(
+          homeColor: Colors.white,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const AppBackButton(),
+            const Expanded(
+              child: Text(
+                "Quizzes",
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
             ),
-          ),
-          _NotificationBell(
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const NotificationScreen()),
+            _NotificationBell(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const NotificationScreen()),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -91,6 +108,7 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
     BuildContext context,
     WidgetRef ref,
     AsyncValue<List<QuizModel>> quizzesAsync,
+    AsyncValue<List<QuizResultModel>> quizResultsAsync,
   ) {
     return Column(
       children: [
@@ -140,12 +158,15 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
                 itemCount: quizzes.length,
                 itemBuilder: (context, index) {
                   final quiz = quizzes[index];
-                  return _buildQuizCard(
-                    context,
-                    quiz,
-                    // Mock progress/color logic for now based on title
-                    0.0,
-                    const Color(0xFFFEBD43),
+                  final matches =
+                      (quizResultsAsync.valueOrNull ?? <QuizResultModel>[])
+                          .where((r) => r.quizId == quiz.id);
+                  return SizedBox(
+                    width: 280,
+                    child: QuizSummaryCard(
+                      quiz: quiz,
+                      result: matches.isEmpty ? null : matches.first,
+                    ),
                   );
                 },
               );
@@ -155,140 +176,6 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildQuizCard(
-    BuildContext context,
-    QuizModel quiz,
-    double progress,
-    Color barColor,
-  ) {
-    return Container(
-      width: 280,
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  color: AppColors.primaryMid.withValues(alpha: 0.1),
-                  child: const Icon(
-                    Icons.quiz_outlined,
-                    color: AppColors.primaryMid,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      quiz.title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: AppColors.textPrimary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (quiz.metaLine.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        quiz.metaLine,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                "0%",
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Color(0xFF4AA678),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              Text(
-                "${(progress * 100).toInt()}%",
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: Color(0xFF4AA678),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: progress,
-              backgroundColor: Colors.grey.shade100,
-              valueColor: AlwaysStoppedAnimation<Color>(barColor),
-              minHeight: 6,
-            ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            height: 40,
-            child: ElevatedButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => StudentQuizQuestionsScreen(quiz: quiz),
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryMid,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                elevation: 0,
-              ),
-              child: const Text(
-                "Start Learning",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -343,22 +230,22 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
                 childAspectRatio: 1.5,
                 children: [
                   _buildStatTile(
-                    "Quizzes Completed",
+                    "Released results",
                     completed.toString(),
                     const Color(0xFFFEBD43),
                   ),
                   _buildStatTile(
-                    "Correct Answers",
+                    "Average score",
                     hasResults ? "$correctPct%" : "N/A",
                     const Color(0xFF4AA678),
                   ),
                   _buildStatTile(
-                    "Wrong Answers",
+                    "Points to improve",
                     hasResults ? "$wrongPct%" : "N/A",
                     const Color(0xFF4AA678).withValues(alpha: 0.85),
                   ),
                   _buildStatTile(
-                    "Best Subject",
+                    "Best assessment",
                     bestSubject,
                     const Color(0xFFFEBD43),
                   ),
@@ -444,23 +331,18 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
             ),
             child: quizResultsAsync.when(
               data: (results) {
-                // Map weekly data (0 = Sun, 6 = Sat)
-                Map<int, double> weeklySpots = {};
-                for (var res in results) {
-                  if (res.createdAt != null) {
-                    if (_filterPeriod == "Weekly" &&
-                        DateTime.now().difference(res.createdAt!).inDays > 7)
-                      continue;
-
-                    int weekday = res.createdAt!.weekday % 7;
-                    weeklySpots[weekday] = res.percentage * 100;
-                  }
-                }
-
-                List<FlSpot> spots = [];
-                for (int i = 0; i < 7; i++) {
-                  spots.add(FlSpot(i.toDouble(), weeklySpots[i] ?? 0));
-                }
+                final days = _filterPeriod == 'Weekly' ? 7 : 30;
+                final daily = quizPerformance(
+                  results,
+                  now: DateTime.now(),
+                  days: days,
+                );
+                final spots = [
+                  for (var i = 0; i < daily.length; i++)
+                    daily[i].percentage == null
+                        ? FlSpot.nullSpot
+                        : FlSpot(i.toDouble(), daily[i].percentage!),
+                ];
 
                 return Column(
                   children: [
@@ -536,18 +418,17 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
                               sideTitles: SideTitles(
                                 showTitles: true,
                                 getTitlesWidget: (value, meta) {
-                                  const days = [
-                                    'S',
-                                    'M',
-                                    'T',
-                                    'W',
-                                    'T',
-                                    'F',
-                                    'S',
-                                  ];
-                                  if (value >= 0 && value < days.length) {
+                                  final index = value.round();
+                                  if (index >= 0 &&
+                                      index < daily.length &&
+                                      value == index.toDouble()) {
+                                    if (days == 30 &&
+                                        index % 7 != 0 &&
+                                        index != 29)
+                                      return const SizedBox.shrink();
+                                    final date = daily[index].date;
                                     return Text(
-                                      days[value.toInt()],
+                                      '${date.day}/${date.month}',
                                       style: const TextStyle(
                                         fontSize: 10,
                                         color: Colors.grey,
@@ -574,17 +455,17 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
                           ),
                           borderData: FlBorderData(show: false),
                           minX: 0,
-                          maxX: 6,
+                          maxX: (days - 1).toDouble(),
                           minY: 0,
                           maxY: 100,
                           lineBarsData: [
                             LineChartBarData(
                               spots: spots,
-                              isCurved: true,
+                              isCurved: false,
                               color: AppColors.primaryMid,
                               barWidth: 3,
                               isStrokeCapRound: true,
-                              dotData: const FlDotData(show: false),
+                              dotData: const FlDotData(show: true),
                               belowBarData: BarAreaData(
                                 show: true,
                                 gradient: LinearGradient(

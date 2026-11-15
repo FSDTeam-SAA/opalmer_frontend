@@ -9,7 +9,8 @@ import '../../core/services/attachment_service.dart';
 
 class CreateLessonScreen extends ConsumerStatefulWidget {
   final String classId;
-  const CreateLessonScreen({super.key, required this.classId});
+  final Map<String, dynamic>? lesson;
+  const CreateLessonScreen({super.key, required this.classId, this.lesson});
 
   @override
   ConsumerState<CreateLessonScreen> createState() => _CreateLessonScreenState();
@@ -23,6 +24,14 @@ class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
   final TextEditingController _noteController = TextEditingController();
   PlatformFile? _selectedFile;
   bool _isLoading = false;
+  bool get _editing => widget.lesson != null;
+  @override
+  void initState() {
+    super.initState();
+    _titleController.text = widget.lesson?['title']?.toString() ?? '';
+    _objectiveController.text = widget.lesson?['objective']?.toString() ?? '';
+    _noteController.text = widget.lesson?['note']?.toString() ?? '';
+  }
 
   @override
   void dispose() {
@@ -66,9 +75,13 @@ class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
   }
 
   Future<void> _saveLesson() async {
-    if (_objectiveController.text.isEmpty) {
+    if (_titleController.text.trim().isEmpty ||
+        _objectiveController.text.trim().isEmpty ||
+        _noteController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter an objective")),
+        const SnackBar(
+          content: Text("Enter a lesson title, objective and note"),
+        ),
       );
       return;
     }
@@ -90,6 +103,10 @@ class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
         'objective': _objectiveController.text.trim(),
         'note': _noteController.text.trim(),
         'classId': widget.classId,
+        if (widget.lesson?['studentId'] != null)
+          'studentId': widget.lesson!['studentId'] is Map
+              ? widget.lesson!['studentId']['_id']
+              : widget.lesson!['studentId'],
       });
 
       if (_selectedFile != null) {
@@ -105,11 +122,16 @@ class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
         );
       }
 
-      final response = await apiClient.post(
-        '/lessons/create',
-        data: formData,
-        options: AttachmentService.uploadOptions,
-      );
+      final response = _editing
+          ? await apiClient.put(
+              '/lessons/update/${widget.lesson!['_id']}',
+              data: formData,
+            )
+          : await apiClient.post(
+              '/lessons/create',
+              data: formData,
+              options: AttachmentService.uploadOptions,
+            );
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         // Refresh lessons list
@@ -117,7 +139,13 @@ class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Lesson created successfully")),
+            SnackBar(
+              content: Text(
+                _editing
+                    ? "Lesson updated successfully"
+                    : "Lesson created successfully",
+              ),
+            ),
           );
           Navigator.pop(context);
         }
@@ -162,8 +190,8 @@ class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  const Text(
-                    "Create Lessons",
+                  Text(
+                    _editing ? "Edit lesson" : "Create lesson",
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,

@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 class ChatMessageInputBar extends StatelessWidget {
   final TextEditingController controller;
   final VoidCallback onSend;
+  final bool enabled;
+  final bool isSending;
 
   const ChatMessageInputBar({
     super.key,
     required this.controller,
     required this.onSend,
+    this.enabled = true,
+    this.isSending = false,
   });
 
   @override
@@ -20,32 +24,26 @@ class ChatMessageInputBar extends StatelessWidget {
           Expanded(
             child: TextField(
               controller: controller,
+              enabled: enabled && !isSending,
+              maxLength: 5000,
               decoration: InputDecoration(
                 hintText: 'Type a message',
-                suffixIcon: const Icon(
-                  Icons.camera_alt_outlined,
-                  color: Color(0xFF871DAD),
-                ),
+                counterText: '',
               ),
               onSubmitted: (_) => onSend(),
             ),
           ),
           const SizedBox(width: 12),
-          GestureDetector(
-            onTap: onSend,
-            child: Container(
-              width: 52,
-              height: 52,
-              decoration: const BoxDecoration(
-                color: Color(0xFF871DAD),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.send_outlined,
-                color: Colors.white,
-                size: 24,
-              ),
-            ),
+          IconButton.filled(
+            tooltip: 'Send message',
+            onPressed: enabled && !isSending ? onSend : null,
+            icon: isSending
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.send_outlined),
           ),
         ],
       ),
