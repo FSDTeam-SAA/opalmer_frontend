@@ -7,7 +7,7 @@ import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'quiz_summary_card.dart';
 
 class StudentQuizListScreen extends ConsumerWidget {
-  const StudentQuizListScreen({Key? key}) : super(key: key);
+  const StudentQuizListScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

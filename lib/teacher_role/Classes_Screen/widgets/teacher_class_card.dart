@@ -137,7 +137,7 @@ class TeacherClassCard extends ConsumerWidget {
                       value: attendanceStatsAsync.when(
                         data: (percentage) => percentage == null ? 'N/A' : '$percentage%',
                         loading: () => '...',
-                        error: (_, __) => 'N/A',
+                        error: (_, _) => 'N/A',
                       ),
                     ),
                   ),

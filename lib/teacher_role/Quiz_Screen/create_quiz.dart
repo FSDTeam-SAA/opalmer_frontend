@@ -9,7 +9,7 @@ import '../../core/services/attachment_service.dart';
 import 'edit_quiz.dart';
 
 class CreateQuizScreen extends ConsumerStatefulWidget {
-  const CreateQuizScreen({Key? key}) : super(key: key);
+  const CreateQuizScreen({super.key});
 
   @override
   ConsumerState<CreateQuizScreen> createState() => _CreateQuizScreenState();
@@ -150,10 +150,11 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
         ),
       );
     } catch (error) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AttachmentService.errorMessage(error))),
         );
+      }
     } finally {
       if (mounted) setState(() => _isCreatingManual = false);
     }
@@ -232,7 +233,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                       setState(() => _selectedClassId = value),
                 ),
                 loading: () => const Center(child: LinearProgressIndicator()),
-                error: (_, __) => const Text("Error loading classes"),
+                error: (_, _) => const Text("Error loading classes"),
               ),
 
               const SizedBox(height: 16),
@@ -517,7 +518,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                           width: double.infinity,
                           height: 180,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
+                          errorBuilder: (_, _, _) => Container(
                             height: 120,
                             alignment: Alignment.center,
                             color: Colors.grey.shade100,

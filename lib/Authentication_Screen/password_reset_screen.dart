@@ -70,17 +70,19 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
         Navigator.pop(context, identifier);
       }
     } on DioException catch (error) {
-      if (mounted)
+      if (mounted) {
         setState(
           () => _error = error.response?.data is Map
               ? error.response!.data['message']?.toString()
               : 'Unable to connect. Please try again.',
         );
+      }
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         setState(
           () => _error = 'Unable to complete your request. Please try again.',
         );
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }

@@ -25,7 +25,7 @@ class _BlockListScreenState extends ConsumerState<BlockListScreen> {
     try {
       final response = await ref.read(apiClientProvider).get('/rooms/my-rooms');
       final userId = ref.read(authStateProvider)?.id;
-      if (mounted)
+      if (mounted) {
         setState(() {
           _rooms = (response.data['data'] as List)
               .where(
@@ -34,9 +34,11 @@ class _BlockListScreenState extends ConsumerState<BlockListScreen> {
               .toList();
           _error = null;
         });
+      }
     } catch (error) {
-      if (mounted)
+      if (mounted) {
         setState(() => _error = AttachmentService.errorMessage(error));
+      }
     }
   }
 
@@ -49,10 +51,11 @@ class _BlockListScreenState extends ConsumerState<BlockListScreen> {
           .patch('/rooms/$id/block', data: {'blocked': false});
       await _load();
     } catch (error) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AttachmentService.errorMessage(error))),
         );
+      }
     } finally {
       if (mounted) setState(() => _busy.remove(id));
     }

@@ -154,8 +154,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     ),
                   ),
                 );
-                if (changed == true && mounted)
+                if (changed == true && mounted) {
                   await ref.read(chatNotifierProvider.notifier).loadRooms();
+                }
               },
         onOpenLanguage: () {
           Navigator.push(

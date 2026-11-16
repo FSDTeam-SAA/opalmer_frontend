@@ -61,8 +61,9 @@ class _GradingProgressScreenState extends ConsumerState<GradingProgressScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 20),
             child: Center(
-              child: GestureDetector(
-                onTap: () {
+              child: IconButton(
+                tooltip: 'Scan document',
+                onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -70,7 +71,7 @@ class _GradingProgressScreenState extends ConsumerState<GradingProgressScreen> {
                     ),
                   );
                 },
-                child: Container(
+                icon: Container(
                   width: 40,
                   height: 40,
                   decoration: const BoxDecoration(
@@ -113,12 +114,13 @@ class _GradingProgressScreenState extends ConsumerState<GradingProgressScreen> {
                   result['percentage'] >= 0 &&
                   result['percentage'] <= 100;
             }).toList();
-            if (reviewed.isEmpty)
+            if (reviewed.isEmpty) {
               return const Center(
                 child: Text(
                   'No reviewed grading results for this student in this class.',
                 ),
               );
+            }
             return RefreshIndicator(
               onRefresh: () async {
                 ref.invalidate(studentQuizResultsProvider(widget.studentId));

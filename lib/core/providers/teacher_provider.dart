@@ -123,8 +123,9 @@ final classDetailsAttendanceProvider = FutureProvider.family<int?, String>((
   final count = student ? data['recordedCount'] : data['totalDays'];
   if (count is! num ||
       count <= 0 ||
-      (!student && (data['studentCount'] as num? ?? 0) <= 0))
+      (!student && (data['studentCount'] as num? ?? 0) <= 0)) {
     return null;
+  }
   final percentage = data['percentage'];
   return percentage is num &&
           percentage.isFinite &&

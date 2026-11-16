@@ -49,11 +49,12 @@ class _LanguagePreferenceScreenState
         _loading = false;
       });
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _error = 'Unable to load your language preference.';
           _loading = false;
         });
+      }
     }
   }
 
@@ -65,15 +66,17 @@ class _LanguagePreferenceScreenState
       await ref
           .read(apiClientProvider)
           .put('/users/$userId', data: {'language': _selected});
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Language preference saved.')),
         );
+      }
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Unable to save. Please try again.')),
         );
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }

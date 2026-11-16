@@ -80,11 +80,13 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
         if (['academicdocument', 'academic_document', 'class'].contains(type)) {
           _ref.invalidate(studentAcademicDocumentsProvider);
         }
-        if (['lesson', 'class'].contains(type))
+        if (['lesson', 'class'].contains(type)) {
           _ref.invalidate(studentLessonsProvider);
+        }
         if (type == 'behavior') _ref.invalidate(studentBehaviorsProvider);
-        if (['attendance', 'class'].contains(type))
+        if (['attendance', 'class'].contains(type)) {
           _ref.invalidate(studentAttendanceProvider);
+        }
       }
     };
     socket.onNotification = (notification) {

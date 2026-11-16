@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import '../../core/widgets/app_back_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
-import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/notification/notification.dart';
 import 'package:opalmer_education/teacher_role/profile_screen/rewards_badges.dart';
 import 'package:opalmer_education/user_role_screen/user_role_screen.dart';
@@ -17,7 +16,7 @@ import 'package:opalmer_education/teacher_role/profile_screen/language.dart';
 import 'package:opalmer_education/authentication_screen/two_factor_auth_screen.dart';
 
 class StudentProfileScreen extends ConsumerStatefulWidget {
-  const StudentProfileScreen({Key? key}) : super(key: key);
+  const StudentProfileScreen({super.key});
 
   @override
   ConsumerState<StudentProfileScreen> createState() =>
@@ -129,7 +128,7 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                           ? Image.network(
                               user.avatar!,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Icon(
+                              errorBuilder: (_, _, _) => const Icon(
                                 Icons.person_outline_rounded,
                                 size: 54,
                                 color: Color(0xFFB088C2),
@@ -260,31 +259,6 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildInfoChip(String text, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.primaryMid.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: AppColors.primaryMid),
-          const SizedBox(width: 8),
-          Text(
-            text,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primaryMid,
-            ),
-          ),
-        ],
       ),
     );
   }

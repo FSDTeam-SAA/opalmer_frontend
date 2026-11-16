@@ -71,8 +71,9 @@ class ChatNotifier extends StateNotifier<ChatState> {
     final token = await _storage.getToken();
     if (token == null ||
         token.isEmpty ||
-        _ref.read(authStateProvider)?.id != user.id)
+        _ref.read(authStateProvider)?.id != user.id) {
       return;
+    }
 
     _socketService.connect(token: token);
     _setupListeners();

@@ -2,13 +2,12 @@ import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import '../../core/widgets/app_back_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/providers/student_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/student_role/Subjects/widgets/subject_card.dart';
 
 class SubjectsScreen extends ConsumerWidget {
-  const SubjectsScreen({Key? key}) : super(key: key);
+  const SubjectsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -53,7 +52,7 @@ class SubjectsScreen extends ConsumerWidget {
     return Stack(
       children: [
         // Wave Background
-        Container(
+        SizedBox(
           width: double.infinity,
           height: 180,
           child: Image.asset(

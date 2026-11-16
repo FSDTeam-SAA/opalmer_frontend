@@ -21,11 +21,11 @@ class SubjectDetailScreen extends ConsumerStatefulWidget {
   final StudentClassModel? studentClass;
 
   const SubjectDetailScreen({
-    Key? key,
+    super.key,
     this.subjectName = "Science",
     this.lesson,
     this.studentClass,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<SubjectDetailScreen> createState() =>

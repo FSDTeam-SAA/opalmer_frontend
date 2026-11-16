@@ -8,7 +8,7 @@ import 'add_class.dart';
 import 'widgets/teacher_class_card.dart';
 
 class ClassesScreen extends ConsumerStatefulWidget {
-  const ClassesScreen({Key? key}) : super(key: key);
+  const ClassesScreen({super.key});
 
   @override
   ConsumerState<ClassesScreen> createState() => _ClassesScreenState();

@@ -9,8 +9,7 @@ import 'package:open_filex/open_filex.dart';
 
 class StudentLessonOverviewScreen extends StatefulWidget {
   final LessonModel lesson;
-  const StudentLessonOverviewScreen({Key? key, required this.lesson})
-    : super(key: key);
+  const StudentLessonOverviewScreen({super.key, required this.lesson});
 
   @override
   State<StudentLessonOverviewScreen> createState() =>
@@ -55,18 +54,18 @@ class _StudentLessonOverviewScreenState
         },
       );
 
-      if (!mounted) return;
+      if (!mounted || !context.mounted) return;
       setState(() => _isDownloading = false);
 
       // 3. Open File
       final result = await OpenFilex.open(filePath);
-      if (mounted && result.type != ResultType.done) {
+      if (mounted && context.mounted && result.type != ResultType.done) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Could not open file: ${result.message}")),
         );
       }
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || !context.mounted) return;
       setState(() => _isDownloading = false);
       ScaffoldMessenger.of(
         context,

@@ -11,8 +11,7 @@ import 'package:opalmer_education/student_role/Quizzes/student_quiz_result_scree
 
 class StudentQuizQuestionsScreen extends ConsumerStatefulWidget {
   final QuizModel quiz;
-  const StudentQuizQuestionsScreen({Key? key, required this.quiz})
-    : super(key: key);
+  const StudentQuizQuestionsScreen({super.key, required this.quiz});
 
   @override
   ConsumerState<StudentQuizQuestionsScreen> createState() =>
@@ -251,7 +250,7 @@ class _StudentQuizQuestionsScreenState
                             final idx = entry.key;
                             final q = entry.value;
                             return _buildQuestionCard(idx, q, questions);
-                          }).toList(),
+                          }),
                         ],
                       ),
                     ),
@@ -468,7 +467,7 @@ class _StudentQuizQuestionsScreenState
                 width: double.infinity,
                 height: 190,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
+                errorBuilder: (_, _, _) => Container(
                   height: 120,
                   alignment: Alignment.center,
                   color: Colors.grey.shade100,
@@ -538,7 +537,7 @@ class _StudentQuizQuestionsScreenState
                 ),
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );

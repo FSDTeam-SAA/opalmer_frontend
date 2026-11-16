@@ -46,12 +46,13 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
       setState(() => _room = Map<String, dynamic>.from(response.data['data']));
       ref.invalidate(userRoomsProvider);
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Unable to update group. Please try again.'),
           ),
         );
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -107,13 +108,14 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
         ],
       ),
     );
-    if (confirmed == true && mounted)
+    if (confirmed == true && mounted) {
       await _update({
         'participants': _participants
             .map((p) => _id(p['userId']))
             .where((value) => value != id)
             .toList(),
       });
+    }
   }
 
   @override

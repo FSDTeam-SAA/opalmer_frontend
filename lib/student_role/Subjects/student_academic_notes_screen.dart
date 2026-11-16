@@ -10,7 +10,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
 
 class StudentAcademicNotesScreen extends ConsumerStatefulWidget {
-  const StudentAcademicNotesScreen({Key? key}) : super(key: key);
+  const StudentAcademicNotesScreen({super.key});
 
   @override
   ConsumerState<StudentAcademicNotesScreen> createState() =>
@@ -54,17 +54,17 @@ class _StudentAcademicNotesScreenState
         },
       );
 
-      if (!mounted) return;
+      if (!mounted || !context.mounted) return;
       setState(() => _downloadingId = null);
 
       final result = await OpenFilex.open(filePath);
-      if (mounted && result.type != ResultType.done) {
+      if (mounted && context.mounted && result.type != ResultType.done) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Could not open file: ${result.message}")),
         );
       }
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || !context.mounted) return;
       setState(() => _downloadingId = null);
       ScaffoldMessenger.of(
         context,

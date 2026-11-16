@@ -15,7 +15,7 @@ import 'package:flutter/services.dart';
 import '../../core/theme/app_theme.dart';
 
 class StudentQuizMainScreen extends ConsumerStatefulWidget {
-  const StudentQuizMainScreen({Key? key}) : super(key: key);
+  const StudentQuizMainScreen({super.key});
 
   @override
   ConsumerState<StudentQuizMainScreen> createState() =>
@@ -424,8 +424,9 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
                                       value == index.toDouble()) {
                                     if (days == 30 &&
                                         index % 7 != 0 &&
-                                        index != 29)
+                                        index != 29) {
                                       return const SizedBox.shrink();
+                                    }
                                     final date = daily[index].date;
                                     return Text(
                                       '${date.day}/${date.month}',

@@ -11,10 +11,10 @@ class StudentAttendanceScreen extends ConsumerStatefulWidget {
   final TeacherClassModel classData;
   final String? studentId;
   const StudentAttendanceScreen({
-    Key? key,
+    super.key,
     required this.classData,
     this.studentId,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<StudentAttendanceScreen> createState() =>
@@ -137,8 +137,9 @@ class _StudentAttendanceScreenState
         );
       }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(() => _attendance = AsyncError(e, StackTrace.current));
+      }
     } finally {
       if (mounted) setState(() => _isCreating = false);
     }
@@ -305,8 +306,9 @@ class _StudentAttendanceScreenState
                                   itemBuilder: (context, index) {
                                     final assignment = students[index];
                                     final student = assignment['studentId'];
-                                    if (student == null)
+                                    if (student == null) {
                                       return const SizedBox();
+                                    }
 
                                     final studentId = student['_id'];
                                     final record = attendanceMap[studentId];

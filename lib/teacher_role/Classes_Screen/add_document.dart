@@ -208,7 +208,7 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
                   .watch(studentTeacherClassesProvider(widget.studentId))
                   .when(
                     loading: () => const LinearProgressIndicator(),
-                    error: (_, __) => TextButton(
+                    error: (_, _) => TextButton(
                       onPressed: () => ref.invalidate(
                         studentTeacherClassesProvider(widget.studentId),
                       ),

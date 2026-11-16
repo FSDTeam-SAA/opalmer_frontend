@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
+import 'package:opalmer_education/core/providers/notification_provider.dart';
 import 'package:opalmer_education/core/providers/student_provider.dart';
 import 'package:opalmer_education/core/providers/navigation_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
@@ -25,12 +26,16 @@ class StudentHomeDashboard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(context, studentName),
+            _buildHeader(
+              context,
+              studentName,
+              ref.watch(unreadNotificationCountProvider),
+            ),
             const SizedBox(height: 10),
             _buildSectionHeader(context, ref, "Classes"),
             const SizedBox(height: 16),
             _buildClassesList(ref),
-            const SizedBox(height: 32),
+            const SizedBox(height: 18),
             _buildSectionHeader(context, ref, "Quizzes"),
             const SizedBox(height: 16),
             _buildQuizzesList(ref),
@@ -41,9 +46,10 @@ class StudentHomeDashboard extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, String studentName) =>
+  Widget _buildHeader(BuildContext context, String studentName, int unread) =>
       DashboardHeader(
         name: studentName,
+        unreadCount: unread,
         workspace: 'Student workspace',
         subtitle: 'Ready to learn something new today?',
         onOpenMenu: onOpenMenu,
@@ -95,29 +101,39 @@ class StudentHomeDashboard extends ConsumerWidget {
   Widget _buildClassesList(WidgetRef ref) {
     final classesAsync = ref.watch(studentClassesProvider);
 
-    return SizedBox(
-      height: 220,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: classesAsync.when(
         data: (classes) {
           if (classes.isEmpty) {
-            return const Center(child: Text("No classes found"));
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 40),
+              child: Center(
+                child: Text(
+                  "No classes found",
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+            );
           }
-          return ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            scrollDirection: Axis.horizontal,
-            itemCount: classes.length,
-            separatorBuilder: (context, index) => const SizedBox(width: 16),
-            itemBuilder: (context, index) {
-              final studentClass = classes[index];
-              return SubjectCard(
-                studentClass: studentClass,
-                subjectName: studentClass.subject,
-                lesson: null,
-              );
-            },
+          return Column(
+            children: [
+              for (final studentClass in classes.take(3))
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 14),
+                  child: SubjectCard(
+                    width: double.infinity,
+                    studentClass: studentClass,
+                    subjectName: studentClass.subject,
+                  ),
+                ),
+            ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const SizedBox(
+          height: 120,
+          child: Center(child: CircularProgressIndicator()),
+        ),
         error: (err, stack) {
           if (err.toString().contains('401')) {
             return Center(

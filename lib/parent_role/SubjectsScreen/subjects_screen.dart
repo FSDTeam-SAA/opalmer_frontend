@@ -100,10 +100,11 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
       }
     } catch (e) {
       debugPrint('Failed to load children list: $e');
-      if (mounted)
+      if (mounted) {
         setState(
           () => _loadError = 'Unable to load students. Please try again.',
         );
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -269,9 +270,9 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
 
             // ── Child Selector ──
             SizedBox(
-              height: 70,
+              height: 56,
               child: _isLoadingChildren && _children.isEmpty
-                  ? Center(
+                  ? const Center(
                       child: SizedBox(
                         width: 24,
                         height: 24,
@@ -282,44 +283,12 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       itemCount: _children.length,
-                      itemBuilder: (context, index) {
-                        final child = _children[index];
-                        final bool isSelected = _selectedChildId == child.id;
-                        return Semantics(
-                          label: 'Select ${child.name}',
-                          button: true,
-                          selected: isSelected,
-                          child: GestureDetector(
-                            onTap: () => _onSelectChild(child.id),
-                            child: Container(
-                              margin: const EdgeInsets.only(right: 12),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: isSelected
-                                      ? AppColors.primaryMid
-                                      : Colors.transparent,
-                                  width: 2,
-                                ),
-                              ),
-                              child: CircleAvatar(
-                                radius: 28,
-                                backgroundImage: _avatarProvider(
-                                  child.imageUrl,
-                                ),
-                                backgroundColor: Colors.grey.shade200,
-                                child: child.imageUrl.isEmpty
-                                    ? _initialFallback(child.name)
-                                    : null,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
+                      itemBuilder: (context, index) =>
+                          _buildChildChip(_children[index]),
                     ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
 
             // ── Subjects List ──
             Expanded(
@@ -335,21 +304,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                       ),
                     )
                   : _subjects.isEmpty
-                  ? Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 32),
-                        child: Text(
-                          _children.isEmpty
-                              ? 'No linked students. Open My Students to link your child.'
-                              : 'No subjects assigned yet.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF666666),
-                          ),
-                        ),
-                      ),
-                    )
+                  ? _buildEmptyState()
                   : RefreshIndicator(
                       onRefresh: () => _loadSubjects(_selectedChildId),
                       child: ListView.builder(
@@ -365,6 +320,155 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                     ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// Selectable pill (avatar + name) for each linked child.
+  Widget _buildChildChip(ChildProfile child) {
+    final isSelected = _selectedChildId == child.id;
+    return Semantics(
+      label: 'Select ${child.name}',
+      button: true,
+      selected: isSelected,
+      child: GestureDetector(
+        onTap: () => _onSelectChild(child.id),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          margin: const EdgeInsets.only(right: 10, top: 4, bottom: 4),
+          padding: const EdgeInsets.fromLTRB(4, 4, 16, 4),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.primaryMid : Colors.white,
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: isSelected
+                  ? AppColors.primaryMid
+                  : AppColors.primaryMid.withValues(alpha: 0.2),
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.primaryMid.withValues(alpha: 0.25),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(
+                radius: 18,
+                backgroundImage: _avatarProvider(child.imageUrl),
+                backgroundColor: Colors.grey.shade200,
+                child: child.imageUrl.isEmpty
+                    ? _initialFallback(child.name)
+                    : null,
+              ),
+              const SizedBox(width: 8),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 140),
+                child: Text(
+                  child.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isSelected ? Colors.white : const Color(0xFF333333),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Friendly empty state; pull down or tap Refresh to check again.
+  Widget _buildEmptyState() {
+    final noChildren = _children.isEmpty;
+    final name = _selectedChildName();
+    final title = noChildren ? 'No linked students' : 'No subjects yet';
+    final message = noChildren
+        ? 'Open My Students and link your child with the invitation code from the school.'
+        : '${name.isEmpty ? 'Your child' : name} hasn\'t been added to any class yet. '
+              'Subjects will appear here once the school assigns classes.';
+
+    return RefreshIndicator(
+      onRefresh: () =>
+          noChildren ? _loadChildren() : _loadSubjects(_selectedChildId),
+      child: LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 96,
+                      height: 96,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryMid.withValues(alpha: 0.08),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        noChildren
+                            ? Icons.family_restroom_outlined
+                            : widget.feature.icon,
+                        size: 44,
+                        color: AppColors.primaryMid,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF222222),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      message,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        height: 1.5,
+                        color: Color(0xFF666666),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    OutlinedButton.icon(
+                      onPressed: () => noChildren
+                          ? _loadChildren()
+                          : _loadSubjects(_selectedChildId),
+                      icon: const Icon(Icons.refresh, size: 18),
+                      label: const Text('Refresh'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primaryMid,
+                        side: BorderSide(
+                          color: AppColors.primaryMid.withValues(alpha: 0.5),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );

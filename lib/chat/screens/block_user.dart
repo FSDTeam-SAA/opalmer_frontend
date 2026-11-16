@@ -34,10 +34,11 @@ class _BlockUserScreenState extends State<BlockUserScreen> {
       );
       if (mounted) Navigator.pop(context, true);
     } catch (error) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AttachmentService.errorMessage(error))),
         );
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }

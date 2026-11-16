@@ -16,8 +16,7 @@ import 'add_class.dart';
 
 class ClassDetailsScreen extends ConsumerStatefulWidget {
   final TeacherClassModel classData;
-  const ClassDetailsScreen({Key? key, required this.classData})
-    : super(key: key);
+  const ClassDetailsScreen({super.key, required this.classData});
 
   @override
   ConsumerState<ClassDetailsScreen> createState() => _ClassDetailsScreenState();
@@ -202,7 +201,7 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                             studentsAsync.when(
                               data: (students) => '${students.length}',
                               loading: () => '...',
-                              error: (_, __) => 'N/A',
+                              error: (_, _) => 'N/A',
                             ),
                             const Color(0xFF3F99B4),
                           ),
@@ -232,7 +231,7 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                               "...",
                               const Color(0xFF4AA678),
                             ),
-                            error: (_, __) => _buildStatBox(
+                            error: (_, _) => _buildStatBox(
                               "Attendance",
                               "Error",
                               const Color(0xFF4AA678),
@@ -247,7 +246,7 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                               data: (value) =>
                                   value == null ? 'N/A' : '$value%',
                               loading: () => '...',
-                              error: (_, __) => 'N/A',
+                              error: (_, _) => 'N/A',
                             ),
                             const Color(0xFFFEBD43),
                           ),
@@ -496,10 +495,10 @@ class StudentCard extends ConsumerWidget {
   final TeacherClassModel classData;
 
   const StudentCard({
-    Key? key,
+    super.key,
     required this.studentData,
     required this.classData,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -605,7 +604,7 @@ class StudentCard extends ConsumerWidget {
                                 ? Image.network(
                                     effectiveAvatarUrl,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => const Icon(
+                                    errorBuilder: (_, _, _) => const Icon(
                                       Icons.person_outline,
                                       color: Color(0xFF871DAD),
                                     ),
@@ -682,7 +681,7 @@ class StudentCard extends ConsumerWidget {
                                       data: (stats) =>
                                           stats == null ? "N/A" : "$stats%",
                                       loading: () => "...",
-                                      error: (_, __) => "N/A",
+                                      error: (_, _) => "N/A",
                                     ),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,

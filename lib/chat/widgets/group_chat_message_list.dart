@@ -192,12 +192,11 @@ class _MockGroupMessage {
   final String text;
   final String time;
   final bool isMe;
-  final String? imageUrl;
+  final String? imageUrl = null;
 
   const _MockGroupMessage({
     required this.text,
     required this.time,
     required this.isMe,
-    this.imageUrl,
   });
 }

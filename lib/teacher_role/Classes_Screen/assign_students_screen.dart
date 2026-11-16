@@ -346,7 +346,7 @@ class _AssignStudentsScreenState extends ConsumerState<AssignStudentsScreen> {
               : ListView.separated(
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                   itemCount: filteredStudents.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  separatorBuilder: (_, _) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {
                     final student = filteredStudents[index];
                     return _buildStudentTile(student);

@@ -108,13 +108,14 @@ class _TeacherLessonListState extends ConsumerState<TeacherLessonList> {
             final visible = items
                 .where((item) => (item['isArchived'] == true) == _archived)
                 .toList();
-            if (visible.isEmpty)
+            if (visible.isEmpty) {
               return Padding(
                 padding: const EdgeInsets.all(24),
                 child: Text(
                   _archived ? 'No archived lessons.' : 'No active lessons.',
                 ),
               );
+            }
             return Column(
               children: visible.map((item) {
                 final lesson = Map<String, dynamic>.from(item as Map);

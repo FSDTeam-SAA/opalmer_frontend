@@ -22,10 +22,10 @@ class StudentProfileScreen extends ConsumerStatefulWidget {
   final String? classId;
 
   const StudentProfileScreen({
-    Key? key,
+    super.key,
     required this.studentData,
     this.classId,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<StudentProfileScreen> createState() =>
@@ -157,7 +157,7 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                               ? Image.network(
                                   avatarUrl,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => const Icon(
+                                  errorBuilder: (_, _, _) => const Icon(
                                     Icons.person_outline,
                                     color: Color(0xFF871DAD),
                                   ),
@@ -240,7 +240,7 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                               "...%",
                               const Color(0xFF4AA678),
                             ),
-                            error: (_, __) => _buildStatBox(
+                            error: (_, _) => _buildStatBox(
                               "Attendance",
                               "N/A",
                               const Color(0xFFC04345),
@@ -287,7 +287,7 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
 
                         final parentName = parentUser['username'] ?? 'Parent';
                         final avatarData = parentUser['avatar'];
-                        final String? avatarUrl = ApiConstants.buildImageUrl(
+                        final String avatarUrl = ApiConstants.buildImageUrl(
                           (avatarData is Map)
                               ? avatarData['url']
                               : (avatarData is String ? avatarData : null),
@@ -308,16 +308,14 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                                     ),
                                   ),
                                   clipBehavior: Clip.hardEdge,
-                                  child:
-                                      avatarUrl != null && avatarUrl.isNotEmpty
+                                  child: avatarUrl.isNotEmpty
                                       ? Image.network(
                                           avatarUrl,
                                           fit: BoxFit.cover,
-                                          errorBuilder: (_, __, ___) =>
-                                              const Icon(
-                                                Icons.person_outline,
-                                                color: Color(0xFF871DAD),
-                                              ),
+                                          errorBuilder: (_, _, _) => const Icon(
+                                            Icons.person_outline,
+                                            color: Color(0xFF871DAD),
+                                          ),
                                         )
                                       : const Icon(
                                           Icons.person_outline,
@@ -347,7 +345,7 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                                 _buildAction(
                                   Icons.phone_outlined,
                                   onTap: () =>
-                                      _handleCall(parentName, avatarUrl ?? ''),
+                                      _handleCall(parentName, avatarUrl),
                                 ),
                               ],
                             ),
@@ -431,8 +429,9 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                                     ),
                                   ],
                                   onChanged: (value) {
-                                    if (value != null)
+                                    if (value != null) {
                                       setState(() => _selectedFilter = value);
+                                    }
                                   },
                                 ),
                               ),

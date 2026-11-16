@@ -3,6 +3,7 @@ import '../providers/parent_children_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
+import 'package:opalmer_education/core/providers/notification_provider.dart';
 import 'package:opalmer_education/core/models/user_model.dart';
 import 'package:opalmer_education/core/services/secure_storage_service.dart';
 import 'package:opalmer_education/core/services/api_client.dart';
@@ -140,6 +141,7 @@ class _ParentHomeDashboardState extends ConsumerState<ParentHomeDashboard> {
             workspace: 'Parent workspace',
             subtitle: "Stay connected with your child's learning.",
             onOpenMenu: widget.onOpenMenu,
+            unreadCount: ref.watch(unreadNotificationCountProvider),
             onNotifications: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const NotificationScreen()),
             ),
@@ -216,18 +218,12 @@ class _ParentHomeDashboardState extends ConsumerState<ParentHomeDashboard> {
                             ),
                           ),
                         )
-                      : SizedBox(
-                          height:
-                              128 *
-                              MediaQuery.textScalerOf(
-                                context,
-                              ).scale(1).clamp(1.0, 2.0),
-                          child: ListView(
-                            scrollDirection: Axis.horizontal,
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                      : Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Column(
                             children: _profiles.take(3).map((profile) {
                               return Padding(
-                                padding: const EdgeInsets.only(right: 14),
+                                padding: const EdgeInsets.only(bottom: 12),
                                 child: _buildChildCard(profile),
                               );
                             }).toList(),

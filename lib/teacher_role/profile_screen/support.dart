@@ -5,7 +5,7 @@ import 'package:opalmer_education/chat/screens/call.dart';
 import 'package:opalmer_education/teacher_role/profile_screen/language.dart';
 
 class SupportScreen extends StatefulWidget {
-  const SupportScreen({Key? key}) : super(key: key);
+  const SupportScreen({super.key});
 
   @override
   State<SupportScreen> createState() => _SupportScreenState();

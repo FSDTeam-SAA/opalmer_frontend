@@ -51,6 +51,8 @@ class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
       );
       debugPrint("CreateLesson: FilePicker result: $result");
 
+      if (!mounted) return;
+
       if (result != null) {
         final pickedFile = result.files.first;
         if (pickedFile.size > _maxPdfSizeBytes) {
@@ -68,6 +70,7 @@ class _CreateLessonScreenState extends ConsumerState<CreateLessonScreen> {
       }
     } catch (e) {
       debugPrint("Error picking PDF: $e");
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Could not pick PDF")));

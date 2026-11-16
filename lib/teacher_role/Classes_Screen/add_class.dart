@@ -10,7 +10,7 @@ import 'assign_students_screen.dart';
 class AddClassScreen extends ConsumerStatefulWidget {
   final TeacherClassModel? classToEdit;
 
-  const AddClassScreen({Key? key, this.classToEdit}) : super(key: key);
+  const AddClassScreen({super.key, this.classToEdit});
 
   @override
   ConsumerState<AddClassScreen> createState() => _AddClassScreenState();

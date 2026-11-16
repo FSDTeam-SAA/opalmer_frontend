@@ -103,10 +103,11 @@ class _OCRResultScreenState extends State<OCRResultScreen>
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: AppBar(
-            backgroundColor: Colors.white.withOpacity(0.8),
+            backgroundColor: Colors.white.withValues(alpha: 0.8),
             elevation: 0,
             centerTitle: true,
             leading: IconButton(
+              tooltip: 'Close preview',
               icon: const Icon(Icons.close_rounded, color: Colors.black87),
               onPressed: () => Navigator.pop(context),
             ),
@@ -122,6 +123,9 @@ class _OCRResultScreenState extends State<OCRResultScreen>
             actions: [
               const AppHomeButton(),
               _buildActionButton(
+                tooltip: _isEditing
+                    ? 'Apply text edits'
+                    : 'Edit recognized text',
                 icon: _isEditing ? Icons.save_rounded : Icons.edit_rounded,
                 onPressed: () {
                   setState(() => _isEditing = !_isEditing);
@@ -129,7 +133,7 @@ class _OCRResultScreenState extends State<OCRResultScreen>
                     HapticFeedback.mediumImpact();
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text("Changes saved"),
+                        content: Text("Text edits applied to this preview"),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
@@ -137,6 +141,7 @@ class _OCRResultScreenState extends State<OCRResultScreen>
                 },
               ),
               _buildActionButton(
+                tooltip: 'Copy recognized text',
                 icon: Icons.copy_all_rounded,
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: _controller.text));
@@ -157,16 +162,18 @@ class _OCRResultScreenState extends State<OCRResultScreen>
   }
 
   Widget _buildActionButton({
+    required String tooltip,
     required IconData icon,
     required VoidCallback onPressed,
   }) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF871DAD).withOpacity(0.1),
+        color: const Color(0xFF871DAD).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10),
       ),
       child: IconButton(
+        tooltip: tooltip,
         icon: Icon(icon, color: const Color(0xFF871DAD), size: 20),
         onPressed: onPressed,
       ),
@@ -183,7 +190,7 @@ class _OCRResultScreenState extends State<OCRResultScreen>
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -194,13 +201,21 @@ class _OCRResultScreenState extends State<OCRResultScreen>
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Image.file(File(widget.imagePath), fit: BoxFit.cover),
+              Image.file(
+                File(widget.imagePath),
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) =>
+                    const Center(child: Text('Image preview unavailable')),
+              ),
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
-                    colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+                    colors: [
+                      Colors.black.withValues(alpha: 0.6),
+                      Colors.transparent,
+                    ],
                   ),
                 ),
               ),
@@ -238,14 +253,17 @@ class _OCRResultScreenState extends State<OCRResultScreen>
           color: Colors.white,
           borderRadius: BorderRadius.circular(2),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 1),
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 1,
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 10,
               offset: const Offset(0, 10),
             ),
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: Colors.black.withValues(alpha: 0.02),
               blurRadius: 30,
               offset: const Offset(0, 20),
             ),
@@ -265,7 +283,9 @@ class _OCRResultScreenState extends State<OCRResultScreen>
                         controller: _controller,
                         maxLines: null,
                         style: _paperTextStyle(),
-                        decoration: const InputDecoration(),
+                        decoration: const InputDecoration(
+                          labelText: 'Recognized text',
+                        ),
                       )
                     : SelectableText(
                         _controller.text.isEmpty
@@ -290,7 +310,7 @@ class _OCRResultScreenState extends State<OCRResultScreen>
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w900,
-            color: Colors.black.withOpacity(0.8),
+            color: Colors.black.withValues(alpha: 0.8),
             fontFamily: 'serif',
             letterSpacing: 1.5,
           ),
@@ -341,9 +361,9 @@ class _OCRResultScreenState extends State<OCRResultScreen>
         child: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.0),
+            color: Colors.white.withValues(alpha: 0.0),
             border: Border(
-              top: BorderSide(color: Colors.black.withOpacity(0.00)),
+              top: BorderSide(color: Colors.black.withValues(alpha: 0.00)),
             ),
           ),
           child: SafeArea(
@@ -358,14 +378,30 @@ class _OCRResultScreenState extends State<OCRResultScreen>
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF871DAD).withOpacity(0.3),
+                          color: const Color(0xFF871DAD).withValues(alpha: 0.3),
                           blurRadius: 15,
                           offset: const Offset(0, 8),
                         ),
                       ],
                     ),
                     child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () async {
+                        if (_controller.text.trim().isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'No text to copy. Try a clearer image.',
+                              ),
+                            ),
+                          );
+                          return;
+                        }
+                        await Clipboard.setData(
+                          ClipboardData(text: _controller.text),
+                        );
+                        if (!mounted) return;
+                        Navigator.pop(context, _controller.text);
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,
                         shadowColor: Colors.transparent,
@@ -375,7 +411,7 @@ class _OCRResultScreenState extends State<OCRResultScreen>
                         ),
                       ),
                       child: const Text(
-                        "FINALIZE & USE DOCUMENT",
+                        "COPY TEXT & FINISH",
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 16,
@@ -409,11 +445,11 @@ class PremiumPaperPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final linePaint = Paint()
-      ..color = Colors.blue.withOpacity(0.08)
+      ..color = Colors.blue.withValues(alpha: 0.08)
       ..strokeWidth = 0.5;
 
     final marginPaint = Paint()
-      ..color = Colors.red.withOpacity(0.2)
+      ..color = Colors.red.withValues(alpha: 0.2)
       ..strokeWidth = 1.2;
 
     final holePaint = Paint()
@@ -436,7 +472,7 @@ class PremiumPaperPainter extends CustomPainter {
         Offset(25, i),
         8,
         Paint()
-          ..color = Colors.black.withOpacity(0.05)
+          ..color = Colors.black.withValues(alpha: 0.05)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1,
       );

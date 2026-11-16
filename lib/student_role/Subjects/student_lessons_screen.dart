@@ -7,7 +7,7 @@ import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/student_role/Subjects/student_lesson_overview_screen.dart';
 
 class StudentLessonsScreen extends ConsumerWidget {
-  const StudentLessonsScreen({Key? key}) : super(key: key);
+  const StudentLessonsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

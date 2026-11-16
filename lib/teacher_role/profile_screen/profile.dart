@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
 import 'package:opalmer_education/notification/notification.dart';
-import 'package:opalmer_education/teacher_role/profile_screen/rewards_badges.dart';
 import 'package:opalmer_education/user_role_screen/user_role_screen.dart';
 import 'notification_setting.dart';
 import 'about_us.dart';
@@ -13,12 +12,11 @@ import 'disput_center.dart';
 import 'block_list.dart';
 import 'language.dart';
 import '../../authentication_screen/two_factor_auth_screen.dart';
-import 'package:opalmer_education/authentication_screen/login_screen.dart';
 import 'profile_setup.dart';
 import '../../core/widgets/app_back_button.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
@@ -129,7 +127,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           ? Image.network(
                               user.avatar!,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Icon(
+                              errorBuilder: (_, _, _) => const Icon(
                                 Icons.person_outline_rounded,
                                 size: 54,
                                 color: Color(0xFFB088C2),

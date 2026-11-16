@@ -72,10 +72,11 @@ class _TeacherAssignmentListState extends ConsumerState<TeacherAssignmentList> {
       }
       ref.invalidate(classHomeworkProvider(widget.classId));
     } catch (error) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AttachmentService.errorMessage(error))),
         );
+      }
     } finally {
       if (mounted) setState(() => _busy.remove(id));
     }
@@ -114,7 +115,7 @@ class _TeacherAssignmentListState extends ConsumerState<TeacherAssignmentList> {
             final visible = items
                 .where((item) => (item['archived'] == true) == _archived)
                 .toList();
-            if (visible.isEmpty)
+            if (visible.isEmpty) {
               return Padding(
                 padding: const EdgeInsets.all(24),
                 child: Text(
@@ -123,6 +124,7 @@ class _TeacherAssignmentListState extends ConsumerState<TeacherAssignmentList> {
                       : 'No active assignments.',
                 ),
               );
+            }
             return Column(
               children: visible.map((item) {
                 final hw = Map<String, dynamic>.from(item as Map);

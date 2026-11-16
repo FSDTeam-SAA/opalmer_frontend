@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 import 'package:opalmer_education/core/models/student_models.dart';
-import 'package:opalmer_education/core/providers/student_provider.dart';
 import 'package:opalmer_education/student_role/Subjects/subject_detail_screen.dart';
 
 class SubjectCard extends ConsumerWidget {
@@ -13,41 +12,46 @@ class SubjectCard extends ConsumerWidget {
   final LessonModel? lesson;
 
   const SubjectCard({
-    Key? key,
+    super.key,
     this.subjectName = "Science",
     this.width,
     this.studentClass,
     this.lesson,
-  }) : super(key: key);
+  });
+
+  void _open(BuildContext context) => Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => SubjectDetailScreen(
+        subjectName: studentClass?.subject ?? subjectName,
+        studentClass: studentClass,
+      ),
+    ),
+  );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final int perf = studentClass?.performancePercentage ?? 0;
     final int att = studentClass?.attendancePercentage ?? 0;
-    
+    final avatar = studentClass?.teacherAvatar;
+    final hasAvatar = avatar != null && avatar.isNotEmpty;
+
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SubjectDetailScreen(
-              subjectName: studentClass?.subject ?? subjectName,
-              studentClass: studentClass,
-            ),
-          ),
-        );
-      },
+      onTap: () => _open(context),
       child: Container(
         width: width ?? 300,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: AppColors.primaryMid.withValues(alpha: 0.10),
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
+              color: AppColors.primaryMid.withValues(alpha: 0.07),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -55,18 +59,24 @@ class SubjectCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
+            // ── Title row ──
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
-                    color: AppColors.primaryMid.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF9B2FC4), Color(0xFF6E17A0)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   child: const Icon(
                     Icons.auto_stories_rounded,
-                    color: AppColors.primaryMid,
-                    size: 20,
+                    color: Colors.white,
+                    size: 22,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -77,93 +87,118 @@ class SubjectCard extends ConsumerWidget {
                       Text(
                         studentClass?.subject ?? subjectName,
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 17,
                           fontWeight: FontWeight.w800,
                           color: AppColors.textPrimary,
-                          letterSpacing: -0.5,
+                          letterSpacing: -0.3,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      Text(
-                        "Grade ${studentClass?.grade ?? ''}",
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey.shade500,
-                          fontWeight: FontWeight.w600,
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryMid.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          "Grade ${studentClass?.grade ?? ''}",
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: AppColors.primaryMid,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                _buildCompactStat(
-                  icon: Icons.calendar_today_rounded,
-                  label: "Attendance",
-                  value: "$att%",
-                  color: const Color(0xFF4AA678),
-                ),
-                const SizedBox(width: 20),
-                _buildCompactStat(
-                  icon: Icons.insights_rounded,
-                  label: "Performance",
-                  value: "$perf%",
-                  color: const Color(0xFFFEBD43),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
                 Container(
-                  width: 36,
-                  height: 36,
+                  width: 32,
+                  height: 32,
                   decoration: BoxDecoration(
+                    color: AppColors.primaryMid.withValues(alpha: 0.08),
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.grey.shade200, width: 1.5),
                   ),
-                  child: CircleAvatar(
-                    radius: 18,
-                    backgroundColor: Colors.grey.shade100,
-                    backgroundImage: studentClass?.teacherAvatar != null &&
-                            studentClass!.teacherAvatar!.isNotEmpty
-                        ? NetworkImage(studentClass!.teacherAvatar!) as ImageProvider
-                        : null,
-                    child: studentClass?.teacherAvatar == null ||
-                            studentClass!.teacherAvatar!.isEmpty
-                        ? const Icon(Icons.person, color: Colors.grey, size: 18)
-                        : null,
+                  child: const Icon(
+                    Icons.chevron_right,
+                    color: AppColors.primaryMid,
+                    size: 20,
                   ),
                 ),
-                const SizedBox(width: 12),
+              ],
+            ),
+            const SizedBox(height: 14),
+
+            // ── Stats ──
+            Row(
+              children: [
                 Expanded(
-                  child: Text(
-                    studentClass?.teacherName ?? "N/A",
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade700,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  child: _buildStat(
+                    icon: Icons.calendar_today_rounded,
+                    label: "Attendance",
+                    percent: att,
+                    color: const Color(0xFF4AA678),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _buildStat(
+                    icon: Icons.insights_rounded,
+                    label: "Performance",
+                    percent: perf,
+                    color: const Color(0xFFE9A21B),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Divider(height: 1, color: Colors.grey.shade200),
+            const SizedBox(height: 12),
+
+            // ── Teacher + action ──
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 17,
+                  backgroundColor: Colors.grey.shade100,
+                  backgroundImage: hasAvatar ? NetworkImage(avatar) : null,
+                  child: hasAvatar
+                      ? null
+                      : const Icon(Icons.person, color: Colors.grey, size: 18),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Teacher",
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          color: Colors.grey.shade500,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        studentClass?.teacherName ?? "N/A",
+                        style: const TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SubjectDetailScreen(
-                          subjectName: studentClass?.subject ?? subjectName,
-                          studentClass: studentClass,
-                        ),
-                      ),
-                    );
-                  },
+                  onPressed: () => _open(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryMid,
                     foregroundColor: Colors.white,
@@ -171,7 +206,10 @@ class SubjectCard extends ConsumerWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 9,
+                    ),
                     minimumSize: Size.zero,
                   ),
                   child: const Text(
@@ -187,38 +225,58 @@ class SubjectCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildCompactStat({
+  Widget _buildStat({
     required IconData icon,
     required String label,
-    required String value,
+    required int percent,
     required Color color,
   }) {
-    return Row(
-      children: [
-        Icon(icon, color: color, size: 16),
-        const SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
+    final value = (percent.clamp(0, 100)) / 100;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color, size: 14),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-            ),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.grey.shade500,
-                fontWeight: FontWeight.w600,
+              Text(
+                "$percent%",
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
+                ),
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+          const SizedBox(height: 8),
+          LinearProgressIndicator(
+            value: value,
+            minHeight: 5,
+            color: color,
+            backgroundColor: Colors.white,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ],
+      ),
     );
   }
 }

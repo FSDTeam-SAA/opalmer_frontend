@@ -6,8 +6,7 @@ import 'package:opalmer_education/core/theme/app_colors.dart';
 
 class StudentQuizResultScreen extends StatelessWidget {
   final QuizSubmissionResult result;
-  const StudentQuizResultScreen({Key? key, required this.result})
-    : super(key: key);
+  const StudentQuizResultScreen({super.key, required this.result});
 
   @override
   Widget build(BuildContext context) {
@@ -117,7 +116,7 @@ class StudentQuizResultScreen extends StatelessWidget {
                             ),
                           ),
                         )
-                        .toList(),
+                        ,
                   ],
                 ),
               ),

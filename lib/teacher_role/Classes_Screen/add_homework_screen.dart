@@ -95,8 +95,9 @@ class _AddHomeworkScreenState extends ConsumerState<AddHomeworkScreen> {
       ref.invalidate(classHomeworkProvider(widget.classId));
       if (mounted) Navigator.pop(context, true);
     } catch (error) {
-      if (mounted)
+      if (mounted) {
         setState(() => _error = AttachmentService.errorMessage(error));
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -144,10 +145,11 @@ class _AddHomeworkScreenState extends ConsumerState<AddHomeworkScreen> {
               lastDate: DateTime.now().add(const Duration(days: 730)),
               initialDate: _due ?? DateTime.now(),
             );
-            if (mounted && date != null)
+            if (mounted && date != null) {
               setState(
                 () => _due = DateTime(date.year, date.month, date.day, 23, 59),
               );
+            }
           },
         ),
         TextButton.icon(

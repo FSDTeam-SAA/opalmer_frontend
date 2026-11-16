@@ -23,7 +23,12 @@ class NotificationSocketService {
 
   Future<void> connect(String userId) async {
     final generation = ++_generation;
-    final token = await SecureStorageService().getToken();
+    String? token;
+    try {
+      token = await SecureStorageService().getToken();
+    } catch (e) {
+      debugPrint('NotificationSocket: token unavailable: $e');
+    }
     if (generation != _generation) return;
     if (token == null || token.isEmpty) {
       disconnect();

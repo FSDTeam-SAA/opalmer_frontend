@@ -290,7 +290,7 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
                   ? Image.network(
                       avatarUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(
+                      errorBuilder: (_, _, _) => const Icon(
                         Icons.person_outline,
                         color: Color(0xFF871DAD),
                       ),

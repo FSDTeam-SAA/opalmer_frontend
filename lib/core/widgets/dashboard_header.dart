@@ -13,6 +13,9 @@ class DashboardHeader extends StatelessWidget {
   final Animation<Offset> greetingSlide;
   final Animation<double> notificationRotation;
 
+  /// Unread notification count shown as a badge on the bell.
+  final int unreadCount;
+
   const DashboardHeader({
     super.key,
     required this.name,
@@ -24,6 +27,7 @@ class DashboardHeader extends StatelessWidget {
     this.greetingOpacity = const AlwaysStoppedAnimation(1),
     this.greetingSlide = const AlwaysStoppedAnimation(Offset.zero),
     this.notificationRotation = const AlwaysStoppedAnimation(0),
+    this.unreadCount = 0,
   });
 
   @override
@@ -110,10 +114,52 @@ class DashboardHeader extends StatelessWidget {
                           angle: notificationRotation.value,
                           child: child,
                         ),
-                        child: _HeaderAction(
-                          tooltip: 'Notifications',
-                          icon: Icons.notifications_none_rounded,
-                          onTap: onNotifications,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            _HeaderAction(
+                              tooltip: 'Notifications',
+                              icon: unreadCount > 0
+                                  ? Icons.notifications_active_rounded
+                                  : Icons.notifications_none_rounded,
+                              onTap: onNotifications,
+                            ),
+                            if (unreadCount > 0)
+                              Positioned(
+                                top: -4,
+                                right: -4,
+                                child: IgnorePointer(
+                                  child: Container(
+                                    constraints: const BoxConstraints(
+                                      minWidth: 20,
+                                      minHeight: 20,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 5,
+                                    ),
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFF4D4F),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      unreadCount > 99
+                                          ? '99+'
+                                          : '$unreadCount',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ],

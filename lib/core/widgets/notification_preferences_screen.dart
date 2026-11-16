@@ -57,11 +57,12 @@ class _NotificationPreferencesScreenState
         _loaded = true;
       });
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _loading = false;
           _error = 'Unable to load notification preferences.';
         });
+      }
     }
   }
 
@@ -79,10 +80,11 @@ class _NotificationPreferencesScreenState
             '/users/$userId',
             data: {'notificationPreferences': _preferences},
           );
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Notification preferences saved.')),
         );
+      }
     } catch (_) {
       if (mounted) setState(() => _error = 'Unable to save. Please try again.');
     } finally {

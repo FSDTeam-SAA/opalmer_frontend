@@ -180,8 +180,9 @@ class _GradingToolScreenState extends ConsumerState<GradingToolScreen> {
             ),
           ),
           if (!_isDraftTab)
-            GestureDetector(
-              onTap: () {
+            IconButton(
+              tooltip: 'Scan document',
+              onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -189,7 +190,7 @@ class _GradingToolScreenState extends ConsumerState<GradingToolScreen> {
                   ),
                 );
               },
-              child: Container(
+              icon: Container(
                 width: 38,
                 height: 38,
                 decoration: const BoxDecoration(

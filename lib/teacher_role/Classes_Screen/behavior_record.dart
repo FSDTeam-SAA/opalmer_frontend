@@ -11,11 +11,11 @@ class BehaviorRecordScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic>? student;
 
   const BehaviorRecordScreen({
-    Key? key,
+    super.key,
     required this.studentId,
     this.classId,
     this.student,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<BehaviorRecordScreen> createState() =>
@@ -214,7 +214,7 @@ class _BehaviorRecordScreenState extends ConsumerState<BehaviorRecordScreen> {
                     ? Image.network(
                         avatarUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Icon(
+                        errorBuilder: (_, _, _) => const Icon(
                           Icons.person_outline,
                           color: Color(0xFF871DAD),
                         ),

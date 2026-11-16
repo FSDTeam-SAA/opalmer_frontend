@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/providers/auth_provider.dart';
+import 'package:opalmer_education/core/providers/notification_provider.dart';
 import 'package:opalmer_education/core/providers/navigation_provider.dart';
 import 'package:opalmer_education/core/providers/teacher_provider.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
@@ -211,6 +212,7 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
               onOpenMenu:
                   widget.onOpenMenu ??
                   () => openTeacherPage(context, const TeacherMenuScreen()),
+              unreadCount: ref.watch(unreadNotificationCountProvider),
               onNotifications: () =>
                   openTeacherPage(context, const NotificationScreen()),
               greetingOpacity: _headerFade,

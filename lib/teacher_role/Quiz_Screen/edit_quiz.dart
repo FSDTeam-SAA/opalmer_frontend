@@ -536,7 +536,7 @@ class _EditQuizScreenState extends ConsumerState<EditQuizScreen> {
                 width: double.infinity,
                 height: 170,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
+                errorBuilder: (_, _, _) => Container(
                   height: 120,
                   alignment: Alignment.center,
                   color: Colors.grey.shade100,

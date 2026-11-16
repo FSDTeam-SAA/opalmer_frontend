@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'chat/widgets/app_call_listener.dart';
+import 'notification/app_notification_listener.dart';
 import 'core/navigation/app_navigator.dart';
 import 'core/navigation/role_navigation.dart';
 import 'splash_screen/splash_screen.dart';
@@ -27,7 +28,9 @@ class MyApp extends StatelessWidget {
       builder: (context, child) {
         return AnnotatedRegion<SystemUiOverlayStyle>(
           value: AppTheme.lightSurfaceStatusBarStyle,
-          child: AppCallListener(child: child ?? const SizedBox.shrink()),
+          child: AppNotificationListener(
+            child: AppCallListener(child: child ?? const SizedBox.shrink()),
+          ),
         );
       },
       home: const SplashScreen(),

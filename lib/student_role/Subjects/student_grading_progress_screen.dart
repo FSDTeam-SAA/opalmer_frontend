@@ -2,11 +2,10 @@ import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/providers/student_provider.dart';
-import 'package:opalmer_education/core/models/student_models.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
 
 class StudentGradingProgressScreen extends ConsumerWidget {
-  const StudentGradingProgressScreen({Key? key}) : super(key: key);
+  const StudentGradingProgressScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

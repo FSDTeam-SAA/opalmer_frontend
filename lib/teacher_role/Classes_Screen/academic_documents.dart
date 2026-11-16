@@ -11,10 +11,10 @@ class AcademicDocumentsScreen extends ConsumerStatefulWidget {
   final String studentId;
   final String? classId;
   const AcademicDocumentsScreen({
-    Key? key,
+    super.key,
     required this.studentId,
     this.classId,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<AcademicDocumentsScreen> createState() =>
