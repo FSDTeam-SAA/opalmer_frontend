@@ -2,6 +2,7 @@ import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:opalmer_education/core/widgets/app_dropdown_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:opalmer_education/core/constants/api_constants.dart';
 import 'package:opalmer_education/core/providers/grading_provider.dart';
 import 'package:opalmer_education/core/providers/teacher_provider.dart';
@@ -23,6 +24,85 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
   bool _isGenerating = false;
   bool _isCreatingManual = false;
   String? _selectedClassId;
+  final ImagePicker _imagePicker = ImagePicker();
+  String _coverImageUrl = '';
+  bool _isUploadingCover = false;
+
+  Future<void> _pickCoverImage(ImageSource source) async {
+    final picked = await _imagePicker.pickImage(
+      source: source,
+      imageQuality: 85,
+      maxWidth: 1600,
+    );
+    if (picked == null) return;
+
+    setState(() => _isUploadingCover = true);
+    try {
+      final url = await ref
+          .read(gradingActionProvider.notifier)
+          .uploadQuestionImage(picked.path);
+      if (!mounted) return;
+      setState(() => _coverImageUrl = url);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AttachmentService.errorMessage(e))),
+      );
+    } finally {
+      if (mounted) setState(() => _isUploadingCover = false);
+    }
+  }
+
+  void _showCoverSourceSheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('Choose from gallery'),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _pickCoverImage(ImageSource.gallery);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: const Text('Take a photo'),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _pickCoverImage(ImageSource.camera);
+              },
+            ),
+            if (_coverImageUrl.isNotEmpty)
+              ListTile(
+                leading: const Icon(Icons.delete_outline, color: Colors.red),
+                title: const Text(
+                  'Remove cover',
+                  style: TextStyle(color: Colors.red),
+                ),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  setState(() => _coverImageUrl = '');
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Teacher's own cover first; otherwise the first AI-generated question image.
+  String get _effectiveCoverImage {
+    if (_coverImageUrl.isNotEmpty) return _coverImageUrl;
+    for (final q in _generatedQuestions) {
+      final url = q['imageUrl']?.toString() ?? '';
+      if (url.isNotEmpty) return url;
+    }
+    return '';
+  }
 
   @override
   void dispose() {
@@ -106,6 +186,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
           title: _titleController.text,
           questions: questionsPayload,
           time: int.tryParse(_timeController.text),
+          image: _effectiveCoverImage,
           publish: publish,
         );
 
@@ -140,7 +221,12 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
     try {
       final session = await ref
           .read(gradingServiceProvider)
-          .createSession(classId: _selectedClassId!, title: title, time: time);
+          .createSession(
+            classId: _selectedClassId!,
+            title: title,
+            time: time,
+            image: _coverImageUrl,
+          );
       ref.invalidate(teacherSessionsProvider);
       if (!mounted) return;
       Navigator.pushReplacement(
@@ -252,6 +338,11 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                 controller: _timeController,
                 keyboardType: TextInputType.number,
               ),
+
+              const SizedBox(height: 16),
+              _buildInputLabel("Cover Image (optional)"),
+              const SizedBox(height: 8),
+              _buildCoverPicker(),
 
               const SizedBox(height: 16),
               _buildInputLabel("AI Prompt"),
@@ -434,6 +525,80 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
         fontSize: 14,
         fontWeight: FontWeight.w600,
         color: Color(0xFF494451),
+      ),
+    );
+  }
+
+  Widget _buildCoverPicker() {
+    final resolved = ApiConstants.buildImageUrl(_coverImageUrl);
+    final placeholder = Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(
+          Icons.add_photo_alternate_outlined,
+          color: Color(0xFF871DAD),
+          size: 30,
+        ),
+        const SizedBox(height: 6),
+        const Text(
+          'Add cover image',
+          style: TextStyle(
+            color: Color(0xFF871DAD),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          'If empty, the AI question image is used',
+          style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+        ),
+      ],
+    );
+
+    return InkWell(
+      onTap: _isUploadingCover ? null : _showCoverSourceSheet,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        height: 140,
+        width: double.infinity,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8F6FB),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE5DDEE)),
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (resolved.isEmpty)
+              placeholder
+            else
+              Image.network(
+                resolved,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => placeholder,
+              ),
+            if (resolved.isNotEmpty && !_isUploadingCover)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Material(
+                  color: Colors.black54,
+                  shape: const CircleBorder(),
+                  child: IconButton(
+                    tooltip: 'Change cover',
+                    icon: const Icon(Icons.edit, color: Colors.white, size: 18),
+                    onPressed: _showCoverSourceSheet,
+                  ),
+                ),
+              ),
+            if (_isUploadingCover)
+              const ColoredBox(
+                color: Colors.black26,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+          ],
+        ),
       ),
     );
   }

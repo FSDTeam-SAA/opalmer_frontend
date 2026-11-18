@@ -18,6 +18,7 @@ class ManualGradingService implements GradingService {
     required String title,
     String? description,
     int? time,
+    String? image,
   }) async {
     creates++;
     this.title = title;

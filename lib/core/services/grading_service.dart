@@ -17,6 +17,7 @@ class GradingService {
     required String title,
     String? description,
     int? time,
+    String? image,
   }) async {
     final response = await _apiClient.post(
       '/grading/sessions',
@@ -25,6 +26,7 @@ class GradingService {
         'title': title,
         'description': description ?? '',
         'time': time ?? 5,
+        if (image != null && image.isNotEmpty) 'image': image,
       },
     );
     return response.data['data'] as Map<String, dynamic>;
@@ -34,12 +36,14 @@ class GradingService {
     required String sessionId,
     required String title,
     int? time,
+    String? image,
   }) async {
     final response = await _apiClient.patch(
       '/grading/sessions/$sessionId',
       data: {
         'title': title,
         'time': time ?? 5,
+        'image': ?image,
       },
     );
     return response.data['data'] as Map<String, dynamic>;
