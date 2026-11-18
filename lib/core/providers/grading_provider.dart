@@ -48,6 +48,7 @@ class GradingNotifier extends StateNotifier<AsyncValue<void>> {
     required String title,
     required List<Map<String, dynamic>> questions,
     int? time,
+    String? image,
     bool publish = false,
   }) async {
     state = const AsyncValue.loading();
@@ -57,6 +58,7 @@ class GradingNotifier extends StateNotifier<AsyncValue<void>> {
         classId: classId,
         title: title,
         time: time,
+        image: image,
       );
 
       final sessionId = session['_id'];
