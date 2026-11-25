@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import '../navigation/teacher_workspace.dart';
@@ -58,104 +59,107 @@ class AttendedStudentsScreen extends ConsumerWidget {
           ),
         ),
       ),
-      body: resultsAsync.when(
-        data: (data) {
-          final List<dynamic> attended = data['results'] ?? [];
-          final List<dynamic> notAttended = data['notAttendedStudents'] ?? [];
+      body: ResponsiveBody(
+        child: resultsAsync.when(
+          data: (data) {
+            final List<dynamic> attended = data['results'] ?? [];
+            final List<dynamic> notAttended = data['notAttendedStudents'] ?? [];
 
-          // Merge both lists into a single normalized list
-          final List<Map<String, dynamic>> allStudents = [
-            ...attended.map(
-              (r) => {
-                'student': r['studentId'],
-                'resultId': r['_id'],
-                'status': r['status'],
-                'progress': _toNum(r['totalQuestions']) > 0
-                    ? (_toNum(r['score']) / _toNum(r['totalQuestions']))
-                          .clamp(0, 1)
-                          .toDouble()
-                    : 0.0,
-                'isAttended': true,
-              },
-            ),
-            ...notAttended.map(
-              (s) => {'student': s, 'progress': 0.0, 'isAttended': false},
-            ),
-          ];
+            // Merge both lists into a single normalized list
+            final List<Map<String, dynamic>> allStudents = [
+              ...attended.map(
+                (r) => {
+                  'student': r['studentId'],
+                  'resultId': r['_id'],
+                  'status': r['status'],
+                  'progress': _toNum(r['totalQuestions']) > 0
+                      ? (_toNum(r['score']) / _toNum(r['totalQuestions']))
+                            .clamp(0, 1)
+                            .toDouble()
+                      : 0.0,
+                  'isAttended': true,
+                },
+              ),
+              ...notAttended.map(
+                (s) => {'student': s, 'progress': 0.0, 'isAttended': false},
+              ),
+            ];
 
-          if (allStudents.isEmpty) {
-            return const Center(
-              child: Text("No students found for this class"),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            itemCount: allStudents.length,
-            itemBuilder: (context, index) {
-              final item = allStudents[index];
-              final student = item['student'];
-              final name = student != null
-                  ? student['username'] ?? 'Unknown'
-                  : 'Unknown';
-              final grade = student != null
-                  ? student['gradeLevel'] ?? student['grade'] ?? 'N/A'
-                  : 'N/A';
-              final progress = item['progress'] as double;
-
-              // Use backend avatar URL if available, else fallback to asset
-              String imageUrl = '';
-              final avatar = student?['avatar'];
-              if (avatar != null) {
-                if (avatar is Map &&
-                    avatar['url'] != null &&
-                    avatar['url'].toString().isNotEmpty) {
-                  imageUrl = avatar['url'].toString();
-                } else if (avatar is String && avatar.isNotEmpty) {
-                  imageUrl = avatar;
-                }
-              }
-
-              // Cycle through colors: Green, Orange, Blue
-              final colors = [
-                const Color(0xFF4DB68D),
-                const Color(0xFFFFCC33),
-                const Color(0xFF4FA0F3),
-              ];
-              final sideColor = colors[index % colors.length];
-
-              return GestureDetector(
-                onTap: item['resultId'] == null || item['status'] != 'completed'
-                    ? null
-                    : () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => TeacherContextFrame.carry(
-                              context,
-                              StudentDetailScreen(
-                                resultId: item['resultId'].toString(),
-                              ),
-                              student: student is Map
-                                  ? Map<String, dynamic>.from(student)
-                                  : null,
-                            ),
-                          ),
-                        );
-                      },
-                child: _buildStudentCard(
-                  name: name,
-                  details: "Grade $grade",
-                  progress: progress,
-                  sideColor: sideColor,
-                  imageUrl: imageUrl,
-                ),
+            if (allStudents.isEmpty) {
+              return const Center(
+                child: Text("No students found for this class"),
               );
-            },
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text("Error: $err")),
+            }
+
+            return ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              itemCount: allStudents.length,
+              itemBuilder: (context, index) {
+                final item = allStudents[index];
+                final student = item['student'];
+                final name = student != null
+                    ? student['username'] ?? 'Unknown'
+                    : 'Unknown';
+                final grade = student != null
+                    ? student['gradeLevel'] ?? student['grade'] ?? 'N/A'
+                    : 'N/A';
+                final progress = item['progress'] as double;
+
+                // Use backend avatar URL if available, else fallback to asset
+                String imageUrl = '';
+                final avatar = student?['avatar'];
+                if (avatar != null) {
+                  if (avatar is Map &&
+                      avatar['url'] != null &&
+                      avatar['url'].toString().isNotEmpty) {
+                    imageUrl = avatar['url'].toString();
+                  } else if (avatar is String && avatar.isNotEmpty) {
+                    imageUrl = avatar;
+                  }
+                }
+
+                // Cycle through colors: Green, Orange, Blue
+                final colors = [
+                  const Color(0xFF4DB68D),
+                  const Color(0xFFFFCC33),
+                  const Color(0xFF4FA0F3),
+                ];
+                final sideColor = colors[index % colors.length];
+
+                return GestureDetector(
+                  onTap:
+                      item['resultId'] == null || item['status'] != 'completed'
+                      ? null
+                      : () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => TeacherContextFrame.carry(
+                                context,
+                                StudentDetailScreen(
+                                  resultId: item['resultId'].toString(),
+                                ),
+                                student: student is Map
+                                    ? Map<String, dynamic>.from(student)
+                                    : null,
+                              ),
+                            ),
+                          );
+                        },
+                  child: _buildStudentCard(
+                    name: name,
+                    details: "Grade $grade",
+                    progress: progress,
+                    sideColor: sideColor,
+                    imageUrl: imageUrl,
+                  ),
+                );
+              },
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, stack) => Center(child: Text("Error: $err")),
+        ),
       ),
     );
   }

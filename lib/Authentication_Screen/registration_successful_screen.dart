@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -30,74 +31,79 @@ class RegistrationSuccessfulScreen extends ConsumerWidget {
       ),
       child: Scaffold(
         backgroundColor: AppColors.primaryMid,
-        body: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(33, 72, 33, 24),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const SizedBox.shrink(),
-                        Column(
-                          children: [
-                            const _SuccessMark(),
-                            const SizedBox(height: 52),
-                            const Text(
-                              "Registration Successful",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
-                                height: 1.2,
+        body: ResponsiveBody(
+          maxWidth: Responsive.formMaxWidth,
+          child: SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(33, 72, 33, 24),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const SizedBox.shrink(),
+                          Column(
+                            children: [
+                              const _SuccessMark(),
+                              const SizedBox(height: 52),
+                              const Text(
+                                "Registration Successful",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.2,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              subtitle,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w400,
-                                height: 1.25,
+                              const SizedBox(height: 12),
+                              Text(
+                                subtitle,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.25,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 56,
-                          child: ElevatedButton(
-                            onPressed: () =>
-                                _continueToDashboard(context, role),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                            ],
+                          ),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 56,
+                            child: ElevatedButton(
+                              onPressed: () =>
+                                  _continueToDashboard(context, role),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
-                            ),
-                            child: const Text(
-                              "CONTINUE",
-                              style: TextStyle(
-                                color: AppColors.primaryMid,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
+                              child: const Text(
+                                "CONTINUE",
+                                style: TextStyle(
+                                  color: AppColors.primaryMid,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ),

@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:flutter/material.dart';
 import '../../core/widgets/app_home_button.dart';
 import 'widgets/teacher_lesson_list.dart';
@@ -11,6 +12,6 @@ class LessonsScreen extends StatelessWidget {
       title: const Text('Lessons'),
       actions: const [AppHomeButton()],
     ),
-    body: TeacherLessonList(classId: classId),
+    body: ResponsiveBody(child: TeacherLessonList(classId: classId)),
   );
 }

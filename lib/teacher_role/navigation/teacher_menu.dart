@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import '../../core/widgets/access_guide_screen.dart';
 import '../../core/widgets/drawer_logout_button.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import '../Quiz_Screen/create_quiz.dart';
 import '../Quiz_Screen/grading_tool.dart';
 import '../profile_screen/profile.dart';
 import 'teacher_activity.dart';
+import 'teacher_materials.dart';
 import 'teacher_workspace.dart';
 
 void openTeacherPage(BuildContext context, Widget page) {
@@ -154,8 +156,7 @@ class _TeacherMenuScreenState extends ConsumerState<TeacherMenuScreen> {
       _MenuItem(
         'Announcements',
         Icons.campaign_outlined,
-        page: () =>
-            const TeacherClassPicker(feature: TeacherFeature.announcements),
+        page: () => const TeacherAnnouncementsScreen(),
       ),
       _MenuItem(
         'Activity',
@@ -385,7 +386,9 @@ class _TeacherMenuScreenState extends ConsumerState<TeacherMenuScreen> {
         ),
       ),
     );
-    return widget.inDrawer ? content : Scaffold(body: content);
+    return widget.inDrawer
+        ? content
+        : Scaffold(body: ResponsiveBody(child: content));
   }
 
   Widget _toolRow(_MenuItem item, Color color) {
@@ -461,8 +464,7 @@ class _TeacherMenuScreenState extends ConsumerState<TeacherMenuScreen> {
     _MenuItem(
       'Send announcement',
       Icons.campaign_outlined,
-      page: () =>
-          const TeacherClassPicker(feature: TeacherFeature.announcements),
+      page: () => const TeacherAnnouncementsScreen(),
     ),
   ];
 }

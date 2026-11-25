@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -66,87 +67,90 @@ class _GradingToolScreenState extends ConsumerState<GradingToolScreen> {
           backgroundColor: const Color(0xFF871DAD),
           child: const Icon(Icons.add, color: Colors.white, size: 28),
         ),
-        body: Column(
-          children: [
-            // Header
-            _buildHeader(),
+        body: ResponsiveBody(
+          child: Column(
+            children: [
+              // Header
+              _buildHeader(),
 
-            // Tab Switcher
-            const SizedBox(height: 24),
-            _buildTabSwitcher(),
+              // Tab Switcher
+              const SizedBox(height: 24),
+              _buildTabSwitcher(),
 
-            // Grading List
-            Expanded(
-              child: sessionsAsync.when(
-                data: (sessions) {
-                  final filteredSessions = sessions.where((s) {
-                    final status = s['status']?.toString().toLowerCase();
-                    return _isDraftTab
-                        ? status == 'draft'
-                        : status == 'published';
-                  }).toList();
+              // Grading List
+              Expanded(
+                child: sessionsAsync.when(
+                  data: (sessions) {
+                    final filteredSessions = sessions.where((s) {
+                      final status = s['status']?.toString().toLowerCase();
+                      return _isDraftTab
+                          ? status == 'draft'
+                          : status == 'published';
+                    }).toList();
 
-                  if (filteredSessions.isEmpty) {
-                    return Center(
-                      child: Text(
-                        _isDraftTab
-                            ? "No draft sessions found"
-                            : "No published sessions found",
-                        style: TextStyle(color: Colors.grey.shade500),
+                    if (filteredSessions.isEmpty) {
+                      return Center(
+                        child: Text(
+                          _isDraftTab
+                              ? "No draft sessions found"
+                              : "No published sessions found",
+                          style: TextStyle(color: Colors.grey.shade500),
+                        ),
+                      );
+                    }
+
+                    return RefreshIndicator(
+                      onRefresh: () =>
+                          ref.refresh(teacherSessionsProvider(null).future),
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 16,
+                        ),
+                        itemCount: filteredSessions.length,
+                        itemBuilder: (context, index) {
+                          final session = filteredSessions[index];
+                          final sessionId = session['_id']?.toString() ?? '';
+                          String imageUrl = "";
+                          if (session['image'] != null &&
+                              session['image'].toString().isNotEmpty) {
+                            imageUrl = session['image'].toString();
+                          }
+
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      QuizDetailScreen(sessionId: sessionId),
+                                ),
+                              );
+                            },
+                            child: _buildGradingItem(
+                              title: session['title'] ?? 'Untitled',
+                              questions:
+                                  "${session['questionCount'] ?? 0} Questions",
+                              time: "${session['time'] ?? 0} min",
+                              status: _isDraftTab ? "Draft" : "Published",
+                              imageUrl: imageUrl,
+                              isPublishing: _publishingSessionId == sessionId,
+                              onPublish: _isDraftTab && sessionId.isNotEmpty
+                                  ? () => _publishDraft(sessionId)
+                                  : null,
+                            ),
+                          );
+                        },
                       ),
                     );
-                  }
-
-                  return RefreshIndicator(
-                    onRefresh: () =>
-                        ref.refresh(teacherSessionsProvider(null).future),
-                    child: ListView.builder(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
-                      ),
-                      itemCount: filteredSessions.length,
-                      itemBuilder: (context, index) {
-                        final session = filteredSessions[index];
-                        final sessionId = session['_id']?.toString() ?? '';
-                        String imageUrl = "";
-                        if (session['image'] != null &&
-                            session['image'].toString().isNotEmpty) {
-                          imageUrl = session['image'].toString();
-                        }
-
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    QuizDetailScreen(sessionId: sessionId),
-                              ),
-                            );
-                          },
-                          child: _buildGradingItem(
-                            title: session['title'] ?? 'Untitled',
-                            questions:
-                                "${session['questionCount'] ?? 0} Questions",
-                            time: "${session['time'] ?? 0} min",
-                            status: _isDraftTab ? "Draft" : "Published",
-                            imageUrl: imageUrl,
-                            isPublishing: _publishingSessionId == sessionId,
-                            onPublish: _isDraftTab && sessionId.isNotEmpty
-                                ? () => _publishDraft(sessionId)
-                                : null,
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, stack) => Center(child: Text("Error: $err")),
+                  },
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (err, stack) => Center(child: Text("Error: $err")),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

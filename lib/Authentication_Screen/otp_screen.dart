@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/core/providers/role_provider.dart';
@@ -47,13 +48,21 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                   height: 350,
                   child: Image.asset(
                     'assets/images/header_design.png',
-                    fit: BoxFit.cover,
+                    // Stretch instead of crop on wide screens so the title
+                    // stays on the purple part of the artwork.
+                    fit: MediaQuery.sizeOf(context).width > 600
+                        ? BoxFit.fill
+                        : BoxFit.cover,
                   ),
                 ),
                 SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: Responsive.gutter(
+                        context,
+                        maxWidth: Responsive.formMaxWidth,
+                        base: 24,
+                      ),
                       vertical: 12,
                     ),
                     child: Column(
@@ -106,11 +115,14 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
             const SizedBox(height: 60),
 
             // OTP Input Fields
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(4, (index) => _buildOtpCircle(index)),
+            ResponsiveBody(
+              maxWidth: Responsive.formMaxWidth,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: List.generate(4, (index) => _buildOtpCircle(index)),
+                ),
               ),
             ),
 
@@ -144,49 +156,52 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
             const SizedBox(height: 60),
 
             // Verify Button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Verification logic
-                    final role = ref.read(roleProvider);
-                    if (role == UserRole.student) {
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(
-                          builder: (_) => const StudentMainShell(),
-                        ),
-                        (route) => false,
-                      );
-                    } else if (role == UserRole.parent) {
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(
-                          builder: (_) => const ParentHomeDashboard(),
-                        ),
-                        (route) => false,
-                      );
-                    } else {
-                      // Default to teacher / main shell
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (_) => const MainShell()),
-                        (route) => false,
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF871DAD),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+            ResponsiveBody(
+              maxWidth: Responsive.formMaxWidth,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Verification logic
+                      final role = ref.read(roleProvider);
+                      if (role == UserRole.student) {
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(
+                            builder: (_) => const StudentMainShell(),
+                          ),
+                          (route) => false,
+                        );
+                      } else if (role == UserRole.parent) {
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(
+                            builder: (_) => const ParentHomeDashboard(),
+                          ),
+                          (route) => false,
+                        );
+                      } else {
+                        // Default to teacher / main shell
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (_) => const MainShell()),
+                          (route) => false,
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF871DAD),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                  ),
-                  child: const Text(
-                    "VERIFY",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                    child: const Text(
+                      "VERIFY",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),

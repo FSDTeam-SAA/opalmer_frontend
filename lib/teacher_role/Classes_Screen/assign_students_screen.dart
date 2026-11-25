@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -209,7 +210,7 @@ class _AssignStudentsScreenState extends ConsumerState<AssignStudentsScreen> {
           ),
         ),
       ),
-      body: SafeArea(child: _buildBody()),
+      body: ResponsiveBody(child: SafeArea(child: _buildBody())),
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.fromLTRB(24, 12, 24, 20),
         child: SizedBox(

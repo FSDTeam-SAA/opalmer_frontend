@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'dart:convert';
 import '../providers/parent_children_provider.dart';
 import 'package:flutter/material.dart';
@@ -152,137 +153,66 @@ class _ParentHomeDashboardState extends ConsumerState<ParentHomeDashboard> {
             child: Container(
               color: Colors.white,
               width: double.infinity,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 20),
+              child: ResponsiveBody(
+                maxWidth: Responsive.dashboardMaxWidth,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 20),
 
-                  // ── My Students ──
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "My Students",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const ChildsProfilesScreen(),
-                              ),
-                            ).then((_) => _loadProfiles());
-                          },
-                          child: Text(
-                            "View All",
+                    // ── My Students ──
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            "My Students",
                             style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primaryMid,
-                              decoration: TextDecoration.underline,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _isLoadingProfiles
-                      ? const SizedBox(
-                          height: 120,
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.primaryMid,
-                            ),
-                          ),
-                        )
-                      : _profiles.isEmpty
-                      ? const SizedBox(
-                          height: 120,
-                          child: Center(
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const ChildsProfilesScreen(),
+                                ),
+                              ).then((_) => _loadProfiles());
+                            },
                             child: Text(
-                              "No children added yet.\nTap 'View All' to add.",
-                              textAlign: TextAlign.center,
+                              "View All",
                               style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primaryMid,
+                                decoration: TextDecoration.underline,
                               ),
                             ),
                           ),
-                        )
-                      : Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Column(
-                            children: _profiles.take(3).map((profile) {
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: _buildChildCard(profile),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-
-                  const SizedBox(height: 32),
-
-                  // ── Learning Tips ──
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "Learning Tips",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const LearningTipsScreen(),
-                              ),
-                            );
-                          },
-                          child: Text(
-                            "View All",
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primaryMid,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: _isLoadingTips
-                        ? const Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.primaryMid,
+                    const SizedBox(height: 16),
+                    _isLoadingProfiles
+                        ? const SizedBox(
+                            height: 120,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: AppColors.primaryMid,
+                              ),
                             ),
                           )
-                        : _tips.isEmpty
-                        ? const Center(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 32),
+                        : _profiles.isEmpty
+                        ? const SizedBox(
+                            height: 120,
+                            child: Center(
                               child: Text(
-                                'No learning tips available yet.',
+                                "No children added yet.\nTap 'View All' to add.",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 14,
@@ -291,38 +221,118 @@ class _ParentHomeDashboardState extends ConsumerState<ParentHomeDashboard> {
                               ),
                             ),
                           )
-                        : SingleChildScrollView(
-                            padding: const EdgeInsets.only(bottom: 20),
+                        : Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                              ),
-                              child: Column(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: ResponsiveWrapGrid(
+                                minTileWidth: 340,
+                                spacing: 12,
+                                runSpacing: 12,
                                 children: [
-                                  ..._tips.take(5).map((tip) {
-                                    return LearningTipCard(
-                                      title: tip.title,
-                                      imageUrl: tip.imageUrl,
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                LearningTipDetailScreen(
-                                                  tip: tip,
-                                                ),
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  }),
-                                  const SizedBox(height: 20),
+                                  for (final profile in _profiles.take(3))
+                                    _buildChildCard(profile),
                                 ],
                               ),
                             ),
                           ),
-                  ),
-                ],
+
+                    const SizedBox(height: 32),
+
+                    // ── Learning Tips ──
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            "Learning Tips",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const LearningTipsScreen(),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              "View All",
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primaryMid,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: _isLoadingTips
+                          ? const Center(
+                              child: CircularProgressIndicator(
+                                color: AppColors.primaryMid,
+                              ),
+                            )
+                          : _tips.isEmpty
+                          ? const Center(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 32),
+                                child: Text(
+                                  'No learning tips available yet.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : SingleChildScrollView(
+                              padding: const EdgeInsets.only(bottom: 20),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                ),
+                                child: ResponsiveWrapGrid(
+                                  minTileWidth: 340,
+                                  spacing: 12,
+                                  runSpacing: 0,
+                                  children: [
+                                    ..._tips.take(5).map((tip) {
+                                      return LearningTipCard(
+                                        title: tip.title,
+                                        imageUrl: tip.imageUrl,
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  LearningTipDetailScreen(
+                                                    tip: tip,
+                                                  ),
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    }),
+                                  ],
+                                ),
+                              ),
+                            ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

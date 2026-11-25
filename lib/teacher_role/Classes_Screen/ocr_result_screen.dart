@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'dart:io';
 import 'dart:ui';
@@ -53,45 +54,47 @@ class _OCRResultScreenState extends State<OCRResultScreen>
       extendBodyBehindAppBar: true,
       backgroundColor: const Color(0xFFF0F2F5),
       appBar: _buildAppBar(),
-      body: Stack(
-        children: [
-          // Background Gradient
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFFFFFFFF), Color(0xFFE8EAF6)],
+      body: ResponsiveBody(
+        child: Stack(
+          children: [
+            // Background Gradient
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFFFFFFFF), Color(0xFFE8EAF6)],
+                ),
               ),
             ),
-          ),
 
-          // Main Content
-          SafeArea(
-            child: Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: Column(
-                        children: [
-                          _buildImagePreview(),
-                          _buildPaperSheet(),
-                          const SizedBox(height: 120),
-                        ],
+            // Main Content
+            SafeArea(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: Column(
+                          children: [
+                            _buildImagePreview(),
+                            _buildPaperSheet(),
+                            const SizedBox(height: 120),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
 
-          // Glassmorphic Bottom Bar
-          Positioned(bottom: 0, left: 0, right: 0, child: _buildBottomBar()),
-        ],
+            // Glassmorphic Bottom Bar
+            Positioned(bottom: 0, left: 0, right: 0, child: _buildBottomBar()),
+          ],
+        ),
       ),
     );
   }

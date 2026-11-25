@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
@@ -160,16 +161,18 @@ class _AssignmentDetailsScreenState
         MaterialPageRoute(
           builder: (_) => Scaffold(
             appBar: AppBar(actions: [const AppHomeButton()], title: Text(name)),
-            body: PdfPreview(
-              build: (_) async {
-                final response = await dioForDownloadUrl(url).get<List<int>>(
-                  url,
-                  options: Options(responseType: ResponseType.bytes),
-                );
-                return Uint8List.fromList(response.data ?? []);
-              },
-              allowPrinting: false,
-              allowSharing: false,
+            body: ResponsiveBody(
+              child: PdfPreview(
+                build: (_) async {
+                  final response = await dioForDownloadUrl(url).get<List<int>>(
+                    url,
+                    options: Options(responseType: ResponseType.bytes),
+                  );
+                  return Uint8List.fromList(response.data ?? []);
+                },
+                allowPrinting: false,
+                allowSharing: false,
+              ),
             ),
           ),
         ),
@@ -268,132 +271,137 @@ class _AssignmentDetailsScreenState
         actions: [const AppHomeButton()],
         title: const Text('Assignment'),
       ),
-      body: homework == null
-          ? Center(
-              child: _error == null
-                  ? const CircularProgressIndicator()
-                  : Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(_error!),
-                        TextButton(
-                          onPressed: _load,
-                          child: const Text('Retry'),
-                        ),
-                      ],
-                    ),
-            )
-          : ListView(
-              padding: const EdgeInsets.all(24),
-              children: [
-                Text(
-                  '${homework['title']}',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 12),
-                Text('${homework['description'] ?? ''}'),
-                if (homework['dueDate'] != null)
+      body: ResponsiveBody(
+        child: homework == null
+            ? Center(
+                child: _error == null
+                    ? const CircularProgressIndicator()
+                    : Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(_error!),
+                          TextButton(
+                            onPressed: _load,
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+              )
+            : ListView(
+                padding: const EdgeInsets.all(24),
+                children: [
                   Text(
-                    'Due: ${DateTime.tryParse(homework['dueDate'])?.toLocal()}',
+                    '${homework['title']}',
+                    style: Theme.of(context).textTheme.headlineSmall,
                   ),
-                Text('Points possible: ${homework['pointsPossible'] ?? 100}'),
-                HomeworkHelpPanel(
-                  homeworkId: widget.homeworkId,
-                  studentId: widget.childId,
-                ),
-                const SizedBox(height: 16),
-                ...((homework['file'] as List?) ?? []).map(
-                  (file) => ListTile(
-                    leading: const Icon(Icons.open_in_new),
-                    title: Text(
-                      '${file['filename'] ?? 'Homework help / attachment'}',
-                    ),
-                    onTap: () => _openFile(
-                      '${file['downloadUrl'] ?? file['url']}',
-                      '${file['filename'] ?? 'Attachment'}',
-                    ),
-                  ),
-                ),
-                if (!_teacher) ...[
-                  Text('Status: ${_submission?['status'] ?? 'Not started'}'),
-                  if (_submission?['status'] == 'released')
+                  const SizedBox(height: 12),
+                  Text('${homework['description'] ?? ''}'),
+                  if (homework['dueDate'] != null)
                     Text(
-                      'Grade: ${_submission?['score']} / ${homework['pointsPossible'] ?? 100}\n${_submission?['feedback'] ?? ''}',
+                      'Due: ${DateTime.tryParse(homework['dueDate'])?.toLocal()}',
                     ),
-                  TextField(
-                    controller: _response,
-                    readOnly: !editable,
-                    maxLines: 8,
-                    decoration: const InputDecoration(labelText: 'Response'),
+                  Text('Points possible: ${homework['pointsPossible'] ?? 100}'),
+                  HomeworkHelpPanel(
+                    homeworkId: widget.homeworkId,
+                    studentId: widget.childId,
                   ),
-                  ...((_submission?['files'] as List?) ?? []).map(
-                    (file) => TextButton(
-                      onPressed: () => _openFile(
+                  const SizedBox(height: 16),
+                  ...((homework['file'] as List?) ?? []).map(
+                    (file) => ListTile(
+                      leading: const Icon(Icons.open_in_new),
+                      title: Text(
+                        '${file['filename'] ?? 'Homework help / attachment'}',
+                      ),
+                      onTap: () => _openFile(
                         '${file['downloadUrl'] ?? file['url']}',
                         '${file['filename'] ?? 'Attachment'}',
                       ),
-                      child: Text('${file['filename'] ?? 'Attachment'}'),
                     ),
                   ),
-                  if (editable) ...[
-                    TextButton.icon(
-                      onPressed: _busy
-                          ? null
-                          : () async {
-                              final files = await FilePicker.platform.pickFiles(
-                                allowMultiple: true,
-                                withData: true,
-                              );
-                              if (mounted && files != null) {
-                                setState(() => _files = files.files);
-                              }
-                            },
-                      icon: const Icon(Icons.attach_file),
-                      label: Text(
-                        _files.isEmpty
-                            ? 'Attach files'
-                            : '${_files.length} file(s) selected',
+                  if (!_teacher) ...[
+                    Text('Status: ${_submission?['status'] ?? 'Not started'}'),
+                    if (_submission?['status'] == 'released')
+                      Text(
+                        'Grade: ${_submission?['score']} / ${homework['pointsPossible'] ?? 100}\n${_submission?['feedback'] ?? ''}',
+                      ),
+                    TextField(
+                      controller: _response,
+                      readOnly: !editable,
+                      maxLines: 8,
+                      decoration: const InputDecoration(labelText: 'Response'),
+                    ),
+                    ...((_submission?['files'] as List?) ?? []).map(
+                      (file) => TextButton(
+                        onPressed: () => _openFile(
+                          '${file['downloadUrl'] ?? file['url']}',
+                          '${file['filename'] ?? 'Attachment'}',
+                        ),
+                        child: Text('${file['filename'] ?? 'Attachment'}'),
                       ),
                     ),
-                    OutlinedButton(
-                      onPressed: _busy ? null : () => _save(false),
-                      child: const Text('Save draft'),
+                    if (editable) ...[
+                      TextButton.icon(
+                        onPressed: _busy
+                            ? null
+                            : () async {
+                                final files = await FilePicker.platform
+                                    .pickFiles(
+                                      allowMultiple: true,
+                                      withData: true,
+                                    );
+                                if (mounted && files != null) {
+                                  setState(() => _files = files.files);
+                                }
+                              },
+                        icon: const Icon(Icons.attach_file),
+                        label: Text(
+                          _files.isEmpty
+                              ? 'Attach files'
+                              : '${_files.length} file(s) selected',
+                        ),
+                      ),
+                      OutlinedButton(
+                        onPressed: _busy ? null : () => _save(false),
+                        child: const Text('Save draft'),
+                      ),
+                      FilledButton(
+                        onPressed: _busy ? null : () => _save(true),
+                        child: const Text('Submit assignment'),
+                      ),
+                    ],
+                  ],
+                  if (_teacher) ...[
+                    const SizedBox(height: 20),
+                    Text(
+                      'Submissions (${_submissions.length})',
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
-                    FilledButton(
-                      onPressed: _busy ? null : () => _save(true),
-                      child: const Text('Submit assignment'),
+                    ..._submissions.map(
+                      (item) => ListTile(
+                        title: Text(
+                          '${item['studentId']?['username']} · ${item['studentId']?['Id']}',
+                        ),
+                        subtitle: Text('${item['status']}'),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: item['status'] == 'draft'
+                            ? null
+                            : () => _review(item),
+                      ),
+                    ),
+                    Text('Not submitted (${_missing.length})'),
+                    ..._missing.map(
+                      (student) => ListTile(
+                        title: Text(
+                          '${student['username']} · ${student['Id']}',
+                        ),
+                      ),
                     ),
                   ],
+                  if (_error != null)
+                    Text(_error!, style: const TextStyle(color: Colors.red)),
                 ],
-                if (_teacher) ...[
-                  const SizedBox(height: 20),
-                  Text(
-                    'Submissions (${_submissions.length})',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  ..._submissions.map(
-                    (item) => ListTile(
-                      title: Text(
-                        '${item['studentId']?['username']} · ${item['studentId']?['Id']}',
-                      ),
-                      subtitle: Text('${item['status']}'),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: item['status'] == 'draft'
-                          ? null
-                          : () => _review(item),
-                    ),
-                  ),
-                  Text('Not submitted (${_missing.length})'),
-                  ..._missing.map(
-                    (student) => ListTile(
-                      title: Text('${student['username']} · ${student['Id']}'),
-                    ),
-                  ),
-                ],
-                if (_error != null)
-                  Text(_error!, style: const TextStyle(color: Colors.red)),
-              ],
-            ),
+              ),
+      ),
     );
   }
 }

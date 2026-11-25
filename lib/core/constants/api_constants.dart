@@ -2,8 +2,8 @@ class ApiConstants {
   // Live backend. Override with --dart-define=API_BASE_URL=... when needed.
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    // defaultValue: 'https://api.classpulse.info/api/v1',
-    defaultValue: 'http://10.0.2.2:5000/api/v1',
+    defaultValue: 'https://api.classpulse.info/api/v1',
+    // defaultValue: 'http://10.0.2.2:5000/api/v1',
   );
 
   // Auth Endpoints

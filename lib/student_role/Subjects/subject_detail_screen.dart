@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -50,30 +51,32 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 16),
-            _buildStatCards(attendanceAsync, quizResultsAsync),
-            const SizedBox(height: 32),
-            const Text(
-              "Teacher Profile",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+      body: ResponsiveBody(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 16),
+              _buildStatCards(attendanceAsync, quizResultsAsync),
+              const SizedBox(height: 32),
+              const Text(
+                "Teacher Profile",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            _buildTeacherProfile(),
-            const SizedBox(height: 32),
-            _buildProgressSection(quizResultsAsync),
-            const SizedBox(height: 32),
-            _buildOptionsList(context),
-            const SizedBox(height: 40),
-          ],
+              const SizedBox(height: 16),
+              _buildTeacherProfile(),
+              const SizedBox(height: 32),
+              _buildProgressSection(quizResultsAsync),
+              const SizedBox(height: 32),
+              _buildOptionsList(context),
+              const SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );

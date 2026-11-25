@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -116,98 +117,100 @@ class _StudentEditProfileScreenState
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildField(
-                  label: 'Username',
-                  controller: _usernameCtrl,
-                  validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? 'Required' : null,
-                ),
-                _buildField(
-                  label: 'Email',
-                  controller: _emailCtrl,
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                _buildField(
-                  label: 'Phone Number',
-                  controller: _phoneCtrl,
-                  keyboardType: TextInputType.phone,
-                ),
-                _buildField(
-                  label: 'Age',
-                  controller: _ageCtrl,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                ),
-                _buildField(
-                  label: 'Grade Level',
-                  controller: _gradeCtrl,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Gender',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary,
+      body: ResponsiveBody(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildField(
+                    label: 'Username',
+                    controller: _usernameCtrl,
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty) ? 'Required' : null,
                   ),
-                ),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  initialValue: _gender,
-                  items: _genderOptions
-                      .map(
-                        (g) => DropdownMenuItem(
-                          value: g,
-                          child: Text(g[0].toUpperCase() + g.substring(1)),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (v) => setState(() => _gender = v),
-                  decoration: _inputDecoration('Select gender'),
-                ),
-                const SizedBox(height: 32),
-                SizedBox(
-                  height: 52,
-                  child: ElevatedButton(
-                    onPressed: _saving ? null : _save,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryMid,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                  _buildField(
+                    label: 'Email',
+                    controller: _emailCtrl,
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  _buildField(
+                    label: 'Phone Number',
+                    controller: _phoneCtrl,
+                    keyboardType: TextInputType.phone,
+                  ),
+                  _buildField(
+                    label: 'Age',
+                    controller: _ageCtrl,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  ),
+                  _buildField(
+                    label: 'Grade Level',
+                    controller: _gradeCtrl,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Gender',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
                     ),
-                    child: _saving
-                        ? const SizedBox(
-                            height: 22,
-                            width: 22,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
+                  ),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    initialValue: _gender,
+                    items: _genderOptions
+                        .map(
+                          (g) => DropdownMenuItem(
+                            value: g,
+                            child: Text(g[0].toUpperCase() + g.substring(1)),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (v) => setState(() => _gender = v),
+                    decoration: _inputDecoration('Select gender'),
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: _saving ? null : _save,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryMid,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: _saving
+                          ? const SizedBox(
+                              height: 22,
+                              width: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                              ),
+                            )
+                          : const Text(
+                              'Save Changes',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                          )
-                        : const Text(
-                            'Save Changes',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

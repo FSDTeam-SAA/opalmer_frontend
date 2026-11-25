@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'dart:convert';
 
@@ -231,95 +232,100 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // ── Header ──
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: AppPageHeader(
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: const BoxDecoration(
-                        color: AppColors.primaryMid,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Text(
-                    widget.feature.title,
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF222222),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // ── Child Selector ──
-            SizedBox(
-              height: 56,
-              child: _isLoadingChildren && _children.isEmpty
-                  ? const Center(
-                      child: SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    )
-                  : ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      itemCount: _children.length,
-                      itemBuilder: (context, index) =>
-                          _buildChildChip(_children[index]),
-                    ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // ── Subjects List ──
-            Expanded(
-              child: _isLoadingSubjects
-                  ? const Center(child: CircularProgressIndicator())
-                  : _loadError != null
-                  ? Center(
-                      child: TextButton(
-                        onPressed: () => _selectedChildId.isEmpty
-                            ? _loadChildren()
-                            : _loadSubjects(_selectedChildId),
-                        child: Text('$_loadError Retry'),
-                      ),
-                    )
-                  : _subjects.isEmpty
-                  ? _buildEmptyState()
-                  : RefreshIndicator(
-                      onRefresh: () => _loadSubjects(_selectedChildId),
-                      child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
+      body: ResponsiveBody(
+        child: SafeArea(
+          child: Column(
+            children: [
+              // ── Header ──
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
+                child: AppPageHeader(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: const BoxDecoration(
+                          color: AppColors.primaryMid,
+                          shape: BoxShape.circle,
                         ),
-                        itemCount: _subjects.length,
-                        itemBuilder: (context, index) {
-                          return _buildSubjectCard(_subjects[index]);
-                        },
+                        child: const Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
+                          size: 24,
+                        ),
                       ),
                     ),
-            ),
-          ],
+                    const SizedBox(width: 16),
+                    Text(
+                      widget.feature.title,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF222222),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // ── Child Selector ──
+              SizedBox(
+                height: 56,
+                child: _isLoadingChildren && _children.isEmpty
+                    ? const Center(
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        itemCount: _children.length,
+                        itemBuilder: (context, index) =>
+                            _buildChildChip(_children[index]),
+                      ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // ── Subjects List ──
+              Expanded(
+                child: _isLoadingSubjects
+                    ? const Center(child: CircularProgressIndicator())
+                    : _loadError != null
+                    ? Center(
+                        child: TextButton(
+                          onPressed: () => _selectedChildId.isEmpty
+                              ? _loadChildren()
+                              : _loadSubjects(_selectedChildId),
+                          child: Text('$_loadError Retry'),
+                        ),
+                      )
+                    : _subjects.isEmpty
+                    ? _buildEmptyState()
+                    : RefreshIndicator(
+                        onRefresh: () => _loadSubjects(_selectedChildId),
+                        child: ListView.builder(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
+                          itemCount: _subjects.length,
+                          itemBuilder: (context, index) {
+                            return _buildSubjectCard(_subjects[index]);
+                          },
+                        ),
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'password_reset_screen.dart';
@@ -350,16 +351,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                   child: Stack(
                     children: [
                       // Header background image
-                      Image.asset(
-                        'assets/images/header_design.png',
-                        width: double.infinity,
-                        fit: BoxFit.fitWidth,
+                      const ResponsiveHeaderImage(
+                        asset: 'assets/images/header_design.png',
+                        aspectRatio: 430 / 346,
+                        maxHeight: 320,
                       ),
 
                       // Title & Subtitle over header
                       SafeArea(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: Responsive.gutter(
+                              context,
+                              maxWidth: Responsive.formMaxWidth,
+                              base: 24,
+                            ),
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -445,189 +452,195 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             ),
 
             // ── Form Fields ──
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // School ID Label + Field
-                  FadeTransition(
-                    opacity: _schoolIdFade,
-                    child: SlideTransition(
-                      position: _schoolIdSlide,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "ID or Email",
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          TextField(
-                            controller: _schoolIdController,
-                            textInputAction: TextInputAction.next,
-                            onSubmitted: (_) =>
-                                FocusScope.of(context).nextFocus(),
-                            decoration: InputDecoration(
-                              hintText: "Enter your ID or email",
-                              prefixIcon: Icon(
-                                Icons.check_box_outlined,
-                                color: Colors.grey.shade400,
-                                size: 20,
-                              ),
-                              suffixIcon: const Icon(
-                                Icons.check_circle,
-                                color: AppColors.primaryMid,
-                                size: 22,
+            ResponsiveBody(
+              maxWidth: Responsive.formMaxWidth,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // School ID Label + Field
+                    FadeTransition(
+                      opacity: _schoolIdFade,
+                      child: SlideTransition(
+                        position: _schoolIdSlide,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "ID or Email",
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Password Label + Field
-                  FadeTransition(
-                    opacity: _passwordFade,
-                    child: SlideTransition(
-                      position: _passwordSlide,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "Password",
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          TextField(
-                            controller: _passwordController,
-                            textInputAction: TextInputAction.done,
-                            onSubmitted: (_) => _onButtonTap(),
-                            obscureText: _obscurePassword,
-                            decoration: InputDecoration(
-                              hintText: "Password",
-                              prefixIcon: Icon(
-                                Icons.lock_outline,
-                                color: Colors.grey.shade400,
-                                size: 20,
-                              ),
-                              suffixIcon: GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    _obscurePassword = !_obscurePassword;
-                                  });
-                                },
-                                child: Icon(
-                                  _obscurePassword
-                                      ? Icons.visibility_off_outlined
-                                      : Icons.visibility_outlined,
+                            const SizedBox(height: 8),
+                            TextField(
+                              controller: _schoolIdController,
+                              textInputAction: TextInputAction.next,
+                              onSubmitted: (_) =>
+                                  FocusScope.of(context).nextFocus(),
+                              decoration: InputDecoration(
+                                hintText: "Enter your ID or email",
+                                prefixIcon: Icon(
+                                  Icons.check_box_outlined,
                                   color: Colors.grey.shade400,
+                                  size: 20,
+                                ),
+                                suffixIcon: const Icon(
+                                  Icons.check_circle,
+                                  color: AppColors.primaryMid,
                                   size: 22,
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 12),
+                    const SizedBox(height: 20),
 
-                  // Remember Me
-                  FadeTransition(
-                    opacity: _rememberFade,
-                    child: SlideTransition(
-                      position: _rememberSlide,
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: Checkbox(
-                              value: _rememberMe,
-                              onChanged: (val) {
-                                setState(() {
-                                  _rememberMe = val ?? false;
-                                });
-                              },
-                              activeColor: AppColors.primaryMid,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              side: BorderSide(
-                                color: Colors.grey.shade400,
-                                width: 1.5,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Expanded(
-                            child: Text(
-                              "Remember Me",
+                    // Password Label + Field
+                    FadeTransition(
+                      opacity: _passwordFade,
+                      child: SlideTransition(
+                        position: _passwordSlide,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Password",
                               style: TextStyle(
-                                fontSize: 14,
-                                color: AppColors.textSecondary,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
                               ),
                             ),
-                          ),
-                          if (!widget.isRegistrationFlow)
-                            TextButton(
-                              onPressed: () async {
-                                final identifier = await Navigator.push<String>(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => PasswordResetScreen(
-                                      initialIdentifier:
-                                          _schoolIdController.text,
-                                    ),
+                            const SizedBox(height: 8),
+                            TextField(
+                              controller: _passwordController,
+                              textInputAction: TextInputAction.done,
+                              onSubmitted: (_) => _onButtonTap(),
+                              obscureText: _obscurePassword,
+                              decoration: InputDecoration(
+                                hintText: "Password",
+                                prefixIcon: Icon(
+                                  Icons.lock_outline,
+                                  color: Colors.grey.shade400,
+                                  size: 20,
+                                ),
+                                suffixIcon: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _obscurePassword = !_obscurePassword;
+                                    });
+                                  },
+                                  child: Icon(
+                                    _obscurePassword
+                                        ? Icons.visibility_off_outlined
+                                        : Icons.visibility_outlined,
+                                    color: Colors.grey.shade400,
+                                    size: 22,
                                   ),
-                                );
-                                if (identifier != null && mounted) {
-                                  _schoolIdController.text = identifier;
-                                  _passwordController.clear();
-                                }
-                              },
-                              child: const Text('Forgot password?'),
+                                ),
+                              ),
                             ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 28),
+                    const SizedBox(height: 12),
 
-                  // LOG IN NOW Button
-                  FadeTransition(
-                    opacity: _buttonFade,
-                    child: SlideTransition(
-                      position: _buttonSlide,
-                      child: Consumer(
-                        builder: (context, ref, child) {
-                          final isLoading = ref.watch(loginLoadingProvider);
-                          return PrimaryButton(
-                            text: isLoading ? "LOGGING IN..." : "LOG IN NOW",
-                            onPressed: isLoading ? null : () => _onButtonTap(),
-                            isGradient: false,
-                          );
-                        },
+                    // Remember Me
+                    FadeTransition(
+                      opacity: _rememberFade,
+                      child: SlideTransition(
+                        position: _rememberSlide,
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: Checkbox(
+                                value: _rememberMe,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _rememberMe = val ?? false;
+                                  });
+                                },
+                                activeColor: AppColors.primaryMid,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                side: BorderSide(
+                                  color: Colors.grey.shade400,
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Expanded(
+                              child: Text(
+                                "Remember Me",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                            if (!widget.isRegistrationFlow)
+                              TextButton(
+                                onPressed: () async {
+                                  final identifier =
+                                      await Navigator.push<String>(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => PasswordResetScreen(
+                                            initialIdentifier:
+                                                _schoolIdController.text,
+                                          ),
+                                        ),
+                                      );
+                                  if (identifier != null && mounted) {
+                                    _schoolIdController.text = identifier;
+                                    _passwordController.clear();
+                                  }
+                                },
+                                child: const Text('Forgot password?'),
+                              ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 30),
-                ],
+                    const SizedBox(height: 28),
+
+                    // LOG IN NOW Button
+                    FadeTransition(
+                      opacity: _buttonFade,
+                      child: SlideTransition(
+                        position: _buttonSlide,
+                        child: Consumer(
+                          builder: (context, ref, child) {
+                            final isLoading = ref.watch(loginLoadingProvider);
+                            return PrimaryButton(
+                              text: isLoading ? "LOGGING IN..." : "LOG IN NOW",
+                              onPressed: isLoading
+                                  ? null
+                                  : () => _onButtonTap(),
+                              isGradient: false,
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 30),
+                  ],
+                ),
               ),
             ),
           ],

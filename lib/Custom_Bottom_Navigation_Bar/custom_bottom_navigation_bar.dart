@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 
@@ -32,70 +33,73 @@ class CustomBottomNavigationBar extends StatelessWidget {
     ),
     child: SafeArea(
       top: false,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-        child: Row(
-          children: List.generate(_items.length, (index) {
-            final selected = currentIndex == index;
-            final item = _items[index];
-            return Expanded(
-              child: Semantics(
-                button: true,
-                selected: selected,
-                label: item.$3,
-                excludeSemantics: true,
-                child: Tooltip(
-                  message: item.$3,
-                  child: InkWell(
-                    key: ValueKey('teacher-nav-${item.$3}'),
-                    onTap: () => onTap(index),
-                    borderRadius: BorderRadius.circular(14),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 3),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 180),
-                            width: 46,
-                            height: 30,
-                            decoration: BoxDecoration(
-                              color: selected
-                                  ? AppColors.primaryVeryLight
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(11),
+      child: ResponsiveBody(
+        maxWidth: 640,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+          child: Row(
+            children: List.generate(_items.length, (index) {
+              final selected = currentIndex == index;
+              final item = _items[index];
+              return Expanded(
+                child: Semantics(
+                  button: true,
+                  selected: selected,
+                  label: item.$3,
+                  excludeSemantics: true,
+                  child: Tooltip(
+                    message: item.$3,
+                    child: InkWell(
+                      key: ValueKey('teacher-nav-${item.$3}'),
+                      onTap: () => onTap(index),
+                      borderRadius: BorderRadius.circular(14),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 3),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              width: 46,
+                              height: 30,
+                              decoration: BoxDecoration(
+                                color: selected
+                                    ? AppColors.primaryVeryLight
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(11),
+                              ),
+                              child: Icon(
+                                selected ? item.$2 : item.$1,
+                                size: 21,
+                                color: selected
+                                    ? AppColors.primaryMid
+                                    : const Color(0xFF92909B),
+                              ),
                             ),
-                            child: Icon(
-                              selected ? item.$2 : item.$1,
-                              size: 21,
-                              color: selected
-                                  ? AppColors.primaryMid
-                                  : const Color(0xFF92909B),
+                            const SizedBox(height: 4),
+                            Text(
+                              item.$3,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: selected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: selected
+                                    ? AppColors.primaryMid
+                                    : const Color(0xFF92909B),
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            item.$3,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: selected
-                                  ? FontWeight.w700
-                                  : FontWeight.w500,
-                              color: selected
-                                  ? AppColors.primaryMid
-                                  : const Color(0xFF92909B),
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            );
-          }),
+              );
+            }),
+          ),
         ),
       ),
     ),

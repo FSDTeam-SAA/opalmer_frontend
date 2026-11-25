@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:opalmer_education/core/widgets/app_dropdown_field.dart';
 import 'package:flutter/material.dart';
@@ -288,168 +289,170 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
           ),
         ),
       ),
-      body: Stack(
-        children: [
-          ListView(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-            children: [
-              _buildInputLabel("Class"),
-              const SizedBox(height: 8),
-              classesAsync.when(
-                data: (classes) => AppDropdownField<String>(
-                  value: _selectedClassId,
-                  hintText: classes.isEmpty
-                      ? "No classes available"
-                      : "Choose a class",
-                  prefixIcon: const Icon(Icons.school_outlined, size: 20),
-                  items: classes
-                      .map(
-                        (cls) => DropdownMenuItem(
-                          value: cls.id,
-                          child: Text(
-                            '${cls.subject} · Grade ${cls.grade}'
-                            '${cls.section?.trim().isNotEmpty == true ? ' · ${cls.section}' : ''}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+      body: ResponsiveBody(
+        child: Stack(
+          children: [
+            ListView(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              children: [
+                _buildInputLabel("Class"),
+                const SizedBox(height: 8),
+                classesAsync.when(
+                  data: (classes) => AppDropdownField<String>(
+                    value: _selectedClassId,
+                    hintText: classes.isEmpty
+                        ? "No classes available"
+                        : "Choose a class",
+                    prefixIcon: const Icon(Icons.school_outlined, size: 20),
+                    items: classes
+                        .map(
+                          (cls) => DropdownMenuItem(
+                            value: cls.id,
+                            child: Text(
+                              '${cls.subject} · Grade ${cls.grade}'
+                              '${cls.section?.trim().isNotEmpty == true ? ' · ${cls.section}' : ''}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) =>
+                        setState(() => _selectedClassId = value),
+                  ),
+                  loading: () => const Center(child: LinearProgressIndicator()),
+                  error: (_, _) => const Text("Error loading classes"),
+                ),
+
+                const SizedBox(height: 16),
+                _buildInputLabel("Quiz Title"),
+                const SizedBox(height: 8),
+                _buildTextField(
+                  hint: "e.g. Fractions practice",
+                  controller: _titleController,
+                ),
+
+                const SizedBox(height: 16),
+                _buildInputLabel("Quiz Time (minutes)"),
+                const SizedBox(height: 8),
+                _buildTextField(
+                  hint: "e.g. 15",
+                  controller: _timeController,
+                  keyboardType: TextInputType.number,
+                ),
+
+                const SizedBox(height: 16),
+                _buildInputLabel("Cover Image (optional)"),
+                const SizedBox(height: 8),
+                _buildCoverPicker(),
+
+                const SizedBox(height: 16),
+                _buildInputLabel("AI Prompt"),
+                TextButton.icon(
+                  onPressed: _isCreatingManual || _isGenerating
+                      ? null
+                      : _writeQuestions,
+                  icon: const Icon(Icons.edit_note),
+                  label: Text(
+                    _isCreatingManual
+                        ? 'Creating draft...'
+                        : 'Write questions manually',
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _buildTextField(
+                  hint: "Describe the topic and questions you need…",
+                  controller: _promptController,
+                  maxLines: 3,
+                  suffixIcon: _isGenerating
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: Padding(
+                            padding: EdgeInsets.all(10),
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : IconButton(
+                          tooltip: 'Generate questions',
+                          icon: const Icon(
+                            Icons.auto_awesome,
+                            color: Color(0xFF871DAD),
+                            size: 20,
+                          ),
+                          onPressed: _generateQuestions,
+                        ),
+                ),
+
+                const SizedBox(height: 24),
+                const Text(
+                  "Questions",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF222222),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                if (_generatedQuestions.isEmpty)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 20,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8F6FB),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Column(
+                      children: [
+                        Icon(
+                          Icons.quiz_outlined,
+                          color: Color(0xFF871DAD),
+                          size: 28,
+                        ),
+                        SizedBox(height: 12),
+                        Text(
+                          'Your questions will appear here',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        SizedBox(height: 6),
+                        Text(
+                          'Write questions manually or generate them from an AI prompt.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Color(0xFF787481),
+                            fontSize: 13,
                           ),
                         ),
-                      )
-                      .toList(),
-                  onChanged: (value) =>
-                      setState(() => _selectedClassId = value),
-                ),
-                loading: () => const Center(child: LinearProgressIndicator()),
-                error: (_, _) => const Text("Error loading classes"),
-              ),
-
-              const SizedBox(height: 16),
-              _buildInputLabel("Quiz Title"),
-              const SizedBox(height: 8),
-              _buildTextField(
-                hint: "e.g. Fractions practice",
-                controller: _titleController,
-              ),
-
-              const SizedBox(height: 16),
-              _buildInputLabel("Quiz Time (minutes)"),
-              const SizedBox(height: 8),
-              _buildTextField(
-                hint: "e.g. 15",
-                controller: _timeController,
-                keyboardType: TextInputType.number,
-              ),
-
-              const SizedBox(height: 16),
-              _buildInputLabel("Cover Image (optional)"),
-              const SizedBox(height: 8),
-              _buildCoverPicker(),
-
-              const SizedBox(height: 16),
-              _buildInputLabel("AI Prompt"),
-              TextButton.icon(
-                onPressed: _isCreatingManual || _isGenerating
-                    ? null
-                    : _writeQuestions,
-                icon: const Icon(Icons.edit_note),
-                label: Text(
-                  _isCreatingManual
-                      ? 'Creating draft...'
-                      : 'Write questions manually',
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildTextField(
-                hint: "Describe the topic and questions you need…",
-                controller: _promptController,
-                maxLines: 3,
-                suffixIcon: _isGenerating
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: Padding(
-                          padding: EdgeInsets.all(10),
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      )
-                    : IconButton(
-                        tooltip: 'Generate questions',
-                        icon: const Icon(
-                          Icons.auto_awesome,
-                          color: Color(0xFF871DAD),
-                          size: 20,
-                        ),
-                        onPressed: _generateQuestions,
-                      ),
-              ),
-
-              const SizedBox(height: 24),
-              const Text(
-                "Questions",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF222222),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              if (_generatedQuestions.isEmpty)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 20,
+                      ],
+                    ),
                   ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8F6FB),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Column(
-                    children: [
-                      Icon(
-                        Icons.quiz_outlined,
-                        color: Color(0xFF871DAD),
-                        size: 28,
-                      ),
-                      SizedBox(height: 12),
-                      Text(
-                        'Your questions will appear here',
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      SizedBox(height: 6),
-                      Text(
-                        'Write questions manually or generate them from an AI prompt.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Color(0xFF787481),
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
 
-              ...List.generate(_generatedQuestions.length, (index) {
-                final q = _generatedQuestions[index];
-                return _buildQuestionTile(
-                  number: index + 1,
-                  question: q['question'] ?? '',
-                  options: List<String>.from(q['options'] ?? []),
-                  answer: q['answer'] ?? '',
-                  explanation: q['explanation']?.toString() ?? '',
-                  type: q['type']?.toString() ?? 'normal',
-                  difficulty: q['difficulty']?.toString() ?? 'medium',
-                  imageUrl: q['imageUrl']?.toString() ?? '',
-                );
-              }),
-            ],
-          ),
-
-          if (gradingState.isLoading || _isCreatingManual)
-            Container(
-              color: Colors.black26,
-              child: const Center(child: CircularProgressIndicator()),
+                ...List.generate(_generatedQuestions.length, (index) {
+                  final q = _generatedQuestions[index];
+                  return _buildQuestionTile(
+                    number: index + 1,
+                    question: q['question'] ?? '',
+                    options: List<String>.from(q['options'] ?? []),
+                    answer: q['answer'] ?? '',
+                    explanation: q['explanation']?.toString() ?? '',
+                    type: q['type']?.toString() ?? 'normal',
+                    difficulty: q['difficulty']?.toString() ?? 'medium',
+                    imageUrl: q['imageUrl']?.toString() ?? '',
+                  );
+                }),
+              ],
             ),
-        ],
+
+            if (gradingState.isLoading || _isCreatingManual)
+              Container(
+                color: Colors.black26,
+                child: const Center(child: CircularProgressIndicator()),
+              ),
+          ],
+        ),
       ),
       bottomNavigationBar: SafeArea(
         top: false,

@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,39 +18,42 @@ class StudentAttendanceScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          children: [
-            const SizedBox(height: 16),
-            _buildTableHeader(),
-            Expanded(
-              child: attendanceAsync.when(
-                data: (records) {
-                  if (records.isEmpty) {
-                    return const Center(
-                      child: Text("No attendance records found"),
-                    );
-                  }
-                  return ListView.builder(
-                    padding: const EdgeInsets.only(top: 8, bottom: 20),
-                    itemCount: records.length,
-                    itemBuilder: (context, index) {
-                      final record = records[index];
-                      final date = record.date.toString().split(' ')[0];
-                      return _buildAttendanceRow(
-                        date,
-                        studentName,
-                        record.status,
+      body: ResponsiveBody(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            children: [
+              const SizedBox(height: 16),
+              _buildTableHeader(),
+              Expanded(
+                child: attendanceAsync.when(
+                  data: (records) {
+                    if (records.isEmpty) {
+                      return const Center(
+                        child: Text("No attendance records found"),
                       );
-                    },
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, stack) => Center(child: Text('Error: $err')),
+                    }
+                    return ListView.builder(
+                      padding: const EdgeInsets.only(top: 8, bottom: 20),
+                      itemCount: records.length,
+                      itemBuilder: (context, index) {
+                        final record = records[index];
+                        final date = record.date.toString().split(' ')[0];
+                        return _buildAttendanceRow(
+                          date,
+                          studentName,
+                          record.status,
+                        );
+                      },
+                    );
+                  },
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (err, stack) => Center(child: Text('Error: $err')),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

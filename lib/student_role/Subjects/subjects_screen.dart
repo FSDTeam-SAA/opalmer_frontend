@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import '../../core/widgets/app_back_button.dart';
@@ -24,19 +25,25 @@ class SubjectsScreen extends ConsumerWidget {
                 if (classes.isEmpty) {
                   return const Center(child: Text("No classes found"));
                 }
-                return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
-                  itemCount: classes.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 16),
-                  itemBuilder: (context, index) {
-                    final studentClass = classes[index];
-                    return SubjectCard(
-                      width: double.infinity,
-                      studentClass: studentClass,
-                      subjectName: studentClass.subject,
-                    );
-                  },
+                final gutter = Responsive.gutter(
+                  context,
+                  maxWidth: Responsive.dashboardMaxWidth,
+                  base: 24,
+                );
+                return SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(gutter, 24, gutter, 100),
+                  child: ResponsiveWrapGrid(
+                    minTileWidth: 420,
+                    maxColumns: 2,
+                    children: [
+                      for (final studentClass in classes)
+                        SubjectCard(
+                          width: double.infinity,
+                          studentClass: studentClass,
+                          subjectName: studentClass.subject,
+                        ),
+                    ],
+                  ),
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -62,7 +69,14 @@ class SubjectsScreen extends ConsumerWidget {
         ),
         SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            padding: EdgeInsets.symmetric(
+              horizontal: Responsive.gutter(
+                context,
+                maxWidth: Responsive.dashboardMaxWidth,
+                base: 24,
+              ),
+              vertical: 20,
+            ),
             child: AppPageHeader(
               homeColor: Colors.white,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

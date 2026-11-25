@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import '../../core/widgets/app_back_button.dart';
@@ -16,138 +17,140 @@ class StudentQuizResultScreen extends StatelessWidget {
           actions: [const AppHomeButton()],
           title: const Text('Assessment submitted'),
         ),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.check_circle_outline,
-                  size: 72,
-                  color: Colors.green,
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Your answers have been saved. Your grade will appear after your teacher reviews and publishes it.',
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                FilledButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Done'),
-                ),
-              ],
+        body: ResponsiveBody(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.check_circle_outline,
+                    size: 72,
+                    color: Colors.green,
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Your answers have been saved. Your grade will appear after your teacher reviews and publishes it.',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Done'),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       );
     }
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF871DAD), Color(0xFF9D39C3)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+      body: ResponsiveBody(
+        child: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF871DAD), Color(0xFF9D39C3)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: AppBackButton(),
-              ),
-              // Celebratory Header
-              const Text(
-                "Quiz Completed🏆",
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+          child: SafeArea(
+            child: Column(
+              children: [
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: AppBackButton(),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                "You answered ${result.correctCount} out of ${result.totalQuestions} questions correctly",
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w400,
+                // Celebratory Header
+                const Text(
+                  "Quiz Completed🏆",
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "Score: ${result.percentage.toInt()}%",
-                style: const TextStyle(
-                  fontSize: 24,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+                const SizedBox(height: 12),
+                Text(
+                  "You answered ${result.correctCount} out of ${result.totalQuestions} questions correctly",
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 40),
+                const SizedBox(height: 8),
+                Text(
+                  "Score: ${result.percentage.toInt()}%",
+                  style: const TextStyle(
+                    fontSize: 24,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 40),
 
-              // Answer Summary
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  children: [
-                    const Text(
-                      "Summary of answers:",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                // Answer Summary
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    children: [
+                      const Text(
+                        "Summary of answers:",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    ...result.answers
-                        .map(
-                          (ans) => Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: _buildResultCard(
-                              ans.question,
-                              ans.selectedAnswer,
-                              ans.correctAnswer ?? "N/A",
-                              ans.isCorrect,
-                            ),
+                      const SizedBox(height: 16),
+                      ...result.answers.map(
+                        (ans) => Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: _buildResultCard(
+                            ans.question,
+                            ans.selectedAnswer,
+                            ans.correctAnswer ?? "N/A",
+                            ans.isCorrect,
                           ),
-                        )
-                        ,
-                  ],
-                ),
-              ),
-
-              // Footer Button
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                      elevation: 4,
-                    ),
-                    child: const Text(
-                      "Back To Quizzes",
-                      style: TextStyle(
-                        color: Color(0xFF871DAD),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                    ],
+                  ),
+                ),
+
+                // Footer Button
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 4,
+                      ),
+                      child: const Text(
+                        "Back To Quizzes",
+                        style: TextStyle(
+                          color: Color(0xFF871DAD),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

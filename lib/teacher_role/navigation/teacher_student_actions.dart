@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -126,57 +127,59 @@ class StudentAssignmentsScreen extends ConsumerWidget {
       actions: [const AppHomeButton()],
       title: const Text('Student Assignments'),
     ),
-    body: ref
-        .watch(classHomeworkProvider(classData.id))
-        .when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, _) => Center(
-            child: TextButton(
-              onPressed: () =>
-                  ref.invalidate(classHomeworkProvider(classData.id)),
-              child: const Text('Unable to load assignments. Retry'),
+    body: ResponsiveBody(
+      child: ref
+          .watch(classHomeworkProvider(classData.id))
+          .when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (_, _) => Center(
+              child: TextButton(
+                onPressed: () =>
+                    ref.invalidate(classHomeworkProvider(classData.id)),
+                child: const Text('Unable to load assignments. Retry'),
+              ),
             ),
-          ),
-          data: (rows) {
-            final items = rows.where((hw) {
-              final ids = hw['studentIds'] as List? ?? [];
-              return ids.isEmpty ||
-                  ids.any(
-                    (id) =>
-                        (id is Map ? id['_id'] : id).toString() ==
-                        student['_id'].toString(),
-                  );
-            }).toList();
-            return ListView(
-              children: [
-                if (items.isEmpty)
-                  const ListTile(
-                    title: Text('No assignments for this student.'),
-                  ),
-                ...items.map(
-                  (item) => ListTile(
-                    title: Text('${item['title']}'),
-                    subtitle: Text('${item['status'] ?? 'published'}'),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => TeacherContextFrame(
-                          classData: classData,
-                          student: student,
-                          child: AssignmentDetailsScreen(
-                            homeworkId: item['_id'].toString(),
-                            studentId: student['_id'].toString(),
+            data: (rows) {
+              final items = rows.where((hw) {
+                final ids = hw['studentIds'] as List? ?? [];
+                return ids.isEmpty ||
+                    ids.any(
+                      (id) =>
+                          (id is Map ? id['_id'] : id).toString() ==
+                          student['_id'].toString(),
+                    );
+              }).toList();
+              return ListView(
+                children: [
+                  if (items.isEmpty)
+                    const ListTile(
+                      title: Text('No assignments for this student.'),
+                    ),
+                  ...items.map(
+                    (item) => ListTile(
+                      title: Text('${item['title']}'),
+                      subtitle: Text('${item['status'] ?? 'published'}'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => TeacherContextFrame(
+                            classData: classData,
+                            student: student,
+                            child: AssignmentDetailsScreen(
+                              homeworkId: item['_id'].toString(),
+                              studentId: student['_id'].toString(),
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            );
-          },
-        ),
+                ],
+              );
+            },
+          ),
+    ),
   );
 }
 
@@ -194,62 +197,64 @@ class StudentAssessmentsScreen extends ConsumerWidget {
       actions: [const AppHomeButton()],
       title: const Text('Student Assessments'),
     ),
-    body: ref
-        .watch(studentQuizResultsProvider(student['_id'].toString()))
-        .when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, _) => Center(
-            child: TextButton(
-              onPressed: () => ref.invalidate(
-                studentQuizResultsProvider(student['_id'].toString()),
+    body: ResponsiveBody(
+      child: ref
+          .watch(studentQuizResultsProvider(student['_id'].toString()))
+          .when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (_, _) => Center(
+              child: TextButton(
+                onPressed: () => ref.invalidate(
+                  studentQuizResultsProvider(student['_id'].toString()),
+                ),
+                child: const Text('Unable to load assessments. Retry'),
               ),
-              child: const Text('Unable to load assessments. Retry'),
             ),
-          ),
-          data: (rows) {
-            final items = rows
-                .where(
-                  (r) =>
-                      r['quizId'] is Map &&
-                      (r['quizId']['classId'] is Map
-                                  ? r['quizId']['classId']['_id']
-                                  : r['quizId']['classId'])
-                              ?.toString() ==
-                          classData.id,
-                )
-                .toList();
-            return ListView(
-              children: [
-                if (items.isEmpty)
-                  const ListTile(
-                    title: Text('No assessment attempts in this class.'),
-                  ),
-                ...items.map(
-                  (r) => ListTile(
-                    title: Text('${r['quizId']['title']}'),
-                    subtitle: Text(
-                      '${r['progress']?['status']} · ${r['gradeStatus'] ?? 'pending_review'}',
+            data: (rows) {
+              final items = rows
+                  .where(
+                    (r) =>
+                        r['quizId'] is Map &&
+                        (r['quizId']['classId'] is Map
+                                    ? r['quizId']['classId']['_id']
+                                    : r['quizId']['classId'])
+                                ?.toString() ==
+                            classData.id,
+                  )
+                  .toList();
+              return ListView(
+                children: [
+                  if (items.isEmpty)
+                    const ListTile(
+                      title: Text('No assessment attempts in this class.'),
                     ),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: r['progress']?['status'] != 'completed'
-                        ? null
-                        : () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => TeacherContextFrame(
-                                classData: classData,
-                                student: student,
-                                child: StudentDetailScreen(
-                                  resultId: r['_id'].toString(),
+                  ...items.map(
+                    (r) => ListTile(
+                      title: Text('${r['quizId']['title']}'),
+                      subtitle: Text(
+                        '${r['progress']?['status']} · ${r['gradeStatus'] ?? 'pending_review'}',
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: r['progress']?['status'] != 'completed'
+                          ? null
+                          : () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => TeacherContextFrame(
+                                  classData: classData,
+                                  student: student,
+                                  child: StudentDetailScreen(
+                                    resultId: r['_id'].toString(),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
+                    ),
                   ),
-                ),
-              ],
-            );
-          },
-        ),
+                ],
+              );
+            },
+          ),
+    ),
   );
 }

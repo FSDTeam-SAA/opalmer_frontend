@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,116 +34,124 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Header ──
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: AppPageHeader(
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF871DAD),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.arrow_back, color: Colors.white),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  const Text(
-                    "Homework",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // ── Tab Toggle ──
-            Center(
-              child: Container(
-                width: 250,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F1F1),
-                  borderRadius: BorderRadius.circular(8),
+      body: ResponsiveBody(
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Header ──
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
                 ),
-                child: Row(
+                child: AppPageHeader(
                   children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => isClassSelected = true),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: isClassSelected
-                                ? const Color(0xFF871DAD)
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            "Class",
-                            style: TextStyle(
-                              color: isClassSelected
-                                  ? Colors.white
-                                  : Colors.grey.shade600,
-                              fontWeight: isClassSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                              fontSize: 14,
-                            ),
-                          ),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF871DAD),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
                         ),
                       ),
                     ),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => isClassSelected = false),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: !isClassSelected
-                                ? const Color(0xFF871DAD)
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            "Groups",
-                            style: TextStyle(
-                              color: !isClassSelected
-                                  ? Colors.white
-                                  : Colors.grey.shade600,
-                              fontWeight: !isClassSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
+                    const SizedBox(width: 16),
+                    const Text(
+                      "Homework",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
-            Expanded(
-              child: isClassSelected
-                  ? TeacherAssignmentList(classId: widget.classId)
-                  : _buildGroupsTab(),
-            ),
-          ],
+              // ── Tab Toggle ──
+              Center(
+                child: Container(
+                  width: 250,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F1F1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => setState(() => isClassSelected = true),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: isClassSelected
+                                  ? const Color(0xFF871DAD)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              "Class",
+                              style: TextStyle(
+                                color: isClassSelected
+                                    ? Colors.white
+                                    : Colors.grey.shade600,
+                                fontWeight: isClassSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => setState(() => isClassSelected = false),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: !isClassSelected
+                                  ? const Color(0xFF871DAD)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              "Groups",
+                              style: TextStyle(
+                                color: !isClassSelected
+                                    ? Colors.white
+                                    : Colors.grey.shade600,
+                                fontWeight: !isClassSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              Expanded(
+                child: isClassSelected
+                    ? TeacherAssignmentList(classId: widget.classId)
+                    : _buildGroupsTab(),
+              ),
+            ],
+          ),
         ),
       ),
     );

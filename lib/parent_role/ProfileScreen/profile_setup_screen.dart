@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'dart:convert';
 import 'dart:io';
@@ -114,10 +115,14 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     final email = _emailController.text.trim();
     final validation = _nameController.text.trim().isEmpty
         ? 'Enter your name.'
-        : email.isNotEmpty && !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)
-        ? 'Enter a valid email address.' : null;
+        : email.isNotEmpty &&
+              !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)
+        ? 'Enter a valid email address.'
+        : null;
     if (validation != null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(validation)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(validation)));
       return;
     }
     final user = ref.read(authStateProvider);
@@ -208,8 +213,8 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                 const AnimatedWaveHeader(height: 280),
                 SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: Responsive.gutter(context, base: 20),
                       vertical: 10,
                     ),
                     child: Column(
@@ -311,7 +316,9 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
 
             // ── Form Section ──
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: EdgeInsets.symmetric(
+                horizontal: Responsive.gutter(context, base: 24),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -360,7 +367,9 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
 
             // ── Action Button ──
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: EdgeInsets.symmetric(
+                horizontal: Responsive.gutter(context, base: 24),
+              ),
               child: SizedBox(
                 width: double.infinity,
                 height: 56,

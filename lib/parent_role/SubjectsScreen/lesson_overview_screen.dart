@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 
 import 'package:dio/dio.dart';
@@ -17,102 +18,104 @@ class LessonOverviewScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.only(bottom: 30),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
-                child: AppPageHeader(
-                  children: [
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: const BoxDecoration(
-                          color: AppColors.primaryMid,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.arrow_back,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    const Expanded(
-                      child: Text(
-                        'Lessons Overview',
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF222222),
+      body: ResponsiveBody(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 30),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
+                  child: AppPageHeader(
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: const BoxDecoration(
+                            color: AppColors.primaryMid,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
+                            size: 24,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              _buildSection(
-                title: 'Objective',
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        lesson.objective.isEmpty
-                            ? 'No objective provided.'
-                            : lesson.objective,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey.shade600,
-                          fontWeight: FontWeight.w500,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                    if (lesson.createdAt.isNotEmpty) ...[
                       const SizedBox(width: 16),
-                      Text(
-                        lesson.createdAt,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade600,
+                      const Expanded(
+                        child: Text(
+                          'Lessons Overview',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF222222),
+                          ),
                         ),
                       ),
                     ],
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              _buildSection(
-                title: 'Document',
-                child: _buildDocumentCard(context),
-              ),
-              const SizedBox(height: 32),
-              _buildSection(
-                title: 'Note',
-                child: Text(
-                  lesson.note.isEmpty ? 'No note provided.' : lesson.note,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    color: Color(0xFF444444),
-                    fontWeight: FontWeight.w500,
-                    height: 1.5,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 12),
+                _buildSection(
+                  title: 'Objective',
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          lesson.objective.isEmpty
+                              ? 'No objective provided.'
+                              : lesson.objective,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                      if (lesson.createdAt.isNotEmpty) ...[
+                        const SizedBox(width: 16),
+                        Text(
+                          lesson.createdAt,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                _buildSection(
+                  title: 'Document',
+                  child: _buildDocumentCard(context),
+                ),
+                const SizedBox(height: 32),
+                _buildSection(
+                  title: 'Note',
+                  child: Text(
+                    lesson.note.isEmpty ? 'No note provided.' : lesson.note,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      color: Color(0xFF444444),
+                      fontWeight: FontWeight.w500,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -335,6 +338,7 @@ class _LessonDocumentViewerDialogState
 
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      constraints: const BoxConstraints(maxWidth: 760),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: ConstrainedBox(
         constraints: BoxConstraints(

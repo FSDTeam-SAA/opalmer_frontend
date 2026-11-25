@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -345,63 +346,71 @@ class _DashboardContent extends ConsumerWidget {
             );
           },
         ),
-        const SizedBox(height: 16),
-        ChatDashboardTabs(
-          selectedTab: selectedTab,
-          groupTabLabel: role.groupTabLabel,
-          onChanged: onTabChanged,
-        ),
-        const SizedBox(height: 12),
         Expanded(
-          child: chatState.isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : chatState.error != null
-              ? Center(
-                  child: Text(
-                    chatState.error!,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                )
-              : IndexedStack(
-                  index: selectedTab,
-                  children: [
-                    ChatRoomList(
-                      sessions: directRooms,
-                      tab: 0,
-                      role: role,
-                      openedIndex: openedIndex,
-                      onSlide: onSlide,
-                    ),
-                    ChatRoomList(
-                      sessions: draftRooms,
-                      tab: 1,
-                      role: role,
-                      openedIndex: openedIndex,
-                      onSlide: onSlide,
-                    ),
-                    if (role == ChatRole.parent && isLoadingTeachers)
-                      const Center(child: CircularProgressIndicator())
-                    else
-                      ChatRoomList(
-                        sessions: role == ChatRole.parent
-                            ? teacherSessions
-                            : groupRooms,
-                        tab: 2,
-                        role: role,
-                        openedIndex: openedIndex,
-                        onSlide: onSlide,
-                        emptyLabel: role == ChatRole.parent
-                            ? 'No teachers found'
-                            : null,
-                        onSessionTap: role == ChatRole.parent
-                            ? onTeacherTap
-                            : null,
-                        actionsBuilder: role == ChatRole.parent
-                            ? (_) => <ChatSessionAction>[]
-                            : null,
-                      ),
-                  ],
+          child: ResponsiveBody(
+            child: Column(
+              children: [
+                const SizedBox(height: 16),
+                ChatDashboardTabs(
+                  selectedTab: selectedTab,
+                  groupTabLabel: role.groupTabLabel,
+                  onChanged: onTabChanged,
                 ),
+                const SizedBox(height: 12),
+                Expanded(
+                  child: chatState.isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : chatState.error != null
+                      ? Center(
+                          child: Text(
+                            chatState.error!,
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        )
+                      : IndexedStack(
+                          index: selectedTab,
+                          children: [
+                            ChatRoomList(
+                              sessions: directRooms,
+                              tab: 0,
+                              role: role,
+                              openedIndex: openedIndex,
+                              onSlide: onSlide,
+                            ),
+                            ChatRoomList(
+                              sessions: draftRooms,
+                              tab: 1,
+                              role: role,
+                              openedIndex: openedIndex,
+                              onSlide: onSlide,
+                            ),
+                            if (role == ChatRole.parent && isLoadingTeachers)
+                              const Center(child: CircularProgressIndicator())
+                            else
+                              ChatRoomList(
+                                sessions: role == ChatRole.parent
+                                    ? teacherSessions
+                                    : groupRooms,
+                                tab: 2,
+                                role: role,
+                                openedIndex: openedIndex,
+                                onSlide: onSlide,
+                                emptyLabel: role == ChatRole.parent
+                                    ? 'No teachers found'
+                                    : null,
+                                onSessionTap: role == ChatRole.parent
+                                    ? onTeacherTap
+                                    : null,
+                                actionsBuilder: role == ChatRole.parent
+                                    ? (_) => <ChatSessionAction>[]
+                                    : null,
+                              ),
+                          ],
+                        ),
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );

@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/notification/notification.dart';
@@ -41,235 +42,238 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.only(bottom: 30),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Header ──
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
-                child: AppPageHeader(
-                  children: [
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: const BoxDecoration(
-                          color: AppColors.primaryMid,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.arrow_back,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Text(
-                      subject.name,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF222222),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // ── Summary Row (Attendance & Progress) ──
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  children: [
-                    _buildSummaryCard(
-                      label: "Attendance",
-                      value: "${subject.attendance}${subject.attendanceEmoji}",
-                      color: const Color(0xFF4CB07D),
-                    ),
-                    const SizedBox(width: 16),
-                    _buildSummaryCard(
-                      label: "Progress",
-                      value: subject.performance,
-                      color: const Color(0xFFF4B84F),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // ── Teacher Profile ──
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Text(
-                  "Teacher Profile",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF333333),
+      body: ResponsiveBody(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 30),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Header ──
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
                   ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 28,
-                      backgroundImage: NetworkImage(subject.teacherAvatar),
-                      backgroundColor: Colors.grey.shade200,
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Text(
-                        subject.teacherName,
+                  child: AppPageHeader(
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: const BoxDecoration(
+                            color: AppColors.primaryMid,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Text(
+                        subject.name,
                         style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
                           color: Color(0xFF222222),
                         ),
                       ),
-                    ),
-                    _buildContactButton(
-                      Icons.chat_bubble_rounded,
-                      onTap: _openTeacherChat,
-                    ),
-                    const SizedBox(width: 12),
-                    _buildContactButton(Icons.phone_rounded, onTap: () {}),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              // ── Progress Chart ──
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Text(
-                  "Progress",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF333333),
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              _buildChartCard(),
 
-              const SizedBox(height: 24),
-
-              // ── Action Grid ──
-              _buildActionTile(
-                "Student Notifications",
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => NotificationScreen(childId: studentId),
+                // ── Summary Row (Attendance & Progress) ──
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      _buildSummaryCard(
+                        label: "Attendance",
+                        value:
+                            "${subject.attendance}${subject.attendanceEmoji}",
+                        color: const Color(0xFF4CB07D),
+                      ),
+                      const SizedBox(width: 16),
+                      _buildSummaryCard(
+                        label: "Progress",
+                        value: subject.performance,
+                        color: const Color(0xFFF4B84F),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              _buildActionTile(
-                "Home Work",
-                onTap: () {
-                  Navigator.push(
+
+                const SizedBox(height: 24),
+
+                // ── Teacher Profile ──
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Text(
+                    "Teacher Profile",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF333333),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 28,
+                        backgroundImage: NetworkImage(subject.teacherAvatar),
+                        backgroundColor: Colors.grey.shade200,
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Text(
+                          subject.teacherName,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF222222),
+                          ),
+                        ),
+                      ),
+                      _buildContactButton(
+                        Icons.chat_bubble_rounded,
+                        onTap: _openTeacherChat,
+                      ),
+                      const SizedBox(width: 12),
+                      _buildContactButton(Icons.phone_rounded, onTap: () {}),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+
+                // ── Progress Chart ──
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Text(
+                    "Progress",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF333333),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildChartCard(),
+
+                const SizedBox(height: 24),
+
+                // ── Action Grid ──
+                _buildActionTile(
+                  "Student Notifications",
+                  onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => HomeworkScreen(
-                        childId: studentId,
-                        classId: subject.id,
-                        subjectName: subject.name,
-                      ),
+                      builder: (_) => NotificationScreen(childId: studentId),
                     ),
-                  );
-                },
-              ),
-              _buildActionTile(
-                "Attendance",
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AttendanceScreen(
-                        subjectName: subject.name,
-                        classId: subject.id,
-                        studentId: studentId,
-                        studentName: studentName,
+                  ),
+                ),
+                _buildActionTile(
+                  "Home Work",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HomeworkScreen(
+                          childId: studentId,
+                          classId: subject.id,
+                          subjectName: subject.name,
+                        ),
                       ),
-                    ),
-                  );
-                },
-              ),
-              _buildActionTile(
-                "Lessons",
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => LessonsScreen(
-                        childId: studentId,
-                        classId: subject.id,
-                        subjectName: subject.name,
+                    );
+                  },
+                ),
+                _buildActionTile(
+                  "Attendance",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AttendanceScreen(
+                          subjectName: subject.name,
+                          classId: subject.id,
+                          studentId: studentId,
+                          studentName: studentName,
+                        ),
                       ),
-                    ),
-                  );
-                },
-              ),
-              _buildActionTile(
-                "Behavior Record",
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => BehaviorRecordScreen(
-                        subjectName: subject.name,
-                        childId: studentId,
-                        childName: studentName,
+                    );
+                  },
+                ),
+                _buildActionTile(
+                  "Lessons",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => LessonsScreen(
+                          childId: studentId,
+                          classId: subject.id,
+                          subjectName: subject.name,
+                        ),
                       ),
-                    ),
-                  );
-                },
-              ),
-              _buildActionTile(
-                "Academic Documents",
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AcademicDocumentsScreen(
-                        subjectName: subject.name,
-                        childId: studentId,
-                        childName: studentName,
+                    );
+                  },
+                ),
+                _buildActionTile(
+                  "Behavior Record",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BehaviorRecordScreen(
+                          subjectName: subject.name,
+                          childId: studentId,
+                          childName: studentName,
+                        ),
                       ),
-                    ),
-                  );
-                },
-              ),
-              _buildActionTile(
-                "Grading Progress",
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => GradingProgressScreen(
-                        subjectName: subject.name,
-                        childId: studentId,
-                        classId: subject.id,
+                    );
+                  },
+                ),
+                _buildActionTile(
+                  "Academic Documents",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AcademicDocumentsScreen(
+                          subjectName: subject.name,
+                          childId: studentId,
+                          childName: studentName,
+                        ),
                       ),
-                    ),
-                  );
-                },
-              ),
-            ],
+                    );
+                  },
+                ),
+                _buildActionTile(
+                  "Grading Progress",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => GradingProgressScreen(
+                          subjectName: subject.name,
+                          childId: studentId,
+                          classId: subject.id,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import '../../core/widgets/access_guide_screen.dart';
 import 'package:flutter/material.dart';
@@ -50,8 +51,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       SafeArea(
                         bottom: false,
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: Responsive.gutter(context, base: 24),
                             vertical: 16,
                           ),
                           child: AppPageHeader(
@@ -163,7 +164,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
             // Menu Items List
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: EdgeInsets.symmetric(
+                horizontal: Responsive.gutter(context, base: 24),
+              ),
               child: Column(
                 children: [
                   _buildMenuTile(

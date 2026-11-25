@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
@@ -98,37 +99,39 @@ class _NotificationPreferencesScreenState
       title: const Text('Notification Settings'),
       actions: const [AppHomeButton()],
     ),
-    body: _loading
-        ? const Center(child: CircularProgressIndicator())
-        : ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              if (_error != null) ...[
-                Text(_error!, style: const TextStyle(color: Colors.red)),
-                TextButton(
-                  onPressed: _load,
-                  child: const Text('Retry loading'),
+    body: ResponsiveBody(
+      child: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                if (_error != null) ...[
+                  Text(_error!, style: const TextStyle(color: Colors.red)),
+                  TextButton(
+                    onPressed: _load,
+                    child: const Text('Retry loading'),
+                  ),
+                ],
+                for (final entry in categories.entries)
+                  SwitchListTile.adaptive(
+                    title: Text(entry.value),
+                    value: _preferences[entry.key] != false,
+                    onChanged:
+                        !_loaded ||
+                            _saving ||
+                            (entry.key != 'enabled' &&
+                                _preferences['enabled'] == false)
+                        ? null
+                        : (value) =>
+                              setState(() => _preferences[entry.key] = value),
+                  ),
+                const SizedBox(height: 16),
+                FilledButton(
+                  onPressed: !_loaded || _saving ? null : _save,
+                  child: Text(_saving ? 'Saving...' : 'Save preferences'),
                 ),
               ],
-              for (final entry in categories.entries)
-                SwitchListTile.adaptive(
-                  title: Text(entry.value),
-                  value: _preferences[entry.key] != false,
-                  onChanged:
-                      !_loaded ||
-                          _saving ||
-                          (entry.key != 'enabled' &&
-                              _preferences['enabled'] == false)
-                      ? null
-                      : (value) =>
-                            setState(() => _preferences[entry.key] = value),
-                ),
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: !_loaded || _saving ? null : _save,
-                child: Text(_saving ? 'Saving...' : 'Save preferences'),
-              ),
-            ],
-          ),
+            ),
+    ),
   );
 }

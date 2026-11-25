@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -44,290 +45,338 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Header ──
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 10,
-                ),
-                child: AppPageHeader(
-                  children: [
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF871DAD),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.arrow_back,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    const Text(
-                      "Class Detail",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const Spacer(),
-                    GestureDetector(
-                      onTap: () async {
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                AssignStudentsScreen(classData: classData),
+      body: ResponsiveBody(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Header ──
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
+                  child: AppPageHeader(
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF871DAD),
+                            shape: BoxShape.circle,
                           ),
-                        );
-                        ref.invalidate(classStudentsProvider(classData.id));
-                        ref.invalidate(teacherClassesProvider);
-                      },
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF904BBB),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.group_add,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                HomeworkScreen(classId: classData.id),
-                          ),
-                        );
-                      },
-
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF904BBB),
-                          shape: BoxShape.circle,
-                        ),
-                        padding: const EdgeInsets.all(8),
-                        child: Image.asset(
-                          'assets/images/classes/home_book.png',
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    GestureDetector(
-                      onTap: () async {
-                        final updatedClass =
-                            await Navigator.push<TeacherClassModel>(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    AddClassScreen(classToEdit: classData),
-                              ),
-                            );
-
-                        if (updatedClass == null || !mounted) return;
-
-                        setState(() {
-                          _classData = updatedClass.copyWith(
-                            studentCount: classData.studentCount,
-                            attendance: classData.attendance,
-                            performance: classData.performance,
-                          );
-                        });
-                        ref.invalidate(teacherClassesProvider);
-                        ref.invalidate(classStudentsProvider(classData.id));
-                      },
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF904BBB),
-                          shape: BoxShape.circle,
-                        ),
-                        padding: const EdgeInsets.all(8),
-                        child: Image.asset(
-                          'assets/images/classes/calender.png',
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ── Subtitle ──
-                    Text(
-                      "Grade ${classData.grade} - ${classData.subject}",
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF333333),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // ── Stats Grid ──
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildStatBox(
-                            "Students",
-                            studentsAsync.when(
-                              data: (students) => '${students.length}',
-                              loading: () => '...',
-                              error: (_, _) => 'N/A',
-                            ),
-                            const Color(0xFF3F99B4),
+                          child: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildStatBox(
-                            "Date",
-                            todayDate,
-                            const Color(0xFFB87841),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: attendanceStatsAsync.when(
-                            data: (percentage) => _buildStatBox(
-                              "Attendance",
-                              percentage == null ? "N/A" : "$percentage%",
-                              const Color(0xFF4AA678),
-                            ),
-                            loading: () => _buildStatBox(
-                              "Attendance",
-                              "...",
-                              const Color(0xFF4AA678),
-                            ),
-                            error: (_, _) => _buildStatBox(
-                              "Attendance",
-                              "Error",
-                              const Color(0xFF4AA678),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildStatBox(
-                            "Performance",
-                            performanceAsync.when(
-                              data: (value) =>
-                                  value == null ? 'N/A' : '$value%',
-                              loading: () => '...',
-                              error: (_, _) => 'N/A',
-                            ),
-                            const Color(0xFFFEBD43),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 28),
-
-                    // ── Lessons Section ──
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "Lessons",
+                      ),
+                      const SizedBox(width: 16),
+                      const Expanded(
+                        child: Text(
+                          "Class Detail",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF222222),
+                            color: Colors.black87,
                           ),
                         ),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    LessonsScreen(classId: classData.id),
+                      ),
+                      GestureDetector(
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  AssignStudentsScreen(classData: classData),
+                            ),
+                          );
+                          ref.invalidate(classStudentsProvider(classData.id));
+                          ref.invalidate(teacherClassesProvider);
+                        },
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF904BBB),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.group_add,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  HomeworkScreen(classId: classData.id),
+                            ),
+                          );
+                        },
+
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF904BBB),
+                            shape: BoxShape.circle,
+                          ),
+                          padding: const EdgeInsets.all(8),
+                          child: Image.asset(
+                            'assets/images/classes/home_book.png',
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      GestureDetector(
+                        onTap: () async {
+                          final updatedClass =
+                              await Navigator.push<TeacherClassModel>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      AddClassScreen(classToEdit: classData),
+                                ),
+                              );
+
+                          if (updatedClass == null || !mounted) return;
+
+                          setState(() {
+                            _classData = updatedClass.copyWith(
+                              studentCount: classData.studentCount,
+                              attendance: classData.attendance,
+                              performance: classData.performance,
+                            );
+                          });
+                          ref.invalidate(teacherClassesProvider);
+                          ref.invalidate(classStudentsProvider(classData.id));
+                        },
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF904BBB),
+                            shape: BoxShape.circle,
+                          ),
+                          padding: const EdgeInsets.all(8),
+                          child: Image.asset(
+                            'assets/images/classes/calender.png',
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ── Subtitle ──
+                      Text(
+                        "Grade ${classData.grade} - ${classData.subject}",
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF333333),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // ── Stats Grid ──
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildStatBox(
+                              "Students",
+                              studentsAsync.when(
+                                data: (students) => '${students.length}',
+                                loading: () => '...',
+                                error: (_, _) => 'N/A',
                               ),
+                              const Color(0xFF3F99B4),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildStatBox(
+                              "Date",
+                              todayDate,
+                              const Color(0xFFB87841),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: attendanceStatsAsync.when(
+                              data: (percentage) => _buildStatBox(
+                                "Attendance",
+                                percentage == null ? "N/A" : "$percentage%",
+                                const Color(0xFF4AA678),
+                              ),
+                              loading: () => _buildStatBox(
+                                "Attendance",
+                                "...",
+                                const Color(0xFF4AA678),
+                              ),
+                              error: (_, _) => _buildStatBox(
+                                "Attendance",
+                                "Error",
+                                const Color(0xFF4AA678),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildStatBox(
+                              "Performance",
+                              performanceAsync.when(
+                                data: (value) =>
+                                    value == null ? 'N/A' : '$value%',
+                                loading: () => '...',
+                                error: (_, _) => 'N/A',
+                              ),
+                              const Color(0xFFFEBD43),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 28),
+
+                      // ── Lessons Section ──
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            "Lessons",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF222222),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      LessonsScreen(classId: classData.id),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              "View All",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Color(0xFF871DAD),
+                                decoration: TextDecoration.underline,
+                                decorationColor: Color(0xFF871DAD),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      SizedBox(
+                        height: 136,
+                        child: lessonsAsync.when(
+                          data: (lessons) {
+                            if (lessons.isEmpty) {
+                              return const Center(
+                                child: Text("No lessons found."),
+                              );
+                            }
+                            return ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              clipBehavior: Clip.none,
+                              itemCount: lessons.length,
+                              itemBuilder: (context, index) {
+                                final lesson = lessons[index];
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => LessonOverviewScreen(
+                                          lesson: lesson,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: _buildLessonCard(
+                                    title:
+                                        lesson['title'] ??
+                                        lesson['objective'] ??
+                                        'No Title',
+                                    description:
+                                        lesson['note'] ?? 'No Description',
+                                    dueDate: lesson['created_at'] != null
+                                        ? "Date: ${lesson['created_at'].toString().split('T')[0]}"
+                                        : "Date: TBD",
+                                  ),
+                                );
+                              },
                             );
                           },
-                          child: const Text(
-                            "View All",
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Color(0xFF871DAD),
-                              decoration: TextDecoration.underline,
-                              decorationColor: Color(0xFF871DAD),
-                            ),
-                          ),
+                          loading: () =>
+                              const Center(child: CircularProgressIndicator()),
+                          error: (err, stack) =>
+                              Center(child: Text("Error: $err")),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
+                      ),
 
-                    SizedBox(
-                      height: 136,
-                      child: lessonsAsync.when(
-                        data: (lessons) {
-                          if (lessons.isEmpty) {
+                      const SizedBox(height: 28),
+
+                      // ── Students Section ──
+                      const Text(
+                        "Students",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF222222),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      studentsAsync.when(
+                        data: (students) {
+                          if (students.isEmpty) {
                             return const Center(
-                              child: Text("No lessons found."),
+                              child: Text("No students enrolled."),
                             );
                           }
                           return ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            clipBehavior: Clip.none,
-                            itemCount: lessons.length,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: students.length,
                             itemBuilder: (context, index) {
-                              final lesson = lessons[index];
-                              return GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          LessonOverviewScreen(lesson: lesson),
-                                    ),
-                                  );
-                                },
-                                child: _buildLessonCard(
-                                  title:
-                                      lesson['title'] ??
-                                      lesson['objective'] ??
-                                      'No Title',
-                                  description:
-                                      lesson['note'] ?? 'No Description',
-                                  dueDate: lesson['created_at'] != null
-                                      ? "Date: ${lesson['created_at'].toString().split('T')[0]}"
-                                      : "Date: TBD",
-                                ),
+                              final assignment = students[index];
+                              final student = assignment['studentId'];
+                              if (student == null) return const SizedBox();
+
+                              return StudentCard(
+                                studentData: student,
+                                classData: classData,
                               );
                             },
                           );
@@ -337,53 +386,12 @@ class _ClassDetailsScreenState extends ConsumerState<ClassDetailsScreen> {
                         error: (err, stack) =>
                             Center(child: Text("Error: $err")),
                       ),
-                    ),
-
-                    const SizedBox(height: 28),
-
-                    // ── Students Section ──
-                    const Text(
-                      "Students",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF222222),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    studentsAsync.when(
-                      data: (students) {
-                        if (students.isEmpty) {
-                          return const Center(
-                            child: Text("No students enrolled."),
-                          );
-                        }
-                        return ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: students.length,
-                          itemBuilder: (context, index) {
-                            final assignment = students[index];
-                            final student = assignment['studentId'];
-                            if (student == null) return const SizedBox();
-
-                            return StudentCard(
-                              studentData: student,
-                              classData: classData,
-                            );
-                          },
-                        );
-                      },
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (err, stack) => Center(child: Text("Error: $err")),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

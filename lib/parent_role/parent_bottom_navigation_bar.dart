@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:flutter/material.dart';
 
 class ParentBottomNavigationBar extends StatelessWidget {
@@ -17,7 +18,6 @@ class ParentBottomNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 70,
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -28,30 +28,39 @@ class ParentBottomNavigationBar extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavItem(
-            iconAsset: '$_iconPath/home.png',
-            label: "Home",
-            index: 0,
+      child: SafeArea(
+        top: false,
+        child: ResponsiveBody(
+          maxWidth: 640,
+          child: SizedBox(
+            height: 70,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(
+                  iconAsset: '$_iconPath/home.png',
+                  label: "Home",
+                  index: 0,
+                ),
+                _buildNavItem(
+                  iconAsset: '$_iconPath/teacher.png',
+                  label: "Child's",
+                  index: 1,
+                ),
+                _buildNavItem(
+                  iconAsset: '$_iconPath/message.png',
+                  label: "Chat",
+                  index: 2,
+                ),
+                _buildNavItem(
+                  iconAsset: '$_iconPath/frofile.png',
+                  label: "Profile",
+                  index: 3,
+                ),
+              ],
+            ),
           ),
-          _buildNavItem(
-            iconAsset: '$_iconPath/teacher.png',
-            label: "Child's",
-            index: 1,
-          ),
-          _buildNavItem(
-            iconAsset: '$_iconPath/message.png',
-            label: "Chat",
-            index: 2,
-          ),
-          _buildNavItem(
-            iconAsset: '$_iconPath/frofile.png',
-            label: "Profile",
-            index: 3,
-          ),
-        ],
+        ),
       ),
     );
   }

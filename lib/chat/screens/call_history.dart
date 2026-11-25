@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:opalmer_education/chat/services/chat_api_service.dart';
@@ -46,9 +47,11 @@ class _CallHistoryScreenState extends ConsumerState<CallHistoryScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const ChatSimpleAppBar(title: 'Call History'),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : CallHistoryList(logs: _logs, currentUserId: currentUser?.id),
+      body: ResponsiveBody(
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : CallHistoryList(logs: _logs, currentUserId: currentUser?.id),
+      ),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -89,157 +90,168 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Header ──
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: AppPageHeader(
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF871DAD),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.arrow_back, color: Colors.white),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  const Text(
-                    "Create Group",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            Expanded(
-              child: SingleChildScrollView(
+      body: ResponsiveBody(
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Header ──
+              Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
-                  vertical: 16,
+                  vertical: 10,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: AppPageHeader(
                   children: [
-                    // Group Title Field
-                    const Text(
-                      "Group Title",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF333333),
-                        fontWeight: FontWeight.w500,
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF871DAD),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: _titleController,
-                      decoration: InputDecoration(hintText: "Enter title here"),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Students Title
+                    const SizedBox(width: 16),
                     const Text(
-                      "Students",
+                      "Create Group",
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF222222),
+                        color: Colors.black87,
                       ),
                     ),
-                    const SizedBox(height: 16),
-
-                    // Students List
-                    studentsAsync.when(
-                      data: (students) {
-                        if (students.isEmpty) {
-                          return const Center(
-                            child: Text("No students available."),
-                          );
-                        }
-                        return ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: students.length,
-                          itemBuilder: (context, index) {
-                            final assignment = students[index];
-                            final student = assignment['studentId'];
-                            if (student == null) return const SizedBox();
-
-                            final studentId = student['_id'];
-                            final studentName =
-                                student['username'] ??
-                                student['name'] ??
-                                'Unknown';
-                            final avatarUrl = student['avatar'] is Map
-                                ? student['avatar']['url']
-                                : student['avatar'];
-
-                            return _buildSelectableStudentCard(
-                              id: studentId,
-                              name: studentName,
-                              avatarUrl: avatarUrl,
-                            );
-                          },
-                        );
-                      },
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (err, stack) => Center(child: Text("Error: $err")),
-                    ),
-
-                    const SizedBox(height: 20),
                   ],
                 ),
               ),
-            ),
 
-            // Create Button
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _createGroup,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF871DAD),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    elevation: 0,
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
                   ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : Text(
-                          "(${_selectedStudentIds.length}) CREATE",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Group Title Field
+                      const Text(
+                        "Group Title",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF333333),
+                          fontWeight: FontWeight.w500,
                         ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _titleController,
+                        decoration: InputDecoration(
+                          hintText: "Enter title here",
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Students Title
+                      const Text(
+                        "Students",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF222222),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Students List
+                      studentsAsync.when(
+                        data: (students) {
+                          if (students.isEmpty) {
+                            return const Center(
+                              child: Text("No students available."),
+                            );
+                          }
+                          return ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: students.length,
+                            itemBuilder: (context, index) {
+                              final assignment = students[index];
+                              final student = assignment['studentId'];
+                              if (student == null) return const SizedBox();
+
+                              final studentId = student['_id'];
+                              final studentName =
+                                  student['username'] ??
+                                  student['name'] ??
+                                  'Unknown';
+                              final avatarUrl = student['avatar'] is Map
+                                  ? student['avatar']['url']
+                                  : student['avatar'];
+
+                              return _buildSelectableStudentCard(
+                                id: studentId,
+                                name: studentName,
+                                avatarUrl: avatarUrl,
+                              );
+                            },
+                          );
+                        },
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
+                        error: (err, stack) =>
+                            Center(child: Text("Error: $err")),
+                      ),
+
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+
+              // Create Button
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _createGroup,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF871DAD),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            "(${_selectedStudentIds.length}) CREATE",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

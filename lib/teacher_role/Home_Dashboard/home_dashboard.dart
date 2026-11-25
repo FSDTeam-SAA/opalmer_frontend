@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import '../../core/widgets/dashboard_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -220,201 +221,221 @@ class _HomeDashboardState extends ConsumerState<HomeDashboard>
               notificationRotation: _bellShake,
             ),
             // Class statistics and assessments stay directly below the header.
-            Padding(
-              padding: const EdgeInsets.only(top: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ── Class Stats Section ──
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Expanded(
-                          child: Text(
-                            "Class Stats",
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
+            ResponsiveBody(
+              maxWidth: Responsive.dashboardMaxWidth,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ── Class Stats Section ──
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Expanded(
+                            child: Text(
+                              "Class Stats",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
                             ),
                           ),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            ref.read(teacherTabIndexProvider.notifier).state =
-                                1;
-                          },
-                          child: Text(
-                            "View All",
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primaryMid,
+                          GestureDetector(
+                            onTap: () {
+                              ref.read(teacherTabIndexProvider.notifier).state =
+                                  1;
+                            },
+                            child: Text(
+                              "View All",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primaryMid,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
+                    const SizedBox(height: 12),
 
-                  // Horizontal scrollable Class Stats cards
-                  SizedBox(
-                    height: 228,
-                    child: LayoutBuilder(
-                      builder: (context, constraints) => classesAsync.when(
-                        data: (classes) {
+                    // Horizontal scrollable Class Stats cards
+                    SizedBox(
+                      height: 228,
+                      child: LayoutBuilder(
+                        builder: (context, constraints) => classesAsync.when(
+                          data: (classes) {
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              _setupCardAnimations(classes.length);
+                            });
+
+                            if (classes.isEmpty) {
+                              return const Center(
+                                child: Text("No classes found."),
+                              );
+                            }
+
+                            // One full-width card on phones; two or three
+                            // side by side on tablets.
+                            final available = constraints.maxWidth - 40;
+                            final perView = Responsive.columns(
+                              available,
+                              minTileWidth: 320,
+                              spacing: 14,
+                            );
+                            final cardWidth =
+                                (available - 14 * (perView - 1)) / perView;
+                            return ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                              ),
+                              itemCount: classes.length,
+                              itemBuilder: (context, index) {
+                                final cls = classes[index];
+                                final Color cardColor = index % 2 == 0
+                                    ? AppColors.success
+                                    : AppColors.warning;
+
+                                return Row(
+                                  children: [
+                                    FadeTransition(
+                                      opacity: index < _cardFades.length
+                                          ? _cardFades[index]
+                                          : const AlwaysStoppedAnimation(1),
+                                      child: SlideTransition(
+                                        position: index < _cardSlides.length
+                                            ? _cardSlides[index]
+                                            : const AlwaysStoppedAnimation(
+                                                Offset.zero,
+                                              ),
+                                        child: TeacherClassCard(
+                                          width: cardWidth,
+                                          margin: EdgeInsets.zero,
+                                          classData: cls,
+                                          color: cardColor,
+                                        ),
+                                      ),
+                                    ),
+                                    if (index < classes.length - 1)
+                                      const SizedBox(width: 14),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          loading: () =>
+                              const Center(child: CircularProgressIndicator()),
+                          error: (err, _) => Center(child: Text("Error: $err")),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // ── Quizzes Section ──
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Expanded(
+                            child: Text(
+                              "Quizzes",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () => openTeacherPage(
+                              context,
+                              const GradingToolScreen(),
+                            ),
+                            child: Text(
+                              "View All",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primaryMid,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Quiz list items
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: quizzesAsync.when(
+                        data: (quizzes) {
                           WidgetsBinding.instance.addPostFrameCallback((_) {
-                            _setupCardAnimations(classes.length);
+                            _setupQuizCardAnimations(quizzes.length);
                           });
 
-                          if (classes.isEmpty) {
-                            return const Center(
-                              child: Text("No classes found."),
+                          if (quizzes.isEmpty) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 24),
+                              child: Center(child: Text("No quizzes found.")),
                             );
                           }
 
-                          return ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            itemCount: classes.length,
-                            itemBuilder: (context, index) {
-                              final cls = classes[index];
-                              final Color cardColor = index % 2 == 0
-                                  ? AppColors.success
-                                  : AppColors.warning;
-
-                              return Row(
-                                children: [
-                                  FadeTransition(
-                                    opacity: index < _cardFades.length
-                                        ? _cardFades[index]
+                          return Column(
+                            children: [
+                              ResponsiveWrapGrid(
+                                minTileWidth: 420,
+                                maxColumns: 2,
+                                spacing: 12,
+                                runSpacing: 12,
+                                children: List.generate(quizzes.length, (
+                                  index,
+                                ) {
+                                  final quiz = quizzes[index];
+                                  return FadeTransition(
+                                    opacity: index < _quizCardFades.length
+                                        ? _quizCardFades[index]
                                         : const AlwaysStoppedAnimation(1),
                                     child: SlideTransition(
-                                      position: index < _cardSlides.length
-                                          ? _cardSlides[index]
+                                      position: index < _quizCardSlides.length
+                                          ? _quizCardSlides[index]
                                           : const AlwaysStoppedAnimation(
                                               Offset.zero,
                                             ),
-                                      child: TeacherClassCard(
-                                        width: constraints.maxWidth - 40,
-                                        margin: EdgeInsets.zero,
-                                        classData: cls,
-                                        color: cardColor,
-                                      ),
+                                      child: _buildQuizCardFromModel(quiz),
                                     ),
-                                  ),
-                                  if (index < classes.length - 1)
-                                    const SizedBox(width: 14),
-                                ],
-                              );
-                            },
+                                  );
+                                }),
+                              ),
+                              const SizedBox(
+                                height: 100,
+                              ), // Space for bottom nav
+                            ],
                           );
                         },
-                        loading: () =>
-                            const Center(child: CircularProgressIndicator()),
-                        error: (err, _) => Center(child: Text("Error: $err")),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // ── Quizzes Section ──
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Expanded(
-                          child: Text(
-                            "Quizzes",
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
+                        loading: () => const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 24),
+                          child: Center(child: CircularProgressIndicator()),
                         ),
-                        GestureDetector(
-                          onTap: () => openTeacherPage(
-                            context,
-                            const GradingToolScreen(),
-                          ),
-                          child: Text(
-                            "View All",
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primaryMid,
-                            ),
-                          ),
+                        error: (err, _) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          child: Center(child: Text("Error: $err")),
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Quiz list items
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: quizzesAsync.when(
-                      data: (quizzes) {
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          _setupQuizCardAnimations(quizzes.length);
-                        });
-
-                        if (quizzes.isEmpty) {
-                          return const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 24),
-                            child: Center(child: Text("No quizzes found.")),
-                          );
-                        }
-
-                        return Column(
-                          children: [
-                            ...List.generate(quizzes.length, (index) {
-                              final quiz = quizzes[index];
-                              return Padding(
-                                padding: EdgeInsets.only(
-                                  bottom: index == quizzes.length - 1 ? 0 : 12,
-                                ),
-                                child: FadeTransition(
-                                  opacity: index < _quizCardFades.length
-                                      ? _quizCardFades[index]
-                                      : const AlwaysStoppedAnimation(1),
-                                  child: SlideTransition(
-                                    position: index < _quizCardSlides.length
-                                        ? _quizCardSlides[index]
-                                        : const AlwaysStoppedAnimation(
-                                            Offset.zero,
-                                          ),
-                                    child: _buildQuizCardFromModel(quiz),
-                                  ),
-                                ),
-                              );
-                            }),
-                            const SizedBox(height: 100), // Space for bottom nav
-                          ],
-                        );
-                      },
-                      loading: () => const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 24),
-                        child: Center(child: CircularProgressIndicator()),
-                      ),
-                      error: (err, _) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 24),
-                        child: Center(child: Text("Error: $err")),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],

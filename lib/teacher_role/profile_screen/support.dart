@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/core/widgets/data_avatar.dart';
@@ -92,48 +93,53 @@ class _SupportScreenState extends State<SupportScreen> {
           const SizedBox(width: 20),
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              children: [
-                _buildMessage(
-                  text: "Can't log in.\nPassword wrong.",
-                  time: "17:47",
-                  isMe: true,
+      body: ResponsiveBody(
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 20,
                 ),
-                _buildMessage(
-                  text: "Try \"Forgot\nPassword\"\nlink?",
-                  time: "17:47",
-                  isMe: false,
-                ),
-                _buildMessage(
-                  text: "Did, no reset\nemail received.",
-                  time: "17:47",
-                  isMe: true,
-                ),
-                _buildMessage(
-                  text: "Check spam folder?",
-                  time: "17:47",
-                  isMe: false,
-                ),
-                _buildMessage(
-                  text: "Checked, no email.",
-                  time: "17:47",
-                  isMe: true,
-                ),
-                _buildMessage(
-                  text: "Send your\nemail, we'll\nresend link.",
-                  time: "17:47",
-                  isMe: false,
-                ),
-                _buildVoiceMessage(time: "17:47", isMe: false),
-              ],
+                children: [
+                  _buildMessage(
+                    text: "Can't log in.\nPassword wrong.",
+                    time: "17:47",
+                    isMe: true,
+                  ),
+                  _buildMessage(
+                    text: "Try \"Forgot\nPassword\"\nlink?",
+                    time: "17:47",
+                    isMe: false,
+                  ),
+                  _buildMessage(
+                    text: "Did, no reset\nemail received.",
+                    time: "17:47",
+                    isMe: true,
+                  ),
+                  _buildMessage(
+                    text: "Check spam folder?",
+                    time: "17:47",
+                    isMe: false,
+                  ),
+                  _buildMessage(
+                    text: "Checked, no email.",
+                    time: "17:47",
+                    isMe: true,
+                  ),
+                  _buildMessage(
+                    text: "Send your\nemail, we'll\nresend link.",
+                    time: "17:47",
+                    isMe: false,
+                  ),
+                  _buildVoiceMessage(time: "17:47", isMe: false),
+                ],
+              ),
             ),
-          ),
-          _buildInputBar(),
-        ],
+            _buildInputBar(),
+          ],
+        ),
       ),
     );
   }

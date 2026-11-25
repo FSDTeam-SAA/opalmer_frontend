@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import '../../core/widgets/access_guide_screen.dart';
 import 'package:flutter/material.dart';
@@ -45,7 +46,11 @@ class _ParentProfileScreenState extends ConsumerState<ParentProfileScreen> {
                   height: 220,
                   width: double.infinity,
                   color: AppColors.primaryMid,
-                  padding: const EdgeInsets.only(top: 75, left: 20, right: 20),
+                  padding: EdgeInsets.only(
+                    top: 75,
+                    left: Responsive.gutter(context, base: 20),
+                    right: Responsive.gutter(context, base: 20),
+                  ),
                   alignment: Alignment.topLeft,
 
                   child: AppPageHeader(
@@ -144,7 +149,9 @@ class _ParentProfileScreenState extends ConsumerState<ParentProfileScreen> {
                 children: [
                   // ── Settings Menu ──
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: Responsive.gutter(context, base: 20),
+                    ),
                     child: Column(
                       children: [
                         _buildSettingsTile(

@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/core/services/api_client.dart';
@@ -99,94 +100,96 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
         actions: [const AppHomeButton()],
         title: const Text('Review submission'),
       ),
-      body: result == null
-          ? Center(
-              child: _error == null
-                  ? const CircularProgressIndicator()
-                  : Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(_error!),
-                        TextButton(
-                          onPressed: _load,
-                          child: const Text('Retry'),
-                        ),
-                      ],
+      body: ResponsiveBody(
+        child: result == null
+            ? Center(
+                child: _error == null
+                    ? const CircularProgressIndicator()
+                    : Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(_error!),
+                          TextButton(
+                            onPressed: _load,
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+              )
+            : ListView(
+                padding: const EdgeInsets.all(24),
+                children: [
+                  Text(
+                    '${result['studentId']?['username'] ?? 'Student'} · ${result['studentId']?['Id'] ?? ''}',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  Text('Status: ${result['gradeStatus'] ?? 'pending_review'}'),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _score,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
                     ),
-            )
-          : ListView(
-              padding: const EdgeInsets.all(24),
-              children: [
-                Text(
-                  '${result['studentId']?['username'] ?? 'Student'} · ${result['studentId']?['Id'] ?? ''}',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                Text('Status: ${result['gradeStatus'] ?? 'pending_review'}'),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _score,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
+                    decoration: InputDecoration(
+                      labelText:
+                          'Points out of ${result['progress']?['totalQuestions'] ?? 0}',
+                    ),
                   ),
-                  decoration: InputDecoration(
-                    labelText:
-                        'Points out of ${result['progress']?['totalQuestions'] ?? 0}',
+                  TextField(
+                    controller: _reason,
+                    decoration: const InputDecoration(
+                      labelText: 'Reason for overriding the score',
+                    ),
                   ),
-                ),
-                TextField(
-                  controller: _reason,
-                  decoration: const InputDecoration(
-                    labelText: 'Reason for overriding the score',
+                  TextField(
+                    controller: _feedback,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      labelText: 'Feedback for student and parent',
+                    ),
                   ),
-                ),
-                TextField(
-                  controller: _feedback,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: 'Feedback for student and parent',
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ...((result['answers'] as List?) ?? []).map(
-                  (answer) => Card(
-                    child: ListTile(
-                      title: Text('${answer['question']}'),
-                      subtitle: Text('Response: ${answer['selectedAnswer']}'),
-                      trailing: Icon(
-                        answer['isCorrect'] == true
-                            ? Icons.check_circle
-                            : Icons.cancel_outlined,
+                  const SizedBox(height: 16),
+                  ...((result['answers'] as List?) ?? []).map(
+                    (answer) => Card(
+                      child: ListTile(
+                        title: Text('${answer['question']}'),
+                        subtitle: Text('Response: ${answer['selectedAnswer']}'),
+                        trailing: Icon(
+                          answer['isCorrect'] == true
+                              ? Icons.check_circle
+                              : Icons.cancel_outlined,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                if (_error != null)
-                  Text(_error!, style: const TextStyle(color: Colors.red)),
-                const SizedBox(height: 12),
-                FilledButton(
-                  onPressed: _busy ? null : () => _save(false),
-                  child: const Text('Save review'),
-                ),
-                CheckboxListTile(
-                  value: _notifyStudent,
-                  onChanged: (value) =>
-                      setState(() => _notifyStudent = value ?? true),
-                  title: const Text('Notify student'),
-                ),
-                CheckboxListTile(
-                  value: _notifyParent,
-                  onChanged: (value) =>
-                      setState(() => _notifyParent = value ?? true),
-                  title: const Text('Notify parent'),
-                ),
-                FilledButton(
-                  onPressed: _busy || result['gradeStatus'] != 'reviewed'
-                      ? null
-                      : () => _save(true),
-                  child: const Text('Publish reviewed grade'),
-                ),
-              ],
-            ),
+                  if (_error != null)
+                    Text(_error!, style: const TextStyle(color: Colors.red)),
+                  const SizedBox(height: 12),
+                  FilledButton(
+                    onPressed: _busy ? null : () => _save(false),
+                    child: const Text('Save review'),
+                  ),
+                  CheckboxListTile(
+                    value: _notifyStudent,
+                    onChanged: (value) =>
+                        setState(() => _notifyStudent = value ?? true),
+                    title: const Text('Notify student'),
+                  ),
+                  CheckboxListTile(
+                    value: _notifyParent,
+                    onChanged: (value) =>
+                        setState(() => _notifyParent = value ?? true),
+                    title: const Text('Notify parent'),
+                  ),
+                  FilledButton(
+                    onPressed: _busy || result['gradeStatus'] != 'reviewed'
+                        ? null
+                        : () => _save(true),
+                    child: const Text('Publish reviewed grade'),
+                  ),
+                ],
+              ),
+      ),
     );
   }
 }

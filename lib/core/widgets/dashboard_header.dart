@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -79,7 +80,18 @@ class DashboardHeader extends StatelessWidget {
           SafeArea(
             bottom: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+              padding: EdgeInsets.fromLTRB(
+                Responsive.gutter(
+                  context,
+                  maxWidth: Responsive.dashboardMaxWidth,
+                ),
+                12,
+                Responsive.gutter(
+                  context,
+                  maxWidth: Responsive.dashboardMaxWidth,
+                ),
+                28,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -147,9 +159,7 @@ class DashboardHeader extends StatelessWidget {
                                       ),
                                     ),
                                     child: Text(
-                                      unreadCount > 99
-                                          ? '99+'
-                                          : '$unreadCount',
+                                      unreadCount > 99 ? '99+' : '$unreadCount',
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 10.5,

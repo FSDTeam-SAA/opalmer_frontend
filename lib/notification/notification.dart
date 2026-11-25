@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import '../core/providers/auth_provider.dart';
@@ -110,12 +111,14 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(visibleState.unreadCount),
-            Expanded(child: _buildBody(visibleState)),
-          ],
+      body: ResponsiveBody(
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(visibleState.unreadCount),
+              Expanded(child: _buildBody(visibleState)),
+            ],
+          ),
         ),
       ),
     );

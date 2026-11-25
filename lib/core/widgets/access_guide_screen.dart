@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -125,25 +126,27 @@ class AccessGuideScreen extends StatelessWidget {
         actions: [const AppHomeButton()],
         title: Text('${role[0].toUpperCase()}${role.substring(1)} guide'),
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(20),
-        itemCount: steps.length + 1,
-        separatorBuilder: (_, _) => const SizedBox(height: 16),
-        itemBuilder: (_, index) {
-          if (index == 0) return const _SchoolContext();
-          index--;
-          return Card(
-            child: ListTile(
-              contentPadding: const EdgeInsets.all(16),
-              leading: CircleAvatar(child: Text('${index + 1}')),
-              title: Text(steps[index].$1),
-              subtitle: Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(steps[index].$2),
+      body: ResponsiveBody(
+        child: ListView.separated(
+          padding: const EdgeInsets.all(20),
+          itemCount: steps.length + 1,
+          separatorBuilder: (_, _) => const SizedBox(height: 16),
+          itemBuilder: (_, index) {
+            if (index == 0) return const _SchoolContext();
+            index--;
+            return Card(
+              child: ListTile(
+                contentPadding: const EdgeInsets.all(16),
+                leading: CircleAvatar(child: Text('${index + 1}')),
+                title: Text(steps[index].$1),
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(steps[index].$2),
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import '../../core/widgets/dashboard_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,15 +32,23 @@ class StudentHomeDashboard extends ConsumerWidget {
               studentName,
               ref.watch(unreadNotificationCountProvider),
             ),
-            const SizedBox(height: 10),
-            _buildSectionHeader(context, ref, "Classes"),
-            const SizedBox(height: 16),
-            _buildClassesList(ref),
-            const SizedBox(height: 18),
-            _buildSectionHeader(context, ref, "Quizzes"),
-            const SizedBox(height: 16),
-            _buildQuizzesList(ref),
-            const SizedBox(height: 32),
+            ResponsiveBody(
+              maxWidth: Responsive.dashboardMaxWidth,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 10),
+                  _buildSectionHeader(context, ref, "Classes"),
+                  const SizedBox(height: 16),
+                  _buildClassesList(ref),
+                  const SizedBox(height: 18),
+                  _buildSectionHeader(context, ref, "Quizzes"),
+                  const SizedBox(height: 16),
+                  _buildQuizzesList(ref),
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -116,18 +125,22 @@ class StudentHomeDashboard extends ConsumerWidget {
               ),
             );
           }
-          return Column(
-            children: [
-              for (final studentClass in classes.take(3))
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 14),
-                  child: SubjectCard(
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 14),
+            child: ResponsiveWrapGrid(
+              minTileWidth: 420,
+              maxColumns: 2,
+              spacing: 14,
+              runSpacing: 14,
+              children: [
+                for (final studentClass in classes.take(3))
+                  SubjectCard(
                     width: double.infinity,
                     studentClass: studentClass,
                     subjectName: studentClass.subject,
                   ),
-                ),
-            ],
+              ],
+            ),
           );
         },
         loading: () => const SizedBox(
@@ -192,23 +205,23 @@ class StudentHomeDashboard extends ConsumerWidget {
 
         final results = resultsAsync.asData?.value ?? [];
 
-        return ListView.separated(
+        return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: quizzes.length > 3 ? 3 : quizzes.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 16),
-          itemBuilder: (context, index) {
-            final quiz = quizzes[index];
-
-            // Only released results are exposed by this provider.
-            final quizResult = results.cast<QuizResultModel?>().firstWhere(
-              (r) => r?.quizId == quiz.id,
-              orElse: () => null,
-            );
-
-            return QuizSummaryCard(quiz: quiz, result: quizResult);
-          },
+          child: ResponsiveWrapGrid(
+            minTileWidth: 300,
+            maxColumns: 3,
+            children: [
+              for (final quiz in quizzes.take(3))
+                QuizSummaryCard(
+                  quiz: quiz,
+                  // Only released results are exposed by this provider.
+                  result: results.cast<QuizResultModel?>().firstWhere(
+                    (r) => r?.quizId == quiz.id,
+                    orElse: () => null,
+                  ),
+                ),
+            ],
+          ),
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -251,5 +264,4 @@ class StudentHomeDashboard extends ConsumerWidget {
       },
     );
   }
-
 }

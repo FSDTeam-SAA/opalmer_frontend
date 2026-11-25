@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/chat/widgets/chat_simple_app_bar.dart';
 import 'package:opalmer_education/chat/widgets/compose_message_actions.dart';
@@ -56,14 +57,16 @@ class _ComposeMessageScreenState extends State<ComposeMessageScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const ChatSimpleAppBar(title: 'Compose Message'),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ComposeMessageForm(controller: _controller),
-          const Spacer(),
-          const SizedBox(height: 20),
-          ComposeMessageActions(onSaveDraft: _saveAsDraft, onSend: _send),
-        ],
+      body: ResponsiveBody(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ComposeMessageForm(controller: _controller),
+            const Spacer(),
+            const SizedBox(height: 20),
+            ComposeMessageActions(onSaveDraft: _saveAsDraft, onSend: _send),
+          ],
+        ),
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import '../../core/widgets/app_back_button.dart';
@@ -33,15 +34,21 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
             // Header
             Stack(
               children: [
-                Image.asset(
-                  'assets/images/Home_dashboard_header.png',
-                  width: double.infinity,
-                  fit: BoxFit.fitWidth,
+                const ResponsiveHeaderImage(
+                  asset: 'assets/images/Home_dashboard_header.png',
+                  aspectRatio: 860 / 372,
+                  maxHeight: 200,
                 ),
                 SafeArea(
                   bottom: false,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: Responsive.gutter(
+                        context,
+                        maxWidth: Responsive.dashboardMaxWidth,
+                        base: 24,
+                      ),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -101,38 +108,43 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
             // Main Content Area
             Transform.translate(
               offset: const Offset(0, -10),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: classesAsync.when(
-                  data: (classes) {
-                    if (classes.isEmpty) {
-                      return const Center(
-                        child: Padding(
-                          padding: EdgeInsets.only(top: 100),
-                          child: Text("No classes found."),
-                        ),
-                      );
-                    }
-                    return Column(
-                      children: List.generate(classes.length, (index) {
-                        final cls = classes[index];
-                        return TeacherClassCard(
-                          classData: cls,
-                          color: _cardColors[index % _cardColors.length],
+              child: ResponsiveBody(
+                maxWidth: Responsive.dashboardMaxWidth,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: classesAsync.when(
+                    data: (classes) {
+                      if (classes.isEmpty) {
+                        return const Center(
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 100),
+                            child: Text("No classes found."),
+                          ),
                         );
-                      }),
-                    );
-                  },
-                  loading: () => const Center(
-                    child: Padding(
-                      padding: EdgeInsets.only(top: 100),
-                      child: CircularProgressIndicator(),
+                      }
+                      return ResponsiveWrapGrid(
+                        minTileWidth: 340,
+                        runSpacing: 0,
+                        children: List.generate(classes.length, (index) {
+                          final cls = classes[index];
+                          return TeacherClassCard(
+                            classData: cls,
+                            color: _cardColors[index % _cardColors.length],
+                          );
+                        }),
+                      );
+                    },
+                    loading: () => const Center(
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 100),
+                        child: CircularProgressIndicator(),
+                      ),
                     ),
-                  ),
-                  error: (err, stack) => Center(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 100),
-                      child: Text("Error loading classes: $err"),
+                    error: (err, stack) => Center(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 100),
+                        child: Text("Error loading classes: $err"),
+                      ),
                     ),
                   ),
                 ),

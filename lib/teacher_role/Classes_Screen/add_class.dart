@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:opalmer_education/core/widgets/app_dropdown_field.dart';
 import 'package:flutter/material.dart';
@@ -190,125 +191,127 @@ class _AddClassScreenState extends ConsumerState<AddClassScreen> {
           ),
         ),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight:
-                  MediaQuery.of(context).size.height -
-                  MediaQuery.of(context).padding.top -
-                  kToolbarHeight -
-                  32,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 16),
-                _buildLabel("Class Name"),
-                const SizedBox(height: 8),
-                _buildTextField(
-                  controller: _classNameController,
-                  hintText: 'Enter class name',
-                  textInputAction: TextInputAction.next,
-                ),
-                const SizedBox(height: 24),
-                _buildLabel("Grade"),
-                const SizedBox(height: 8),
-                _buildDropdown<int>(
-                  value: _selectedGrade,
-                  hintText: 'Select grade',
-                  items: _grades
-                      .map(
-                        (grade) => DropdownMenuItem<int>(
-                          value: grade,
-                          child: Text('Grade $grade'),
+      body: ResponsiveBody(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight:
+                    MediaQuery.of(context).size.height -
+                    MediaQuery.of(context).padding.top -
+                    kToolbarHeight -
+                    32,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+                  _buildLabel("Class Name"),
+                  const SizedBox(height: 8),
+                  _buildTextField(
+                    controller: _classNameController,
+                    hintText: 'Enter class name',
+                    textInputAction: TextInputAction.next,
+                  ),
+                  const SizedBox(height: 24),
+                  _buildLabel("Grade"),
+                  const SizedBox(height: 8),
+                  _buildDropdown<int>(
+                    value: _selectedGrade,
+                    hintText: 'Select grade',
+                    items: _grades
+                        .map(
+                          (grade) => DropdownMenuItem<int>(
+                            value: grade,
+                            child: Text('Grade $grade'),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (newValue) {
+                      setState(() {
+                        _selectedGrade = newValue;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  _buildLabel("Section"),
+                  const SizedBox(height: 8),
+                  _buildTextField(
+                    controller: _sectionController,
+                    hintText: 'Example: A',
+                    textCapitalization: TextCapitalization.characters,
+                    textInputAction: TextInputAction.done,
+                  ),
+                  const SizedBox(height: 24),
+                  _buildLabel("Schedule"),
+                  const SizedBox(height: 12),
+                  _buildDaySelector(),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildTimeButton(
+                          label: 'Start time',
+                          value: _startTime,
+                          onTap: () => _pickTime(isStartTime: true),
                         ),
-                      )
-                      .toList(),
-                  onChanged: (newValue) {
-                    setState(() {
-                      _selectedGrade = newValue;
-                    });
-                  },
-                ),
-                const SizedBox(height: 24),
-                _buildLabel("Section"),
-                const SizedBox(height: 8),
-                _buildTextField(
-                  controller: _sectionController,
-                  hintText: 'Example: A',
-                  textCapitalization: TextCapitalization.characters,
-                  textInputAction: TextInputAction.done,
-                ),
-                const SizedBox(height: 24),
-                _buildLabel("Schedule"),
-                const SizedBox(height: 12),
-                _buildDaySelector(),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildTimeButton(
-                        label: 'Start time',
-                        value: _startTime,
-                        onTap: () => _pickTime(isStartTime: true),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildTimeButton(
-                        label: 'End time',
-                        value: _endTime,
-                        onTap: () => _pickTime(isStartTime: false),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildTimeButton(
+                          label: 'End time',
+                          value: _endTime,
+                          onTap: () => _pickTime(isStartTime: false),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (_scheduleText.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      _scheduleText,
+                      style: const TextStyle(
+                        color: Color(0xFF666666),
+                        fontSize: 14,
                       ),
                     ),
                   ],
-                ),
-                if (_scheduleText.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    _scheduleText,
-                    style: const TextStyle(
-                      color: Color(0xFF666666),
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _saveClass,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF871DAD),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _saveClass,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF871DAD),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        elevation: 0,
                       ),
-                      elevation: 0,
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(
+                              _isEditing ? "UPDATE" : "ADD",
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
                     ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : Text(
-                            _isEditing ? "UPDATE" : "ADD",
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
                   ),
-                ),
-                const SizedBox(height: 20),
-              ],
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
           ),
         ),

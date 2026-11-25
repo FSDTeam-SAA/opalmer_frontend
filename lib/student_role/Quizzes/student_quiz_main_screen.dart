@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import '../../core/widgets/app_back_button.dart';
@@ -77,7 +78,12 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
             bottomRight: Radius.circular(32),
           ),
         ),
-        padding: const EdgeInsets.fromLTRB(24, 60, 24, 32),
+        padding: EdgeInsets.fromLTRB(
+          Responsive.gutter(context, base: 24),
+          60,
+          Responsive.gutter(context, base: 24),
+          32,
+        ),
         child: AppPageHeader(
           homeColor: Colors.white,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -113,7 +119,9 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: EdgeInsets.symmetric(
+            horizontal: Responsive.gutter(context, base: 24),
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -153,7 +161,9 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
                 return const Center(child: Text("No quizzes available"));
               }
               return ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: EdgeInsets.symmetric(
+                  horizontal: Responsive.gutter(context, base: 16),
+                ),
                 scrollDirection: Axis.horizontal,
                 itemCount: quizzes.length,
                 itemBuilder: (context, index) {
@@ -183,7 +193,9 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
     AsyncValue<List<QuizResultModel>> quizResultsAsync,
   ) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: EdgeInsets.symmetric(
+        horizontal: Responsive.gutter(context, base: 24),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -222,7 +234,13 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
               }
 
               return GridView.count(
-                crossAxisCount: 2,
+                // Four tiles in a single row when there is room (tablets).
+                crossAxisCount:
+                    MediaQuery.sizeOf(context).width -
+                            2 * Responsive.gutter(context, base: 24) >=
+                        560
+                    ? 4
+                    : 2,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 mainAxisSpacing: 16,
@@ -302,7 +320,9 @@ class _StudentQuizMainScreenState extends ConsumerState<StudentQuizMainScreen> {
     AsyncValue<List<QuizResultModel>> quizResultsAsync,
   ) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: EdgeInsets.symmetric(
+        horizontal: Responsive.gutter(context, base: 24),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

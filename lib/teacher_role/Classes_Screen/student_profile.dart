@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import '../../core/widgets/performance_chart.dart';
 import 'package:flutter/material.dart';
@@ -96,438 +97,441 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Header ──
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
-                ),
-                child: AppPageHeader(
-                  children: [
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF871DAD),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.arrow_back,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    const Text(
-                      "Student Profile",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ── Student Info Block ──
-                    Row(
-                      children: [
-                        Container(
-                          width: 86,
-                          height: 86,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            color: const Color(0xFFF3F4F6),
+      body: ResponsiveBody(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Header ──
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  child: AppPageHeader(
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF871DAD),
+                            shape: BoxShape.circle,
                           ),
-                          clipBehavior: Clip.hardEdge,
-                          child: avatarUrl != null
-                              ? Image.network(
-                                  avatarUrl,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, _, _) => const Icon(
+                          child: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      const Text(
+                        "Student Profile",
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ── Student Info Block ──
+                      Row(
+                        children: [
+                          Container(
+                            width: 86,
+                            height: 86,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              color: const Color(0xFFF3F4F6),
+                            ),
+                            clipBehavior: Clip.hardEdge,
+                            child: avatarUrl != null
+                                ? Image.network(
+                                    avatarUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, _, _) => const Icon(
+                                      Icons.person_outline,
+                                      color: Color(0xFF871DAD),
+                                    ),
+                                  )
+                                : const Icon(
                                     Icons.person_outline,
                                     color: Color(0xFF871DAD),
                                   ),
-                                )
-                              : const Icon(
-                                  Icons.person_outline,
-                                  color: Color(0xFF871DAD),
-                                ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                student['username'] ??
-                                    student['name'] ??
-                                    'Unknown Student',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                  color: Color(0xFF222222),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                "Grade ${student['gradeLevel'] ?? student['grade'] ?? student['grade_level'] ?? 'N/A'} - Age ${student['age'] ?? 'N/A'}",
-                                style: TextStyle(
-                                  color: Colors.grey.shade500,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                student['phoneNumber'] ??
-                                    student['phone'] ??
-                                    '01700000000',
-                                style: TextStyle(
-                                  color: Colors.grey.shade500,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
                           ),
-                        ),
-                        _buildAction(
-                          Icons.chat_bubble_outline,
-                          onTap: () => _handleChat(
-                            studentId,
-                            student['username'] ?? 'Student',
-                            avatarUrl,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        _buildAction(
-                          Icons.phone_outlined,
-                          onTap: () => _handleCall(
-                            student['username'] ?? 'Student',
-                            avatarUrl ?? '',
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 28),
-
-                    // ── Stats Block ──
-                    Row(
-                      children: [
-                        Expanded(
-                          child: attendanceStatsAsync.when(
-                            data: (percentage) => _buildStatBox(
-                              "Attendance",
-                              percentage == null
-                                  ? "N/A"
-                                  : "$percentage%${_getAttendanceEmoji(percentage)}",
-                              _getAttendanceColor(percentage ?? 0),
-                            ),
-                            loading: () => _buildStatBox(
-                              "Attendance",
-                              "...%",
-                              const Color(0xFF4AA678),
-                            ),
-                            error: (_, _) => _buildStatBox(
-                              "Attendance",
-                              "N/A",
-                              const Color(0xFFC04345),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildStatBox(
-                            "Progress",
-                            progressLabel,
-                            const Color(0xFFFEBD43),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 28),
-
-                    // ── Parent Profile Block ──
-                    const Text(
-                      "Parent Profile",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF222222),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    parentsAsync.when(
-                      data: (parents) {
-                        if (parents.isEmpty) {
-                          return const Padding(
-                            padding: EdgeInsets.only(bottom: 28),
-                            child: Text(
-                              "No parent linked",
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                          );
-                        }
-                        // For now, show the first parent
-                        final parentRelation = parents[0];
-                        final parentUser = parentRelation['parentId'];
-                        if (parentUser == null) return const SizedBox();
-
-                        final parentName = parentUser['username'] ?? 'Parent';
-                        final avatarData = parentUser['avatar'];
-                        final String avatarUrl = ApiConstants.buildImageUrl(
-                          (avatarData is Map)
-                              ? avatarData['url']
-                              : (avatarData is String ? avatarData : null),
-                        );
-
-                        return Column(
-                          children: [
-                            Row(
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Container(
-                                  width: 54,
-                                  height: 54,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: const Color(0xFF871DAD),
-                                      width: 1.5,
-                                    ),
-                                  ),
-                                  clipBehavior: Clip.hardEdge,
-                                  child: avatarUrl.isNotEmpty
-                                      ? Image.network(
-                                          avatarUrl,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (_, _, _) => const Icon(
-                                            Icons.person_outline,
-                                            color: Color(0xFF871DAD),
-                                          ),
-                                        )
-                                      : const Icon(
-                                          Icons.person_outline,
-                                          color: Color(0xFF871DAD),
-                                        ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Text(
-                                    parentName,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 18,
-                                      color: Color(0xFF222222),
-                                    ),
+                                Text(
+                                  student['username'] ??
+                                      student['name'] ??
+                                      'Unknown Student',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                    color: Color(0xFF222222),
                                   ),
                                 ),
-                                _buildAction(
-                                  Icons.chat_bubble_outline,
-                                  onTap: () => _handleChat(
-                                    parentUser['_id'],
-                                    parentName,
-                                    avatarUrl,
+                                const SizedBox(height: 4),
+                                Text(
+                                  "Grade ${student['gradeLevel'] ?? student['grade'] ?? student['grade_level'] ?? 'N/A'} - Age ${student['age'] ?? 'N/A'}",
+                                  style: TextStyle(
+                                    color: Colors.grey.shade500,
+                                    fontSize: 14,
                                   ),
                                 ),
-                                const SizedBox(width: 10),
-                                _buildAction(
-                                  Icons.phone_outlined,
-                                  onTap: () =>
-                                      _handleCall(parentName, avatarUrl),
+                                const SizedBox(height: 4),
+                                Text(
+                                  student['phoneNumber'] ??
+                                      student['phone'] ??
+                                      '01700000000',
+                                  style: TextStyle(
+                                    color: Colors.grey.shade500,
+                                    fontSize: 14,
+                                  ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 28),
-                          ],
-                        );
-                      },
-                      loading: () => const Padding(
-                        padding: EdgeInsets.all(20),
-                        child: Center(child: CircularProgressIndicator()),
-                      ),
-                      error: (err, stack) => Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Text("Error: $err"),
-                      ),
-                    ),
-
-                    // ── Progress Chart ──
-                    const Text(
-                      "Progress",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF222222),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
+                          ),
+                          _buildAction(
+                            Icons.chat_bubble_outline,
+                            onTap: () => _handleChat(
+                              studentId,
+                              student['username'] ?? 'Student',
+                              avatarUrl,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          _buildAction(
+                            Icons.phone_outlined,
+                            onTap: () => _handleCall(
+                              student['username'] ?? 'Student',
+                              avatarUrl ?? '',
+                            ),
                           ),
                         ],
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      const SizedBox(height: 28),
+
+                      // ── Stats Block ──
+                      Row(
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                "Progress",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF871DAD),
-                                ),
+                          Expanded(
+                            child: attendanceStatsAsync.when(
+                              data: (percentage) => _buildStatBox(
+                                "Attendance",
+                                percentage == null
+                                    ? "N/A"
+                                    : "$percentage%${_getAttendanceEmoji(percentage)}",
+                                _getAttendanceColor(percentage ?? 0),
                               ),
-                              DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: _selectedFilter,
-                                  dropdownColor: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  style: const TextStyle(
-                                    color: Color(0xFF871DAD),
-                                    fontSize: 13,
-                                  ),
-                                  icon: const Icon(
-                                    Icons.keyboard_arrow_down,
-                                    color: Color(0xFF871DAD),
-                                  ),
-                                  items: const [
-                                    DropdownMenuItem(
-                                      value: 'daily',
-                                      child: Text('Day'),
-                                    ),
-                                    DropdownMenuItem(
-                                      value: 'weekly',
-                                      child: Text('Week'),
-                                    ),
-                                    DropdownMenuItem(
-                                      value: 'monthly',
-                                      child: Text('Month'),
-                                    ),
-                                  ],
-                                  onChanged: (value) {
-                                    if (value != null) {
-                                      setState(() => _selectedFilter = value);
-                                    }
-                                  },
-                                ),
+                              loading: () => _buildStatBox(
+                                "Attendance",
+                                "...%",
+                                const Color(0xFF4AA678),
                               ),
-                            ],
+                              error: (_, _) => _buildStatBox(
+                                "Attendance",
+                                "N/A",
+                                const Color(0xFFC04345),
+                              ),
+                            ),
                           ),
-                          const SizedBox(height: 24),
-                          SizedBox(
-                            height: 200,
-                            width: double.infinity,
-                            child: analysisAsync.when(
-                              data: (data) {
-                                final points = data['performanceChartData'];
-                                return PerformanceChart(
-                                  points: points is List ? points : [],
-                                );
-                              },
-                              loading: () => const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                              error: (err, _) =>
-                                  Center(child: Text("Error: $err")),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildStatBox(
+                              "Progress",
+                              progressLabel,
+                              const Color(0xFFFEBD43),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 24),
+                      const SizedBox(height: 28),
 
-                    // ── List Items ──
-                    TeacherStudentActions(
-                      student: student,
-                      classId: widget.classId,
-                      onMessage: () => _handleChat(
-                        studentId,
-                        student['username'] ?? 'Student',
-                        avatarUrl,
+                      // ── Parent Profile Block ──
+                      const Text(
+                        "Parent Profile",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF222222),
+                        ),
                       ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => TeacherContextFrame.carry(
-                              context,
-                              BehaviorRecordScreen(
-                                studentId: studentId,
-                                student: student,
-                                classId: widget.classId,
+                      const SizedBox(height: 16),
+                      parentsAsync.when(
+                        data: (parents) {
+                          if (parents.isEmpty) {
+                            return const Padding(
+                              padding: EdgeInsets.only(bottom: 28),
+                              child: Text(
+                                "No parent linked",
+                                style: TextStyle(color: Colors.grey),
                               ),
-                            ),
-                          ),
-                        );
-                      },
-                      child: _buildListTile("Behavior Record"),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => TeacherContextFrame.carry(
-                              context,
-                              AcademicDocumentsScreen(
-                                studentId: studentId,
-                                classId: widget.classId,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                      child: _buildListTile("Academic Notes"),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => TeacherContextFrame.carry(
-                              context,
-                              GradingProgressScreen(
-                                studentId: studentId,
-                                classId: classId,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                      child: _buildListTile("Grading Progress"),
-                    ),
+                            );
+                          }
+                          // For now, show the first parent
+                          final parentRelation = parents[0];
+                          final parentUser = parentRelation['parentId'];
+                          if (parentUser == null) return const SizedBox();
 
-                    const SizedBox(height: 40),
-                  ],
+                          final parentName = parentUser['username'] ?? 'Parent';
+                          final avatarData = parentUser['avatar'];
+                          final String avatarUrl = ApiConstants.buildImageUrl(
+                            (avatarData is Map)
+                                ? avatarData['url']
+                                : (avatarData is String ? avatarData : null),
+                          );
+
+                          return Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 54,
+                                    height: 54,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: const Color(0xFF871DAD),
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    clipBehavior: Clip.hardEdge,
+                                    child: avatarUrl.isNotEmpty
+                                        ? Image.network(
+                                            avatarUrl,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, _, _) =>
+                                                const Icon(
+                                                  Icons.person_outline,
+                                                  color: Color(0xFF871DAD),
+                                                ),
+                                          )
+                                        : const Icon(
+                                            Icons.person_outline,
+                                            color: Color(0xFF871DAD),
+                                          ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Text(
+                                      parentName,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 18,
+                                        color: Color(0xFF222222),
+                                      ),
+                                    ),
+                                  ),
+                                  _buildAction(
+                                    Icons.chat_bubble_outline,
+                                    onTap: () => _handleChat(
+                                      parentUser['_id'],
+                                      parentName,
+                                      avatarUrl,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  _buildAction(
+                                    Icons.phone_outlined,
+                                    onTap: () =>
+                                        _handleCall(parentName, avatarUrl),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 28),
+                            ],
+                          );
+                        },
+                        loading: () => const Padding(
+                          padding: EdgeInsets.all(20),
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                        error: (err, stack) => Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Text("Error: $err"),
+                        ),
+                      ),
+
+                      // ── Progress Chart ──
+                      const Text(
+                        "Progress",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF222222),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  "Progress",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF871DAD),
+                                  ),
+                                ),
+                                DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    value: _selectedFilter,
+                                    dropdownColor: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    style: const TextStyle(
+                                      color: Color(0xFF871DAD),
+                                      fontSize: 13,
+                                    ),
+                                    icon: const Icon(
+                                      Icons.keyboard_arrow_down,
+                                      color: Color(0xFF871DAD),
+                                    ),
+                                    items: const [
+                                      DropdownMenuItem(
+                                        value: 'daily',
+                                        child: Text('Day'),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'weekly',
+                                        child: Text('Week'),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'monthly',
+                                        child: Text('Month'),
+                                      ),
+                                    ],
+                                    onChanged: (value) {
+                                      if (value != null) {
+                                        setState(() => _selectedFilter = value);
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+                            SizedBox(
+                              height: 200,
+                              width: double.infinity,
+                              child: analysisAsync.when(
+                                data: (data) {
+                                  final points = data['performanceChartData'];
+                                  return PerformanceChart(
+                                    points: points is List ? points : [],
+                                  );
+                                },
+                                loading: () => const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                                error: (err, _) =>
+                                    Center(child: Text("Error: $err")),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // ── List Items ──
+                      TeacherStudentActions(
+                        student: student,
+                        classId: widget.classId,
+                        onMessage: () => _handleChat(
+                          studentId,
+                          student['username'] ?? 'Student',
+                          avatarUrl,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => TeacherContextFrame.carry(
+                                context,
+                                BehaviorRecordScreen(
+                                  studentId: studentId,
+                                  student: student,
+                                  classId: widget.classId,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                        child: _buildListTile("Behavior Record"),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => TeacherContextFrame.carry(
+                                context,
+                                AcademicDocumentsScreen(
+                                  studentId: studentId,
+                                  classId: widget.classId,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                        child: _buildListTile("Academic Notes"),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => TeacherContextFrame.carry(
+                                context,
+                                GradingProgressScreen(
+                                  studentId: studentId,
+                                  classId: classId,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                        child: _buildListTile("Grading Progress"),
+                      ),
+
+                      const SizedBox(height: 40),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

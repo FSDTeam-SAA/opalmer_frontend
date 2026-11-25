@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
@@ -41,78 +42,82 @@ class SupportContentScreen extends ConsumerWidget {
         title: const Text('Dispute Center'),
         actions: const [AppHomeButton()],
       ),
-      body: content.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, _) => Center(
-          child: TextButton(
-            onPressed: () => ref.invalidate(supportContentProvider),
-            child: const Text('Unable to load help. Retry'),
+      body: ResponsiveBody(
+        child: content.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, _) => Center(
+            child: TextButton(
+              onPressed: () => ref.invalidate(supportContentProvider),
+              child: const Text('Unable to load help. Retry'),
+            ),
           ),
-        ),
-        data: (data) => RefreshIndicator(
-          onRefresh: () async {
-            ref.invalidate(supportContentProvider);
-            await ref.read(supportContentProvider.future);
-          },
-          child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(20),
-            children: [
-              const Text(
-                'For an account, class or record problem, contact your school. Include what happened and the affected record.',
-              ),
-              const SizedBox(height: 12),
-              FilledButton.icon(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => ChatDashboard(role: role)),
+          data: (data) => RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(supportContentProvider);
+              await ref.read(supportContentProvider.future);
+            },
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(20),
+              children: [
+                const Text(
+                  'For an account, class or record problem, contact your school. Include what happened and the affected record.',
                 ),
-                icon: const Icon(Icons.chat_outlined),
-                label: const Text('Open messages'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => AccessGuideScreen(role: type),
-                  ),
-                ),
-                child: const Text('School contact details and guide'),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'App Features',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              if (data['features']!.isEmpty)
-                const Text('No features have been published yet.'),
-              for (final feature in data['features']!)
-                Card(
-                  child: ListTile(
-                    title: Text(feature['question']?.toString() ?? ''),
-                    subtitle: Text(feature['answer']?.toString() ?? ''),
-                  ),
-                ),
-              const SizedBox(height: 20),
-              Text(
-                'Frequently Asked Questions',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              if (data['faqs']!.isEmpty)
-                const Text('No FAQs have been published yet.'),
-              for (final faq in data['faqs']!)
-                ExpansionTile(
-                  key: ValueKey(faq['_id']),
-                  title: Text(faq['question']?.toString() ?? ''),
-                  childrenPadding: const EdgeInsets.all(16),
-                  children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(faq['answer']?.toString() ?? ''),
+                const SizedBox(height: 12),
+                FilledButton.icon(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ChatDashboard(role: role),
                     ),
-                  ],
+                  ),
+                  icon: const Icon(Icons.chat_outlined),
+                  label: const Text('Open messages'),
                 ),
-            ],
+                TextButton(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => AccessGuideScreen(role: type),
+                    ),
+                  ),
+                  child: const Text('School contact details and guide'),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'App Features',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                if (data['features']!.isEmpty)
+                  const Text('No features have been published yet.'),
+                for (final feature in data['features']!)
+                  Card(
+                    child: ListTile(
+                      title: Text(feature['question']?.toString() ?? ''),
+                      subtitle: Text(feature['answer']?.toString() ?? ''),
+                    ),
+                  ),
+                const SizedBox(height: 20),
+                Text(
+                  'Frequently Asked Questions',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                if (data['faqs']!.isEmpty)
+                  const Text('No FAQs have been published yet.'),
+                for (final faq in data['faqs']!)
+                  ExpansionTile(
+                    key: ValueKey(faq['_id']),
+                    title: Text(faq['question']?.toString() ?? ''),
+                    childrenPadding: const EdgeInsets.all(16),
+                    children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(faq['answer']?.toString() ?? ''),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
           ),
         ),
       ),

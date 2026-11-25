@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -158,102 +159,121 @@ class _StudentAttendanceScreenState
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // ── Header ──
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: AppPageHeader(
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF871DAD),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.arrow_back, color: Colors.white),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  const Text(
-                    "Attendance",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // ── Table Area ──
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Colors.grey.withValues(alpha: 0.1),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      // Table Header
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 16,
-                          horizontal: 16,
-                        ),
+      body: ResponsiveBody(
+        child: SafeArea(
+          child: Column(
+            children: [
+              // ── Header ──
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                child: AppPageHeader(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        width: 40,
+                        height: 40,
                         decoration: const BoxDecoration(
-                          color: Color(0xFFFEBD43),
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(12),
-                            topRight: Radius.circular(12),
-                          ),
+                          color: Color(0xFF871DAD),
+                          shape: BoxShape.circle,
                         ),
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 90,
-                              child: Row(
-                                children: const [
-                                  Text(
-                                    "Date",
+                        child: const Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    const Text(
+                      "Attendance",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // ── Table Area ──
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.grey.withValues(alpha: 0.1),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        // Table Header
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 16,
+                            horizontal: 16,
+                          ),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFFEBD43),
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(12),
+                              topRight: Radius.circular(12),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 90,
+                                child: Row(
+                                  children: const [
+                                    Text(
+                                      "Date",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    SizedBox(width: 6),
+                                    Icon(
+                                      Icons.calendar_today_outlined,
+                                      color: Colors.white,
+                                      size: 14,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Expanded(
+                                child: Center(
+                                  child: Text(
+                                    "Students Name",
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w600,
                                       fontSize: 13,
                                     ),
                                   ),
-                                  SizedBox(width: 6),
-                                  Icon(
-                                    Icons.calendar_today_outlined,
-                                    color: Colors.white,
-                                    size: 14,
-                                  ),
-                                ],
+                                ),
                               ),
-                            ),
-                            const Expanded(
-                              child: Center(
+                              const SizedBox(
+                                width: 80,
                                 child: Text(
-                                  "Students Name",
+                                  "Status",
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w600,
@@ -261,104 +281,95 @@ class _StudentAttendanceScreenState
                                   ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(
-                              width: 80,
-                              child: Text(
-                                "Status",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
 
-                      // Table Body
-                      Expanded(
-                        child: attendanceAsync.when(
-                          data: (attendanceRecords) {
-                            return studentsAsync.when(
-                              data: (allStudents) {
-                                final students = allStudents
-                                    .where(
-                                      (row) =>
-                                          widget.studentId == null ||
-                                          row['studentId']['_id']?.toString() ==
-                                              widget.studentId,
-                                    )
-                                    .toList();
-                                // Create a map of studentId -> attendanceRecord for quick lookup
-                                final attendanceMap = {
-                                  for (var record in attendanceRecords)
-                                    record['userId']: record,
-                                };
+                        // Table Body
+                        Expanded(
+                          child: attendanceAsync.when(
+                            data: (attendanceRecords) {
+                              return studentsAsync.when(
+                                data: (allStudents) {
+                                  final students = allStudents
+                                      .where(
+                                        (row) =>
+                                            widget.studentId == null ||
+                                            row['studentId']['_id']
+                                                    ?.toString() ==
+                                                widget.studentId,
+                                      )
+                                      .toList();
+                                  // Create a map of studentId -> attendanceRecord for quick lookup
+                                  final attendanceMap = {
+                                    for (var record in attendanceRecords)
+                                      record['userId']: record,
+                                  };
 
-                                return ListView.builder(
-                                  padding: const EdgeInsets.only(
-                                    top: 8,
-                                    bottom: 20,
-                                  ),
-                                  itemCount: students.length,
-                                  itemBuilder: (context, index) {
-                                    final assignment = students[index];
-                                    final student = assignment['studentId'];
-                                    if (student == null) {
-                                      return const SizedBox();
-                                    }
+                                  return ListView.builder(
+                                    padding: const EdgeInsets.only(
+                                      top: 8,
+                                      bottom: 20,
+                                    ),
+                                    itemCount: students.length,
+                                    itemBuilder: (context, index) {
+                                      final assignment = students[index];
+                                      final student = assignment['studentId'];
+                                      if (student == null) {
+                                        return const SizedBox();
+                                      }
 
-                                    final studentId = student['_id'];
-                                    final record = attendanceMap[studentId];
+                                      final studentId = student['_id'];
+                                      final record = attendanceMap[studentId];
 
-                                    return _buildRow(
-                                      record?['date'] is String
-                                          ? DateFormat('dd-MM-yy').format(
-                                              DateTime.parse(record['date']),
-                                            )
-                                          : 'N/A',
-                                      student['username'] ??
-                                          student['name'] ??
-                                          'Unknown',
-                                      record?['status'] ?? 'not_recorded',
-                                      studentId,
-                                      record?['_id'],
-                                      student,
-                                    );
-                                  },
-                                );
-                              },
-                              loading: () => const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                              error: (err, stack) =>
-                                  Center(child: Text("Error: $err")),
-                            );
-                          },
-                          loading: () =>
-                              const Center(child: CircularProgressIndicator()),
-                          error: (err, stack) => Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Text('Unable to load attendance.'),
-                                TextButton(
-                                  onPressed: _initTodayAttendance,
-                                  child: const Text('Retry'),
+                                      return _buildRow(
+                                        record?['date'] is String
+                                            ? DateFormat('dd-MM-yy').format(
+                                                DateTime.parse(record['date']),
+                                              )
+                                            : 'N/A',
+                                        student['username'] ??
+                                            student['name'] ??
+                                            'Unknown',
+                                        record?['status'] ?? 'not_recorded',
+                                        studentId,
+                                        record?['_id'],
+                                        student,
+                                      );
+                                    },
+                                  );
+                                },
+                                loading: () => const Center(
+                                  child: CircularProgressIndicator(),
                                 ),
-                              ],
+                                error: (err, stack) =>
+                                    Center(child: Text("Error: $err")),
+                              );
+                            },
+                            loading: () => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                            error: (err, stack) => Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text('Unable to load attendance.'),
+                                  TextButton(
+                                    onPressed: _initTodayAttendance,
+                                    child: const Text('Retry'),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

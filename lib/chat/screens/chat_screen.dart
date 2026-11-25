@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -180,39 +181,41 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         },
         // onStartVideoCall: () {},
       ),
-      body: Column(
-        children: [
-          if (blocked)
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text(
-                'Messaging is blocked in this conversation. Tap the name to manage your block.',
+      body: ResponsiveBody(
+        child: Column(
+          children: [
+            if (blocked)
+              const Padding(
+                padding: EdgeInsets.all(12),
+                child: Text(
+                  'Messaging is blocked in this conversation. Tap the name to manage your block.',
+                ),
+              ),
+            if (chatState.error != null)
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text(
+                  chatState.error!,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
+            Expanded(
+              child: ChatMessagesPanel(
+                isLoading: chatState.isLoading,
+                error: chatState.error,
+                messages: messages,
+                currentUserId: currentUser?.id,
+                scrollController: _scrollController,
               ),
             ),
-          if (chatState.error != null)
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(
-                chatState.error!,
-                style: const TextStyle(color: Colors.red),
-              ),
+            ChatMessageInputBar(
+              controller: _messageController,
+              onSend: _sendMessage,
+              enabled: !blocked,
+              isSending: _sending,
             ),
-          Expanded(
-            child: ChatMessagesPanel(
-              isLoading: chatState.isLoading,
-              error: chatState.error,
-              messages: messages,
-              currentUserId: currentUser?.id,
-              scrollController: _scrollController,
-            ),
-          ),
-          ChatMessageInputBar(
-            controller: _messageController,
-            onSend: _sendMessage,
-            enabled: !blocked,
-            isSending: _sending,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

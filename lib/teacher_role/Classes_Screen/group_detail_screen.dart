@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers/auth_provider.dart';
@@ -137,119 +138,123 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
           const AppHomeButton(),
         ],
       ),
-      body: Column(
-        children: [
-          if (_busy) const LinearProgressIndicator(),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: FilledButton.icon(
-              icon: const Icon(Icons.chat_bubble_outline),
-              label: const Text('Open group chat'),
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ChatScreen(
-                    session: ChatSessionModel.fromJson(_room),
-                    role: ChatRole.teacher,
+      body: ResponsiveBody(
+        child: Column(
+          children: [
+            if (_busy) const LinearProgressIndicator(),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: FilledButton.icon(
+                icon: const Icon(Icons.chat_bubble_outline),
+                label: const Text('Open group chat'),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ChatScreen(
+                      session: ChatSessionModel.fromJson(_room),
+                      role: ChatRole.teacher,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          Expanded(
-            child: DefaultTabController(
-              length: 2,
-              child: Column(
-                children: [
-                  TabBar(
-                    tabs: [
-                      Tab(text: 'Members (${_participants.length})'),
-                      const Tab(text: 'Class assignments'),
-                    ],
-                  ),
-                  Expanded(
-                    child: TabBarView(
-                      children: [
-                        students.when(
-                          loading: () =>
-                              const Center(child: CircularProgressIndicator()),
-                          error: (_, _) => Center(
-                            child: TextButton(
-                              onPressed: () => ref.invalidate(
-                                classStudentsProvider(widget.classId),
-                              ),
-                              child: const Text('Retry loading members'),
-                            ),
-                          ),
-                          data: (roster) {
-                            final byId = {
-                              for (final row in roster)
-                                if (row['studentId'] is Map)
-                                  _id(row['studentId']): row['studentId'],
-                            };
-                            return ListView(
-                              children: _participants.map<Widget>((
-                                participant,
-                              ) {
-                                final user = participant['userId'];
-                                final id = _id(user);
-                                final person =
-                                    byId[id] ?? (user is Map ? user : null);
-                                final name =
-                                    person?['username']?.toString() ??
-                                    'Group member';
-                                final isStudent = byId.containsKey(id);
-                                return ListTile(
-                                  leading: const CircleAvatar(
-                                    child: Icon(Icons.person_outline),
-                                  ),
-                                  title: Text(name),
-                                  subtitle: Text(
-                                    isStudent ? 'Student' : 'Member',
-                                  ),
-                                  onTap: isStudent
-                                      ? () => Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) =>
-                                                StudentProfileScreen(
-                                                  studentData:
-                                                      Map<String, dynamic>.from(
-                                                        person,
-                                                      ),
-                                                  classId: widget.classId,
-                                                ),
-                                          ),
-                                        )
-                                      : null,
-                                  trailing:
-                                      _canManage &&
-                                          isStudent &&
-                                          _participants.length > 2
-                                      ? IconButton(
-                                          tooltip: 'Remove $name',
-                                          onPressed: _busy
-                                              ? null
-                                              : () => _remove(id, name),
-                                          icon: const Icon(
-                                            Icons.person_remove_outlined,
-                                          ),
-                                        )
-                                      : null,
-                                );
-                              }).toList(),
-                            );
-                          },
-                        ),
-                        TeacherAssignmentList(classId: widget.classId),
+            Expanded(
+              child: DefaultTabController(
+                length: 2,
+                child: Column(
+                  children: [
+                    TabBar(
+                      tabs: [
+                        Tab(text: 'Members (${_participants.length})'),
+                        const Tab(text: 'Class assignments'),
                       ],
                     ),
-                  ),
-                ],
+                    Expanded(
+                      child: TabBarView(
+                        children: [
+                          students.when(
+                            loading: () => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                            error: (_, _) => Center(
+                              child: TextButton(
+                                onPressed: () => ref.invalidate(
+                                  classStudentsProvider(widget.classId),
+                                ),
+                                child: const Text('Retry loading members'),
+                              ),
+                            ),
+                            data: (roster) {
+                              final byId = {
+                                for (final row in roster)
+                                  if (row['studentId'] is Map)
+                                    _id(row['studentId']): row['studentId'],
+                              };
+                              return ListView(
+                                children: _participants.map<Widget>((
+                                  participant,
+                                ) {
+                                  final user = participant['userId'];
+                                  final id = _id(user);
+                                  final person =
+                                      byId[id] ?? (user is Map ? user : null);
+                                  final name =
+                                      person?['username']?.toString() ??
+                                      'Group member';
+                                  final isStudent = byId.containsKey(id);
+                                  return ListTile(
+                                    leading: const CircleAvatar(
+                                      child: Icon(Icons.person_outline),
+                                    ),
+                                    title: Text(name),
+                                    subtitle: Text(
+                                      isStudent ? 'Student' : 'Member',
+                                    ),
+                                    onTap: isStudent
+                                        ? () => Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  StudentProfileScreen(
+                                                    studentData:
+                                                        Map<
+                                                          String,
+                                                          dynamic
+                                                        >.from(person),
+                                                    classId: widget.classId,
+                                                  ),
+                                            ),
+                                          )
+                                        : null,
+                                    trailing:
+                                        _canManage &&
+                                            isStudent &&
+                                            _participants.length > 2
+                                        ? IconButton(
+                                            tooltip: 'Remove $name',
+                                            onPressed: _busy
+                                                ? null
+                                                : () => _remove(id, name),
+                                            icon: const Icon(
+                                              Icons.person_remove_outlined,
+                                            ),
+                                          )
+                                        : null,
+                                  );
+                                }).toList(),
+                              );
+                            },
+                          ),
+                          TeacherAssignmentList(classId: widget.classId),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

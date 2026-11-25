@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -143,33 +144,35 @@ class _SendToScreenState extends ConsumerState<SendToScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const ChatSimpleAppBar(title: 'Send To'),
-      body: Column(
-        children: [
-          SendToSearchBar(
-            onChanged: (value) =>
-                setState(() => _query = value.trim().toLowerCase()),
-          ),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : visibleContacts.isEmpty
-                ? const Center(child: Text('No contacts found'))
-                : SendToContactList(
-                    contacts: visibleContacts,
-                    selectedIds: _selectedIds,
-                    isMultiSelect: _isTeacher,
-                    onToggleSelection: _handleContactTap,
-                  ),
-          ),
-          if (_isTeacher)
-            SendToActionButton(
-              selectedCount: _selectedIds.length,
-              label: _selectedIds.length > 1
-                  ? 'CREATE GROUP (${_selectedIds.length})'
-                  : 'START CHAT',
-              onPressed: _selectedIds.isEmpty ? null : _createOrOpenRoom,
+      body: ResponsiveBody(
+        child: Column(
+          children: [
+            SendToSearchBar(
+              onChanged: (value) =>
+                  setState(() => _query = value.trim().toLowerCase()),
             ),
-        ],
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : visibleContacts.isEmpty
+                  ? const Center(child: Text('No contacts found'))
+                  : SendToContactList(
+                      contacts: visibleContacts,
+                      selectedIds: _selectedIds,
+                      isMultiSelect: _isTeacher,
+                      onToggleSelection: _handleContactTap,
+                    ),
+            ),
+            if (_isTeacher)
+              SendToActionButton(
+                selectedCount: _selectedIds.length,
+                label: _selectedIds.length > 1
+                    ? 'CREATE GROUP (${_selectedIds.length})'
+                    : 'START CHAT',
+                onPressed: _selectedIds.isEmpty ? null : _createOrOpenRoom,
+              ),
+          ],
+        ),
       ),
     );
   }

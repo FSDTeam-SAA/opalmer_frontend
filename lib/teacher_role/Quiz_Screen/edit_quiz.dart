@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:opalmer_education/core/widgets/app_dropdown_field.dart';
 import 'package:flutter/material.dart';
@@ -248,7 +249,7 @@ class _EditQuizScreenState extends ConsumerState<EditQuizScreen> {
           ),
         ),
       ),
-      body: _buildBody(gradingState),
+      body: ResponsiveBody(child: _buildBody(gradingState)),
     );
   }
 

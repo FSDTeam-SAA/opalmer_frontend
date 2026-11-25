@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import '../navigation/teacher_workspace.dart';
@@ -128,166 +129,170 @@ class QuizDetailScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: sessionAsync.when(
-        data: (session) {
-          final title = session['title'] ?? 'Untitled';
-          final questionCount = session['questionCount'] ?? 0;
-          final time = session['time'] ?? 0;
-          final status = session['status'] ?? 'Draft';
+      body: ResponsiveBody(
+        child: sessionAsync.when(
+          data: (session) {
+            final title = session['title'] ?? 'Untitled';
+            final questionCount = session['questionCount'] ?? 0;
+            final time = session['time'] ?? 0;
+            final status = session['status'] ?? 'Draft';
 
-          final classInfo = session['classId'];
-          final grade = (classInfo is Map)
-              ? classInfo['grade'] ?? 'N/A'
-              : 'N/A';
-          final subject = (classInfo is Map)
-              ? classInfo['subject'] ?? 'N/A'
-              : 'N/A';
+            final classInfo = session['classId'];
+            final grade = (classInfo is Map)
+                ? classInfo['grade'] ?? 'N/A'
+                : 'N/A';
+            final subject = (classInfo is Map)
+                ? classInfo['subject'] ?? 'N/A'
+                : 'N/A';
 
-          String imageUrl = "";
-          if (session['image'] != null &&
-              session['image'].toString().isNotEmpty) {
-            imageUrl = session['image'].toString();
-          }
+            String imageUrl = "";
+            if (session['image'] != null &&
+                session['image'].toString().isNotEmpty) {
+              imageUrl = session['image'].toString();
+            }
 
-          return Stack(
-            children: [
-              ListView(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-                children: [
-                  // Summary Green Card
-                  _buildSummaryCard(
-                    title,
-                    questionCount,
-                    time,
-                    status,
-                    imageUrl,
-                  ),
-
-                  const SizedBox(height: 24),
-                  _buildInfoRow("Grade :", grade.toString()),
-                  const SizedBox(height: 12),
-                  _buildInfoRow("Subject :", subject.toString()),
-
-                  const SizedBox(height: 28),
-                  const Text(
-                    "Questions",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF222222),
+            return Stack(
+              children: [
+                ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+                  children: [
+                    // Summary Green Card
+                    _buildSummaryCard(
+                      title,
+                      questionCount,
+                      time,
+                      status,
+                      imageUrl,
                     ),
-                  ),
-                  const SizedBox(height: 16),
 
-                  questionsAsync.when(
-                    data: (questions) => ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: questions.length,
-                      itemBuilder: (context, index) {
-                        final q = questions[index];
-                        return _buildQuestionTile(
-                          number: index + 1,
-                          question: q['question'] ?? '',
-                          options: List<String>.from(q['options'] ?? []),
-                          answer: q['answer'] ?? '',
-                          explanation: q['explanation']?.toString() ?? '',
-                          type: q['type']?.toString() ?? 'normal',
-                          difficulty: q['difficulty']?.toString() ?? 'medium',
-                          imageUrl: q['imageUrl']?.toString() ?? '',
-                          initiallyExpanded: index == 0,
+                    const SizedBox(height: 24),
+                    _buildInfoRow("Grade :", grade.toString()),
+                    const SizedBox(height: 12),
+                    _buildInfoRow("Subject :", subject.toString()),
+
+                    const SizedBox(height: 28),
+                    const Text(
+                      "Questions",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF222222),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    questionsAsync.when(
+                      data: (questions) => ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: questions.length,
+                        itemBuilder: (context, index) {
+                          final q = questions[index];
+                          return _buildQuestionTile(
+                            number: index + 1,
+                            question: q['question'] ?? '',
+                            options: List<String>.from(q['options'] ?? []),
+                            answer: q['answer'] ?? '',
+                            explanation: q['explanation']?.toString() ?? '',
+                            type: q['type']?.toString() ?? 'normal',
+                            difficulty: q['difficulty']?.toString() ?? 'medium',
+                            imageUrl: q['imageUrl']?.toString() ?? '',
+                            initiallyExpanded: index == 0,
+                          );
+                        },
+                      ),
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (err, stack) {
+                        // Check if it's a 404 (No questions found)
+                        return Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade50,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.quiz_outlined,
+                                size: 48,
+                                color: Colors.grey.shade300,
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                "No questions found for this session.",
+                                style: TextStyle(
+                                  color: Colors.grey.shade600,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              TextButton.icon(
+                                onPressed: () => ref.refresh(
+                                  sessionQuestionsProvider(sessionId),
+                                ),
+                                icon: const Icon(Icons.refresh),
+                                label: const Text("Retry"),
+                              ),
+                            ],
+                          ),
                         );
                       },
                     ),
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    error: (err, stack) {
-                      // Check if it's a 404 (No questions found)
-                      return Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade50,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.quiz_outlined,
-                              size: 48,
-                              color: Colors.grey.shade300,
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              "No questions found for this session.",
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: 15,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            TextButton.icon(
-                              onPressed: () => ref.refresh(
-                                sessionQuestionsProvider(sessionId),
-                              ),
-                              icon: const Icon(Icons.refresh),
-                              label: const Text("Retry"),
-                            ),
-                          ],
+                  ],
+                ),
+
+                // Fixed Bottom Button
+                Positioned(
+                  bottom: 12,
+                  left: 20,
+                  right: 20,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => TeacherContextFrame.carry(
+                            context,
+                            AttendedStudentsScreen(sessionId: sessionId),
+                          ),
                         ),
                       );
                     },
-                  ),
-                ],
-              ),
-
-              // Fixed Bottom Button
-              Positioned(
-                bottom: 12,
-                left: 20,
-                right: 20,
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => TeacherContextFrame.carry(
-                          context,
-                          AttendedStudentsScreen(sessionId: sessionId),
-                        ),
+                    child: Container(
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF871DAD),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(
+                              0xFF871DAD,
+                            ).withValues(alpha: 0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                    );
-                  },
-                  child: Container(
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF871DAD),
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF871DAD).withValues(alpha: 0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
+                      alignment: Alignment.center,
+                      child: Text(
+                        attendedLabel,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
                         ),
-                      ],
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      attendedLabel,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 0.5,
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text("Error: $err")),
+              ],
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, stack) => Center(child: Text("Error: $err")),
+        ),
       ),
     );
   }

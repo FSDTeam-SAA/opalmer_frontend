@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,16 +17,18 @@ class StudentLessonsScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
-      body: RefreshIndicator(
-        color: AppColors.primaryMid,
-        onRefresh: () async {
-          ref.invalidate(studentLessonsProvider);
-          await ref.read(studentLessonsProvider.future);
-        },
-        child: lessonsAsync.when(
-          data: (lessons) => _buildContent(context, lessons),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, _) => _buildError(context, ref),
+      body: ResponsiveBody(
+        child: RefreshIndicator(
+          color: AppColors.primaryMid,
+          onRefresh: () async {
+            ref.invalidate(studentLessonsProvider);
+            await ref.read(studentLessonsProvider.future);
+          },
+          child: lessonsAsync.when(
+            data: (lessons) => _buildContent(context, lessons),
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, _) => _buildError(context, ref),
+          ),
         ),
       ),
     );

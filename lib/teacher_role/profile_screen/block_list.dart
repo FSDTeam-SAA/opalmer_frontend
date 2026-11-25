@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers/auth_provider.dart';
@@ -69,34 +70,39 @@ class _BlockListScreenState extends ConsumerState<BlockListScreen> {
         title: const Text('Block list'),
         actions: const [AppHomeButton()],
       ),
-      body: _error != null
-          ? Center(
-              child: TextButton(onPressed: _load, child: Text('$_error Retry')),
-            )
-          : _rooms == null
-          ? const Center(child: CircularProgressIndicator())
-          : _rooms!.isEmpty
-          ? const Center(child: Text('No blocked users'))
-          : ListView(
-              children: _rooms!.map((room) {
-                final peers = (room['participants'] as List)
-                    .map((p) => p['userId'])
-                    .whereType<Map>()
-                    .where((user) => user['_id'] != userId);
-                final name = peers.isEmpty
-                    ? 'Participant unavailable'
-                    : peers.first['username']?.toString() ?? 'Participant';
-                final id = room['_id'].toString();
-                return ListTile(
-                  leading: const Icon(Icons.person_off_outlined),
-                  title: Text(name),
-                  trailing: TextButton(
-                    onPressed: _busy.contains(id) ? null : () => _unblock(id),
-                    child: const Text('Unblock'),
-                  ),
-                );
-              }).toList(),
-            ),
+      body: ResponsiveBody(
+        child: _error != null
+            ? Center(
+                child: TextButton(
+                  onPressed: _load,
+                  child: Text('$_error Retry'),
+                ),
+              )
+            : _rooms == null
+            ? const Center(child: CircularProgressIndicator())
+            : _rooms!.isEmpty
+            ? const Center(child: Text('No blocked users'))
+            : ListView(
+                children: _rooms!.map((room) {
+                  final peers = (room['participants'] as List)
+                      .map((p) => p['userId'])
+                      .whereType<Map>()
+                      .where((user) => user['_id'] != userId);
+                  final name = peers.isEmpty
+                      ? 'Participant unavailable'
+                      : peers.first['username']?.toString() ?? 'Participant';
+                  final id = room['_id'].toString();
+                  return ListTile(
+                    leading: const Icon(Icons.person_off_outlined),
+                    title: Text(name),
+                    trailing: TextButton(
+                      onPressed: _busy.contains(id) ? null : () => _unblock(id),
+                      child: const Text('Unblock'),
+                    ),
+                  );
+                }).toList(),
+              ),
+      ),
     );
   }
 }

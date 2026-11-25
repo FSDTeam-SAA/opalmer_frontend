@@ -80,6 +80,16 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
+
+      // Keep dialogs and sheets at a comfortable width on tablets instead of
+      // stretching across the whole screen. Phones are narrower than these
+      // limits, so they are unaffected.
+      dialogTheme: const DialogThemeData(
+        constraints: BoxConstraints(minWidth: 280, maxWidth: 560),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        constraints: BoxConstraints(maxWidth: 640),
+      ),
     );
   }
 }

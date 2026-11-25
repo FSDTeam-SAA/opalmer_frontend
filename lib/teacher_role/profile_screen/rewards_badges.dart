@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,16 +43,18 @@ class RewardsBadgesScreen extends ConsumerWidget {
           ),
         ),
       ),
-      body: RefreshIndicator(
-        color: AppColors.primaryMid,
-        onRefresh: () async {
-          ref.invalidate(studentBadgesProvider);
-          await ref.read(studentBadgesProvider.future);
-        },
-        child: badgesAsync.when(
-          data: (badges) => _buildList(badges),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, _) => _buildError(context, ref, err),
+      body: ResponsiveBody(
+        child: RefreshIndicator(
+          color: AppColors.primaryMid,
+          onRefresh: () async {
+            ref.invalidate(studentBadgesProvider);
+            await ref.read(studentBadgesProvider.future);
+          },
+          child: badgesAsync.when(
+            data: (badges) => _buildList(badges),
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, _) => _buildError(context, ref, err),
+          ),
         ),
       ),
     );

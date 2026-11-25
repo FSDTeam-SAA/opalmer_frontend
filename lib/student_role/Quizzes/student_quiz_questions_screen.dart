@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -128,10 +129,18 @@ class _StudentQuizQuestionsScreenState
         context: context,
         builder: (dialog) => AlertDialog(
           title: const Text('Submit with unanswered questions?'),
-          content: Text('$remaining question(s) are unanswered. You cannot change your answers after submitting.'),
+          content: Text(
+            '$remaining question(s) are unanswered. You cannot change your answers after submitting.',
+          ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(dialog, false), child: const Text('Keep answering')),
-            FilledButton(onPressed: () => Navigator.pop(dialog, true), child: const Text('Submit anyway')),
+            TextButton(
+              onPressed: () => Navigator.pop(dialog, false),
+              child: const Text('Keep answering'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialog, true),
+              child: const Text('Submit anyway'),
+            ),
           ],
         ),
       );
@@ -207,10 +216,12 @@ class _StudentQuizQuestionsScreenState
     if (_initializationError != null) {
       return Scaffold(
         appBar: _buildAppBar(context),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text(_initializationError!),
+        body: ResponsiveBody(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(_initializationError!),
+            ),
           ),
         ),
       );
@@ -219,48 +230,50 @@ class _StudentQuizQuestionsScreenState
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
-      body: _isInitializing
-          ? const Center(child: CircularProgressIndicator())
-          : quizQAAsync.when(
-              data: (quizQA) {
-                if (quizQA == null || quizQA.questions.isEmpty) {
-                  return _buildEmptyState();
-                }
-                final questions = quizQA.questions;
-                return Column(
-                  children: [
-                    Expanded(
-                      child: ListView(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 16,
-                        ),
-                        children: [
-                          _buildQuizInfoCard(questions.length),
-                          if (_saveError != null)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 12),
-                              child: Text(
-                                _saveError!,
-                                style: const TextStyle(color: Colors.red),
+      body: ResponsiveBody(
+        child: _isInitializing
+            ? const Center(child: CircularProgressIndicator())
+            : quizQAAsync.when(
+                data: (quizQA) {
+                  if (quizQA == null || quizQA.questions.isEmpty) {
+                    return _buildEmptyState();
+                  }
+                  final questions = quizQA.questions;
+                  return Column(
+                    children: [
+                      Expanded(
+                        child: ListView(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 16,
+                          ),
+                          children: [
+                            _buildQuizInfoCard(questions.length),
+                            if (_saveError != null)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 12),
+                                child: Text(
+                                  _saveError!,
+                                  style: const TextStyle(color: Colors.red),
+                                ),
                               ),
-                            ),
-                          const SizedBox(height: 24),
-                          ...questions.asMap().entries.map((entry) {
-                            final idx = entry.key;
-                            final q = entry.value;
-                            return _buildQuestionCard(idx, q, questions);
-                          }),
-                        ],
+                            const SizedBox(height: 24),
+                            ...questions.asMap().entries.map((entry) {
+                              final idx = entry.key;
+                              final q = entry.value;
+                              return _buildQuestionCard(idx, q, questions);
+                            }),
+                          ],
+                        ),
                       ),
-                    ),
-                    _buildFooter(context, questions),
-                  ],
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => _buildErrorState(err),
-            ),
+                      _buildFooter(context, questions),
+                    ],
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, stack) => _buildErrorState(err),
+              ),
+      ),
     );
   }
 

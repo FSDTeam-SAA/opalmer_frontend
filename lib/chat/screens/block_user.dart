@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/chat/widgets/block_user_form.dart';
 import 'package:opalmer_education/chat/widgets/chat_simple_app_bar.dart';
@@ -61,21 +62,23 @@ class _BlockUserScreenState extends State<BlockUserScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: ChatSimpleAppBar(title: widget.isBlocked ? 'Unblock' : 'Block'),
-      body: widget.isBlocked
-          ? Padding(
-              padding: const EdgeInsets.all(24),
-              child: FilledButton(
-                onPressed: _busy ? null : _save,
-                child: const Text('Unblock conversation'),
+      body: ResponsiveBody(
+        child: widget.isBlocked
+            ? Padding(
+                padding: const EdgeInsets.all(24),
+                child: FilledButton(
+                  onPressed: _busy ? null : _save,
+                  child: const Text('Unblock conversation'),
+                ),
+              )
+            : BlockUserForm(
+                userName: widget.userName,
+                selectedReason: _selectedReason,
+                reasonController: _reasonController,
+                onReasonSelected: _selectReason,
+                onBlock: _save,
               ),
-            )
-          : BlockUserForm(
-              userName: widget.userName,
-              selectedReason: _selectedReason,
-              reasonController: _reasonController,
-              onReasonSelected: _selectReason,
-              onBlock: _save,
-            ),
+      ),
     );
   }
 }

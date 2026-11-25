@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
@@ -88,73 +89,75 @@ class _LanguagePreferenceScreenState
       title: const Text('Language preference'),
       actions: const [AppHomeButton()],
     ),
-    body: _loading
-        ? const Center(child: CircularProgressIndicator())
-        : _error != null
-        ? Center(
-            child: TextButton(
-              onPressed: () {
-                setState(() {
-                  _loading = true;
-                  _error = null;
-                });
-                _load();
-              },
-              child: Text('$_error Retry'),
+    body: ResponsiveBody(
+      child: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+          ? Center(
+              child: TextButton(
+                onPressed: () {
+                  setState(() {
+                    _loading = true;
+                    _error = null;
+                  });
+                  _load();
+                },
+                child: Text('$_error Retry'),
+              ),
+            )
+          : Column(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text(
+                    'Save your preferred language to your profile. App menus currently use English.',
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      labelText: 'Find a language',
+                      prefixIcon: Icon(Icons.search),
+                    ),
+                    onChanged: (value) =>
+                        setState(() => _search = value.toLowerCase()),
+                  ),
+                ),
+                Expanded(
+                  child: ListView(
+                    children: [
+                      for (final entry in languages.entries.where(
+                        (entry) => entry.value.toLowerCase().contains(_search),
+                      ))
+                        ListTile(
+                          title: Text(entry.value),
+                          selected: _selected == entry.key,
+                          trailing: _selected == entry.key
+                              ? const Icon(
+                                  Icons.check_circle,
+                                  color: Color(0xFF871DAD),
+                                )
+                              : const Icon(Icons.radio_button_unchecked),
+                          onTap: _saving
+                              ? null
+                              : () => setState(() => _selected = entry.key),
+                        ),
+                    ],
+                  ),
+                ),
+                SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: FilledButton(
+                      onPressed: _saving ? null : _save,
+                      child: Text(_saving ? 'Saving...' : 'Save preference'),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          )
-        : Column(
-            children: [
-              const Padding(
-                padding: EdgeInsets.all(16),
-                child: Text(
-                  'Save your preferred language to your profile. App menus currently use English.',
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: TextField(
-                  decoration: const InputDecoration(
-                    labelText: 'Find a language',
-                    prefixIcon: Icon(Icons.search),
-                  ),
-                  onChanged: (value) =>
-                      setState(() => _search = value.toLowerCase()),
-                ),
-              ),
-              Expanded(
-                child: ListView(
-                  children: [
-                    for (final entry in languages.entries.where(
-                      (entry) => entry.value.toLowerCase().contains(_search),
-                    ))
-                      ListTile(
-                        title: Text(entry.value),
-                        selected: _selected == entry.key,
-                        trailing: _selected == entry.key
-                            ? const Icon(
-                                Icons.check_circle,
-                                color: Color(0xFF871DAD),
-                              )
-                            : const Icon(Icons.radio_button_unchecked),
-                        onTap: _saving
-                            ? null
-                            : () => setState(() => _selected = entry.key),
-                      ),
-                  ],
-                ),
-              ),
-              SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: FilledButton(
-                    onPressed: _saving ? null : _save,
-                    child: Text(_saving ? 'Saving...' : 'Save preference'),
-                  ),
-                ),
-              ),
-            ],
-          ),
+    ),
   );
 }

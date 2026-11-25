@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:opalmer_education/core/widgets/app_dropdown_field.dart';
 import 'package:flutter/material.dart';
@@ -156,71 +157,81 @@ class _AddBehaviorScreenState extends ConsumerState<AddBehaviorScreen> {
           ),
         ),
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Message",
-                style: TextStyle(fontSize: 16, color: Color(0xFF444444)),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _messageController,
-                decoration: InputDecoration(hintText: "Enter behavior message"),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                "Student Behavior",
-                style: TextStyle(fontSize: 16, color: Color(0xFF444444)),
-              ),
-              const SizedBox(height: 8),
-              AppDropdownField<String>(
-                value: _selectedState,
-                items: const [
-                  DropdownMenuItem(value: "positive", child: Text("Positive")),
-                  DropdownMenuItem(value: "negative", child: Text("Negative")),
-                ],
-                onChanged: (val) {
-                  if (val != null) setState(() => _selectedState = val);
-                },
-              ),
-              const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _handleAdd,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF871DAD),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : Text(
-                          widget.behaviorId == null ? "ADD" : "UPDATE",
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
+      body: ResponsiveBody(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Message",
+                  style: TextStyle(fontSize: 16, color: Color(0xFF444444)),
                 ),
-              ),
-              const SizedBox(height: 8),
-            ],
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _messageController,
+                  decoration: InputDecoration(
+                    hintText: "Enter behavior message",
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  "Student Behavior",
+                  style: TextStyle(fontSize: 16, color: Color(0xFF444444)),
+                ),
+                const SizedBox(height: 8),
+                AppDropdownField<String>(
+                  value: _selectedState,
+                  items: const [
+                    DropdownMenuItem(
+                      value: "positive",
+                      child: Text("Positive"),
+                    ),
+                    DropdownMenuItem(
+                      value: "negative",
+                      child: Text("Negative"),
+                    ),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) setState(() => _selectedState = val);
+                  },
+                ),
+                const Spacer(),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _handleAdd,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF871DAD),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            widget.behaviorId == null ? "ADD" : "UPDATE",
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
           ),
         ),
       ),

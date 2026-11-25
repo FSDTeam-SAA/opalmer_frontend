@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -148,8 +149,8 @@ class _ChildsProfilesScreenState extends ConsumerState<ChildsProfilesScreen> {
                   SafeArea(
                     bottom: false,
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: Responsive.gutter(context, base: 20),
                         vertical: 10,
                       ),
                       child: AppPageHeader(
@@ -229,8 +230,8 @@ class _ChildsProfilesScreenState extends ConsumerState<ChildsProfilesScreen> {
                         ),
                       )
                     : ListView(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: Responsive.gutter(context, base: 20),
                           vertical: 20,
                         ),
                         children: _profiles.map((profile) {

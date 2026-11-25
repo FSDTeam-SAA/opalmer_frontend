@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,28 +20,30 @@ class StudentQuizListScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
-      body: quizzesAsync.when(
-        data: (quizzes) {
-          if (quizzes.isEmpty) {
-            return const Center(
-              child: Text("No quizzes available at the moment."),
-            );
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.all(24),
-            itemCount: quizzes.length,
-            itemBuilder: (context, index) {
-              final quiz = quizzes[index];
-              final matches = results.where((r) => r.quizId == quiz.id);
-              return QuizSummaryCard(
-                quiz: quiz,
-                result: matches.isEmpty ? null : matches.first,
+      body: ResponsiveBody(
+        child: quizzesAsync.when(
+          data: (quizzes) {
+            if (quizzes.isEmpty) {
+              return const Center(
+                child: Text("No quizzes available at the moment."),
               );
-            },
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+            }
+            return ListView.builder(
+              padding: const EdgeInsets.all(24),
+              itemCount: quizzes.length,
+              itemBuilder: (context, index) {
+                final quiz = quizzes[index];
+                final matches = results.where((r) => r.quizId == quiz.id);
+                return QuizSummaryCard(
+                  quiz: quiz,
+                  result: matches.isEmpty ? null : matches.first,
+                );
+              },
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, stack) => Center(child: Text('Error: $err')),
+        ),
       ),
     );
   }

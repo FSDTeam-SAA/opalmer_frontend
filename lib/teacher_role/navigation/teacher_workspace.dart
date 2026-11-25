@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -65,72 +66,76 @@ class TeacherClassPicker extends ConsumerWidget {
         title: Text(feature.title),
         automaticallyImplyLeading: !embedded,
       ),
-      body: classes.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, _) => Center(
-          child: TextButton(
-            onPressed: () => ref.invalidate(teacherClassesProvider),
-            child: const Text('Unable to load classes. Retry'),
+      body: ResponsiveBody(
+        child: classes.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, _) => Center(
+            child: TextButton(
+              onPressed: () => ref.invalidate(teacherClassesProvider),
+              child: const Text('Unable to load classes. Retry'),
+            ),
           ),
-        ),
-        data: (items) {
-          final sorted = [...items]
-            ..sort(
-              (a, b) => a.id == b.id
-                  ? 0
-                  : a.id == lastId
-                  ? -1
-                  : b.id == lastId
-                  ? 1
-                  : classLabel(a).compareTo(classLabel(b)),
-            );
-          return ListView(
-            padding: const EdgeInsets.all(20),
-            children: [
-              Text(feature.description),
-              const SizedBox(height: 8),
-              const Text('Select a class'),
-              if (sorted.isEmpty) ...[
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                  child: Text('You have no classes yet.'),
-                ),
-                FilledButton(
-                  onPressed: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const AddClassScreen()),
-                    );
-                    ref.invalidate(teacherClassesProvider);
-                  },
-                  child: const Text('Create class'),
-                ),
-              ],
-              ...sorted.map(
-                (cls) => Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.class_outlined),
-                    title: Text(classLabel(cls)),
-                    subtitle: Text(
-                      '${cls.studentCount} students${cls.id == lastId ? ' · Recently used' : ''}',
-                    ),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      ref.read(teacherLastClassProvider.notifier).state =
-                          cls.id;
-                      Navigator.push(
+          data: (items) {
+            final sorted = [...items]
+              ..sort(
+                (a, b) => a.id == b.id
+                    ? 0
+                    : a.id == lastId
+                    ? -1
+                    : b.id == lastId
+                    ? 1
+                    : classLabel(a).compareTo(classLabel(b)),
+              );
+            return ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                Text(feature.description),
+                const SizedBox(height: 8),
+                const Text('Select a class'),
+                if (sorted.isEmpty) ...[
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 20),
+                    child: Text('You have no classes yet.'),
+                  ),
+                  FilledButton(
+                    onPressed: () async {
+                      await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => teacherFeaturePage(feature, cls),
+                          builder: (_) => const AddClassScreen(),
                         ),
                       );
+                      ref.invalidate(teacherClassesProvider);
                     },
+                    child: const Text('Create class'),
+                  ),
+                ],
+                ...sorted.map(
+                  (cls) => Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.class_outlined),
+                      title: Text(classLabel(cls)),
+                      subtitle: Text(
+                        '${cls.studentCount} students${cls.id == lastId ? ' · Recently used' : ''}',
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        ref.read(teacherLastClassProvider.notifier).state =
+                            cls.id;
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => teacherFeaturePage(feature, cls),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -201,85 +206,90 @@ class TeacherContextFrame extends StatelessWidget {
     final studentId = '${s?['Id'] ?? 'ID unavailable'}';
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppColors.primaryMid.withValues(alpha: 0.06),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: AppColors.primaryMid.withValues(alpha: 0.14),
+      body: ResponsiveBody(
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
                 ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryMid,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(
-                      Icons.class_outlined,
-                      color: Colors.white,
-                      size: 20,
-                    ),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryMid.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: AppColors.primaryMid.withValues(alpha: 0.14),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          classLabel(classData),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black87,
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryMid,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.class_outlined,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            classLabel(classData),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black87,
+                            ),
                           ),
-                        ),
-                        if (s != null) ...[
-                          const SizedBox(height: 3),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.person_outline,
-                                size: 14,
-                                color: AppColors.primaryMid,
-                              ),
-                              const SizedBox(width: 4),
-                              Flexible(
-                                child: Text(
-                                  '$studentName · $studentId',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black54,
+                          if (s != null) ...[
+                            const SizedBox(height: 3),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.person_outline,
+                                  size: 14,
+                                  color: AppColors.primaryMid,
+                                ),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    '$studentName · $studentId',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black54,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
+                              ],
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Expanded(child: child),
-          ],
+              Expanded(child: child),
+            ],
+          ),
         ),
       ),
     );
@@ -300,65 +310,71 @@ class TeacherStudentPicker extends ConsumerWidget {
       actions: [const AppHomeButton()],
       title: Text(feature.title),
     ),
-    body: ref
-        .watch(classStudentsProvider(classData.id))
-        .when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, _) => Center(
-            child: TextButton(
-              onPressed: () =>
-                  ref.invalidate(classStudentsProvider(classData.id)),
-              child: const Text('Unable to load students. Retry'),
+    body: ResponsiveBody(
+      child: ref
+          .watch(classStudentsProvider(classData.id))
+          .when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (_, _) => Center(
+              child: TextButton(
+                onPressed: () =>
+                    ref.invalidate(classStudentsProvider(classData.id)),
+                child: const Text('Unable to load students. Retry'),
+              ),
             ),
-          ),
-          data: (rows) => rows.isEmpty
-              ? const Center(child: Text('No students enrolled in this class.'))
-              : ListView(
-                  children: rows.map((row) {
-                    final student = Map<String, dynamic>.from(row['studentId']);
-                    return ListTile(
-                      title: Text('${student['username'] ?? 'Student'}'),
-                      subtitle: Text('${student['Id'] ?? 'ID unavailable'}'),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () {
-                        final id = student['_id'].toString();
-                        final Widget page =
-                            feature == TeacherFeature.newBehavior
-                            ? AddBehaviorScreen(
-                                studentId: id,
+            data: (rows) => rows.isEmpty
+                ? const Center(
+                    child: Text('No students enrolled in this class.'),
+                  )
+                : ListView(
+                    children: rows.map((row) {
+                      final student = Map<String, dynamic>.from(
+                        row['studentId'],
+                      );
+                      return ListTile(
+                        title: Text('${student['username'] ?? 'Student'}'),
+                        subtitle: Text('${student['Id'] ?? 'ID unavailable'}'),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () {
+                          final id = student['_id'].toString();
+                          final Widget page =
+                              feature == TeacherFeature.newBehavior
+                              ? AddBehaviorScreen(
+                                  studentId: id,
+                                  student: student,
+                                  classId: classData.id,
+                                )
+                              : feature == TeacherFeature.behavior
+                              ? BehaviorRecordScreen(
+                                  studentId: id,
+                                  student: student,
+                                  classId: classData.id,
+                                )
+                              : feature == TeacherFeature.grades
+                              ? GradingProgressScreen(
+                                  studentId: id,
+                                  classId: classData.id,
+                                )
+                              : StudentProfileScreen(
+                                  studentData: student,
+                                  classId: classData.id,
+                                );
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => TeacherContextFrame(
+                                classData: classData,
                                 student: student,
-                                classId: classData.id,
-                              )
-                            : feature == TeacherFeature.behavior
-                            ? BehaviorRecordScreen(
-                                studentId: id,
-                                student: student,
-                                classId: classData.id,
-                              )
-                            : feature == TeacherFeature.grades
-                            ? GradingProgressScreen(
-                                studentId: id,
-                                classId: classData.id,
-                              )
-                            : StudentProfileScreen(
-                                studentData: student,
-                                classId: classData.id,
-                              );
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => TeacherContextFrame(
-                              classData: classData,
-                              student: student,
-                              child: page,
+                                child: page,
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                    );
-                  }).toList(),
-                ),
-        ),
+                          );
+                        },
+                      );
+                    }).toList(),
+                  ),
+          ),
+    ),
   );
 }
 
@@ -371,109 +387,111 @@ class TeacherGradebook extends ConsumerWidget {
       actions: [const AppHomeButton()],
       title: const Text('Gradebook'),
     ),
-    body: ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        ListTile(
-          leading: const Icon(Icons.person_outline),
-          title: const Text('Individual student grades'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => TeacherContextFrame(
-                classData: classData,
-                child: TeacherStudentPicker(
+    body: ResponsiveBody(
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          ListTile(
+            leading: const Icon(Icons.person_outline),
+            title: const Text('Individual student grades'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => TeacherContextFrame(
                   classData: classData,
-                  feature: TeacherFeature.grades,
+                  child: TeacherStudentPicker(
+                    classData: classData,
+                    feature: TeacherFeature.grades,
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-        const Divider(),
-        Text(
-          'Assignment submissions',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        ref
-            .watch(classHomeworkProvider(classData.id))
-            .when(
-              loading: () => const LinearProgressIndicator(),
-              error: (_, _) => TextButton(
-                onPressed: () =>
-                    ref.invalidate(classHomeworkProvider(classData.id)),
-                child: const Text('Retry assignments'),
-              ),
-              data: (rows) => Column(
-                children: [
-                  if (rows.isEmpty)
-                    const ListTile(title: Text('No assignments yet.')),
-                  ...rows.map(
-                    (hw) => ListTile(
-                      title: Text('${hw['title']}'),
-                      subtitle: Text(
-                        '${hw['status'] ?? 'published'} · Review submissions and publish grades',
-                      ),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => TeacherContextFrame(
-                            classData: classData,
-                            child: AssignmentDetailsScreen(
-                              homeworkId: hw['_id'].toString(),
+          const Divider(),
+          Text(
+            'Assignment submissions',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          ref
+              .watch(classHomeworkProvider(classData.id))
+              .when(
+                loading: () => const LinearProgressIndicator(),
+                error: (_, _) => TextButton(
+                  onPressed: () =>
+                      ref.invalidate(classHomeworkProvider(classData.id)),
+                  child: const Text('Retry assignments'),
+                ),
+                data: (rows) => Column(
+                  children: [
+                    if (rows.isEmpty)
+                      const ListTile(title: Text('No assignments yet.')),
+                    ...rows.map(
+                      (hw) => ListTile(
+                        title: Text('${hw['title']}'),
+                        subtitle: Text(
+                          '${hw['status'] ?? 'published'} · Review submissions and publish grades',
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => TeacherContextFrame(
+                              classData: classData,
+                              child: AssignmentDetailsScreen(
+                                homeworkId: hw['_id'].toString(),
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-        const Divider(),
-        Text(
-          'Assessment results',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        ref
-            .watch(teacherSessionsProvider(classData.id))
-            .when(
-              loading: () => const LinearProgressIndicator(),
-              error: (_, _) => TextButton(
-                onPressed: () =>
-                    ref.invalidate(teacherSessionsProvider(classData.id)),
-                child: const Text('Retry assessments'),
-              ),
-              data: (rows) => Column(
-                children: [
-                  if (rows.isEmpty)
-                    const ListTile(title: Text('No assessments yet.')),
-                  ...rows.map(
-                    (quiz) => ListTile(
-                      title: Text('${quiz['title']}'),
-                      subtitle: const Text(
-                        'Automatic results, review and grade overrides',
-                      ),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => TeacherContextFrame(
-                            classData: classData,
-                            child: QuizDetailScreen(
-                              sessionId: quiz['_id'].toString(),
+          const Divider(),
+          Text(
+            'Assessment results',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          ref
+              .watch(teacherSessionsProvider(classData.id))
+              .when(
+                loading: () => const LinearProgressIndicator(),
+                error: (_, _) => TextButton(
+                  onPressed: () =>
+                      ref.invalidate(teacherSessionsProvider(classData.id)),
+                  child: const Text('Retry assessments'),
+                ),
+                data: (rows) => Column(
+                  children: [
+                    if (rows.isEmpty)
+                      const ListTile(title: Text('No assessments yet.')),
+                    ...rows.map(
+                      (quiz) => ListTile(
+                        title: Text('${quiz['title']}'),
+                        subtitle: const Text(
+                          'Automatic results, review and grade overrides',
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => TeacherContextFrame(
+                              classData: classData,
+                              child: QuizDetailScreen(
+                                sessionId: quiz['_id'].toString(),
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-      ],
+        ],
+      ),
     ),
   );
 }
@@ -487,67 +505,69 @@ class TeacherReportsScreen extends ConsumerWidget {
       actions: [const AppHomeButton()],
       title: const Text('Reports & Data'),
     ),
-    body: ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        _metric(
-          'Class attendance',
-          ref.watch(classDetailsAttendanceProvider('class|${classData.id}')),
-        ),
-        _metric(
-          'Assessment performance',
-          ref.watch(classPerformanceProvider(classData.id)),
-        ),
-        ListTile(
-          title: const Text('Student performance trends'),
-          subtitle: const Text(
-            'Student profiles, attendance and performance charts',
+    body: ResponsiveBody(
+      child: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          _metric(
+            'Class attendance',
+            ref.watch(classDetailsAttendanceProvider('class|${classData.id}')),
           ),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => TeacherContextFrame(
-                classData: classData,
-                child: TeacherStudentPicker(classData: classData),
+          _metric(
+            'Assessment performance',
+            ref.watch(classPerformanceProvider(classData.id)),
+          ),
+          ListTile(
+            title: const Text('Student performance trends'),
+            subtitle: const Text(
+              'Student profiles, attendance and performance charts',
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => TeacherContextFrame(
+                  classData: classData,
+                  child: TeacherStudentPicker(classData: classData),
+                ),
               ),
             ),
           ),
-        ),
-        ListTile(
-          title: const Text('Attendance records'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) =>
-                  teacherFeaturePage(TeacherFeature.attendance, classData),
+          ListTile(
+            title: const Text('Attendance records'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    teacherFeaturePage(TeacherFeature.attendance, classData),
+              ),
             ),
           ),
-        ),
-        ListTile(
-          title: const Text('Behavior records'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) =>
-                  teacherFeaturePage(TeacherFeature.behavior, classData),
+          ListTile(
+            title: const Text('Behavior records'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    teacherFeaturePage(TeacherFeature.behavior, classData),
+              ),
             ),
           ),
-        ),
-        ListTile(
-          title: const Text('Assignment and assessment grades'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) =>
-                  teacherFeaturePage(TeacherFeature.grades, classData),
+          ListTile(
+            title: const Text('Assignment and assessment grades'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    teacherFeaturePage(TeacherFeature.grades, classData),
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     ),
   );
   Widget _metric(String title, AsyncValue<int?> metric) => Card(
@@ -580,67 +600,71 @@ class TeacherHelpAssignments extends ConsumerWidget {
       actions: [const AppHomeButton()],
       title: const Text('Homework Help'),
     ),
-    body: ref
-        .watch(classHomeworkProvider(classData.id))
-        .when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, _) => Center(
-            child: TextButton(
-              onPressed: () =>
-                  ref.invalidate(classHomeworkProvider(classData.id)),
-              child: const Text('Unable to load assignments. Retry'),
+    body: ResponsiveBody(
+      child: ref
+          .watch(classHomeworkProvider(classData.id))
+          .when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (_, _) => Center(
+              child: TextButton(
+                onPressed: () =>
+                    ref.invalidate(classHomeworkProvider(classData.id)),
+                child: const Text('Unable to load assignments. Retry'),
+              ),
             ),
-          ),
-          data: (rows) {
-            final published = rows
-                .where(
-                  (hw) =>
-                      hw['status'] != 'draft' &&
-                      (student == null ||
-                          (hw['studentIds'] as List? ?? []).isEmpty ||
-                          (hw['studentIds'] as List).any(
-                            (id) =>
-                                (id is Map ? id['_id'] : id).toString() ==
-                                student!['_id'].toString(),
-                          )),
-                )
-                .toList();
-            return ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                const Text(
-                  'Select a published assignment to add PDF, video or linked help.',
-                ),
-                if (published.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.all(20),
-                    child: Text('No published assignments for this selection.'),
+            data: (rows) {
+              final published = rows
+                  .where(
+                    (hw) =>
+                        hw['status'] != 'draft' &&
+                        (student == null ||
+                            (hw['studentIds'] as List? ?? []).isEmpty ||
+                            (hw['studentIds'] as List).any(
+                              (id) =>
+                                  (id is Map ? id['_id'] : id).toString() ==
+                                  student!['_id'].toString(),
+                            )),
+                  )
+                  .toList();
+              return ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  const Text(
+                    'Select a published assignment to add PDF, video or linked help.',
                   ),
-                ...published.map(
-                  (hw) => Card(
-                    child: ListTile(
-                      title: Text('${hw['title']}'),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => TeacherContextFrame(
-                            classData: classData,
-                            student: student,
-                            child: TeacherMaterialsScreen(
+                  if (published.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.all(20),
+                      child: Text(
+                        'No published assignments for this selection.',
+                      ),
+                    ),
+                  ...published.map(
+                    (hw) => Card(
+                      child: ListTile(
+                        title: Text('${hw['title']}'),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => TeacherContextFrame(
                               classData: classData,
-                              homework: Map<String, dynamic>.from(hw),
                               student: student,
+                              child: TeacherMaterialsScreen(
+                                classData: classData,
+                                homework: Map<String, dynamic>.from(hw),
+                                student: student,
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            );
-          },
-        ),
+                ],
+              );
+            },
+          ),
+    ),
   );
 }

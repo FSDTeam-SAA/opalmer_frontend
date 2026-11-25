@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import '../core/services/api_client.dart';
@@ -90,46 +91,48 @@ class _TwoFactorAuthScreenState extends State<TwoFactorAuthScreen> {
       actions: [const AppHomeButton()],
       title: const Text('Two-Factor Authentication'),
     ),
-    body: _loading
-        ? const Center(child: CircularProgressIndicator())
-        : ListView(
-            padding: const EdgeInsets.all(24),
-            children: [
-              Text(
-                _enabled ? 'Enabled' : 'Disabled',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                _email.isEmpty
-                    ? 'Add an email to your profile before enabling two-factor authentication.'
-                    : 'When enabled, a six-digit code is sent to $_email after your password is verified at sign-in.',
-              ),
-              const SizedBox(height: 24),
-              TextField(
-                controller: _password,
-                obscureText: true,
-                autofillHints: const [AutofillHints.password],
-                decoration: const InputDecoration(
-                  labelText: 'Current password',
+    body: ResponsiveBody(
+      child: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+              padding: const EdgeInsets.all(24),
+              children: [
+                Text(
+                  _enabled ? 'Enabled' : 'Disabled',
+                  style: Theme.of(context).textTheme.headlineSmall,
                 ),
-              ),
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: _busy || _email.isEmpty ? null : _toggle,
-                child: Text(
-                  _busy
-                      ? 'Saving...'
-                      : _enabled
-                      ? 'Disable two-factor authentication'
-                      : 'Enable two-factor authentication',
+                const SizedBox(height: 16),
+                Text(
+                  _email.isEmpty
+                      ? 'Add an email to your profile before enabling two-factor authentication.'
+                      : 'When enabled, a six-digit code is sent to $_email after your password is verified at sign-in.',
                 ),
-              ),
-              if (_error != null) ...[
-                Text(_error!, style: const TextStyle(color: Colors.red)),
-                TextButton(onPressed: _load, child: const Text('Retry')),
+                const SizedBox(height: 24),
+                TextField(
+                  controller: _password,
+                  obscureText: true,
+                  autofillHints: const [AutofillHints.password],
+                  decoration: const InputDecoration(
+                    labelText: 'Current password',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                FilledButton(
+                  onPressed: _busy || _email.isEmpty ? null : _toggle,
+                  child: Text(
+                    _busy
+                        ? 'Saving...'
+                        : _enabled
+                        ? 'Disable two-factor authentication'
+                        : 'Enable two-factor authentication',
+                  ),
+                ),
+                if (_error != null) ...[
+                  Text(_error!, style: const TextStyle(color: Colors.red)),
+                  TextButton(onPressed: _load, child: const Text('Retry')),
+                ],
               ],
-            ],
-          ),
+            ),
+    ),
   );
 }

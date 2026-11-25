@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -192,176 +193,183 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
           ),
         ),
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Upload new academic document here",
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-              const SizedBox(height: 24),
+      body: ResponsiveBody(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Upload new academic document here",
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+                const SizedBox(height: 24),
 
-              ref
-                  .watch(studentTeacherClassesProvider(widget.studentId))
-                  .when(
-                    loading: () => const LinearProgressIndicator(),
-                    error: (_, _) => TextButton(
-                      onPressed: () => ref.invalidate(
-                        studentTeacherClassesProvider(widget.studentId),
+                ref
+                    .watch(studentTeacherClassesProvider(widget.studentId))
+                    .when(
+                      loading: () => const LinearProgressIndicator(),
+                      error: (_, _) => TextButton(
+                        onPressed: () => ref.invalidate(
+                          studentTeacherClassesProvider(widget.studentId),
+                        ),
+                        child: const Text('Unable to load classes. Retry'),
                       ),
-                      child: const Text('Unable to load classes. Retry'),
+                      data: (classes) => classes.isEmpty
+                          ? const Text(
+                              'This student is not enrolled in one of your classes.',
+                            )
+                          : DropdownButtonFormField<String>(
+                              initialValue:
+                                  classes.any(
+                                    (cls) => cls.id == _selectedClassId,
+                                  )
+                                  ? _selectedClassId
+                                  : null,
+                              isExpanded: true,
+                              menuMaxHeight: 300,
+                              dropdownColor: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              icon: const Icon(
+                                Icons.keyboard_arrow_down,
+                                color: Color(0xFF871DAD),
+                              ),
+                              hint: const Text('Select student class'),
+                              style: const TextStyle(
+                                color: Color(0xFF333333),
+                                fontSize: 14,
+                              ),
+                              selectedItemBuilder: (context) => classes
+                                  .map(
+                                    (cls) => Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        'Grade ${cls.grade} - ${cls.subject}${cls.section?.isNotEmpty == true ? ' (Section ${cls.section})' : ''}',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                              decoration: InputDecoration(
+                                labelText: 'Student class',
+                              ),
+                              items: classes
+                                  .map(
+                                    (cls) => DropdownMenuItem(
+                                      value: cls.id,
+                                      child: Text(
+                                        'Grade ${cls.grade} - ${cls.subject}${cls.section?.isNotEmpty == true ? ' (Section ${cls.section})' : ''}',
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: _isLoading
+                                  ? null
+                                  : (value) => setState(
+                                      () => _selectedClassId = value,
+                                    ),
+                            ),
                     ),
-                    data: (classes) => classes.isEmpty
-                        ? const Text(
-                            'This student is not enrolled in one of your classes.',
-                          )
-                        : DropdownButtonFormField<String>(
-                            initialValue:
-                                classes.any((cls) => cls.id == _selectedClassId)
-                                ? _selectedClassId
-                                : null,
-                            isExpanded: true,
-                            menuMaxHeight: 300,
-                            dropdownColor: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            icon: const Icon(
-                              Icons.keyboard_arrow_down,
-                              color: Color(0xFF871DAD),
-                            ),
-                            hint: const Text('Select student class'),
-                            style: const TextStyle(
-                              color: Color(0xFF333333),
-                              fontSize: 14,
-                            ),
-                            selectedItemBuilder: (context) => classes
-                                .map(
-                                  (cls) => Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      'Grade ${cls.grade} - ${cls.subject}${cls.section?.isNotEmpty == true ? ' (Section ${cls.section})' : ''}',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                            decoration: InputDecoration(
-                              labelText: 'Student class',
-                            ),
-                            items: classes
-                                .map(
-                                  (cls) => DropdownMenuItem(
-                                    value: cls.id,
-                                    child: Text(
-                                      'Grade ${cls.grade} - ${cls.subject}${cls.section?.isNotEmpty == true ? ' (Section ${cls.section})' : ''}',
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: _isLoading
-                                ? null
-                                : (value) =>
-                                      setState(() => _selectedClassId = value),
+                const SizedBox(height: 24),
+                // Dashed Upload Area
+                GestureDetector(
+                  onTap: _pickFile,
+                  child: CustomPaint(
+                    painter: DashedBorderPainter(
+                      color: const Color(0xFF871DAD),
+                      strokeWidth: 1.5,
+                      gap: 6.0,
+                    ),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      child: Column(
+                        children: [
+                          const Icon(
+                            Icons.cloud_upload_outlined,
+                            size: 56,
+                            color: Color(0xFF871DAD),
                           ),
-                  ),
-              const SizedBox(height: 24),
-              // Dashed Upload Area
-              GestureDetector(
-                onTap: _pickFile,
-                child: CustomPaint(
-                  painter: DashedBorderPainter(
-                    color: const Color(0xFF871DAD),
-                    strokeWidth: 1.5,
-                    gap: 6.0,
-                  ),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 40),
-                    child: Column(
-                      children: [
-                        const Icon(
-                          Icons.cloud_upload_outlined,
-                          size: 56,
-                          color: Color(0xFF871DAD),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          "Tap to choose a PDF (up to 10 MB)",
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: const Color(0xFF871DAD)),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Text(
-                            "UPLOAD PDF",
+                          const SizedBox(height: 16),
+                          Text(
+                            "Tap to choose a PDF (up to 10 MB)",
                             style: TextStyle(
-                              color: Color(0xFF871DAD),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                              fontSize: 13,
+                              color: Colors.grey.shade600,
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 20),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: const Color(0xFF871DAD),
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text(
+                              "UPLOAD PDF",
+                              style: TextStyle(
+                                color: Color(0xFF871DAD),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 32),
+                const SizedBox(height: 32),
 
-              // Uploaded files list
-              if (_selectedFile != null) ...[
-                _buildUploadedFile(_selectedFile!.name),
+                // Uploaded files list
+                if (_selectedFile != null) ...[
+                  _buildUploadedFile(_selectedFile!.name),
+                ],
+
+                const Spacer(),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _uploadFile,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF871DAD),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text(
+                            "ADD",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                  ),
+                ),
               ],
-
-              const Spacer(),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _uploadFile,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF871DAD),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text(
-                          "ADD",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

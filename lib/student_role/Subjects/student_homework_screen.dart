@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,74 +27,77 @@ class _StudentHomeworkScreenState extends ConsumerState<StudentHomeworkScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
-      body: Column(
-        children: [
-          const SizedBox(height: 16),
-          _buildTabToggle(),
-          const SizedBox(height: 24),
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: () async {
-                if (isClassSelected) {
-                  ref.invalidate(studentHomeworkProvider);
-                  try {
-                    await ref.read(studentHomeworkProvider.future);
-                  } catch (_) {}
-                } else {
-                  ref.invalidate(studentGroupWorkProvider);
-                  try {
-                    await ref.read(studentGroupWorkProvider.future);
-                  } catch (_) {}
-                }
-              },
-              child: ListView(
-                key: const ValueKey('homework_main_list'),
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                physics: const AlwaysScrollableScrollPhysics(),
-                children: [
-                  if (isClassSelected)
-                    ...homeworkAsync.maybeWhen(
-                      data: (homework) => _buildClassHomeworkItems(homework),
-                      loading: () => [
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 60),
-                          child: Center(child: CircularProgressIndicator()),
-                        ),
-                      ],
-                      orElse: () => [
-                        if (homeworkAsync.hasError)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 60),
-                            child: Center(
-                              child: Text('Error: ${homeworkAsync.error}'),
-                            ),
+      body: ResponsiveBody(
+        child: Column(
+          children: [
+            const SizedBox(height: 16),
+            _buildTabToggle(),
+            const SizedBox(height: 24),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  if (isClassSelected) {
+                    ref.invalidate(studentHomeworkProvider);
+                    try {
+                      await ref.read(studentHomeworkProvider.future);
+                    } catch (_) {}
+                  } else {
+                    ref.invalidate(studentGroupWorkProvider);
+                    try {
+                      await ref.read(studentGroupWorkProvider.future);
+                    } catch (_) {}
+                  }
+                },
+                child: ListView(
+                  key: const ValueKey('homework_main_list'),
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: [
+                    if (isClassSelected)
+                      ...homeworkAsync.maybeWhen(
+                        data: (homework) => _buildClassHomeworkItems(homework),
+                        loading: () => [
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 60),
+                            child: Center(child: CircularProgressIndicator()),
                           ),
-                      ],
-                    )
-                  else
-                    ...groupWorkAsync.maybeWhen(
-                      data: (groupWork) => _buildGroupsHomeworkItems(groupWork),
-                      loading: () => [
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 60),
-                          child: Center(child: CircularProgressIndicator()),
-                        ),
-                      ],
-                      orElse: () => [
-                        if (groupWorkAsync.hasError)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 60),
-                            child: Center(
-                              child: Text('Error: ${groupWorkAsync.error}'),
+                        ],
+                        orElse: () => [
+                          if (homeworkAsync.hasError)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 60),
+                              child: Center(
+                                child: Text('Error: ${homeworkAsync.error}'),
+                              ),
                             ),
+                        ],
+                      )
+                    else
+                      ...groupWorkAsync.maybeWhen(
+                        data: (groupWork) =>
+                            _buildGroupsHomeworkItems(groupWork),
+                        loading: () => [
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 60),
+                            child: Center(child: CircularProgressIndicator()),
                           ),
-                      ],
-                    ),
-                ],
+                        ],
+                        orElse: () => [
+                          if (groupWorkAsync.hasError)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 60),
+                              child: Center(
+                                child: Text('Error: ${groupWorkAsync.error}'),
+                              ),
+                            ),
+                        ],
+                      ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -61,69 +62,71 @@ class _PolicyContentScreenState extends ConsumerState<PolicyContentScreen>
           ),
         ],
       ),
-      body: content.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, _) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+      body: ResponsiveBody(
+        child: content.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, _) => Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Unable to load this page. Check your connection and retry.',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton(
+                    onPressed: () =>
+                        ref.invalidate(policyContentProvider(widget.type)),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          data: (document) => RefreshIndicator(
+            onRefresh: _refresh,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
               children: [
-                const Text(
-                  'Unable to load this page. Check your connection and retry.',
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                FilledButton(
-                  onPressed: () =>
-                      ref.invalidate(policyContentProvider(widget.type)),
-                  child: const Text('Retry'),
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 800),
+                    child: document == null || document.html.trim().isEmpty
+                        ? const Padding(
+                            padding: EdgeInsets.all(24),
+                            child: Text('Content has not been published yet.'),
+                          )
+                        : SelectionArea(
+                            child: HtmlWidget(
+                              document.html,
+                              textStyle: Theme.of(
+                                context,
+                              ).textTheme.bodyLarge?.copyWith(height: 1.6),
+                              onTapUrl: (url) async {
+                                final uri = Uri.tryParse(url);
+                                if (uri == null ||
+                                    ![
+                                      'https',
+                                      'http',
+                                      'mailto',
+                                      'tel',
+                                    ].contains(uri.scheme)) {
+                                  return false;
+                                }
+                                return launchUrl(
+                                  uri,
+                                  mode: LaunchMode.externalApplication,
+                                );
+                              },
+                            ),
+                          ),
+                  ),
                 ),
               ],
             ),
-          ),
-        ),
-        data: (document) => RefreshIndicator(
-          onRefresh: _refresh,
-          child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-            children: [
-              Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 800),
-                  child: document == null || document.html.trim().isEmpty
-                      ? const Padding(
-                          padding: EdgeInsets.all(24),
-                          child: Text('Content has not been published yet.'),
-                        )
-                      : SelectionArea(
-                          child: HtmlWidget(
-                            document.html,
-                            textStyle: Theme.of(
-                              context,
-                            ).textTheme.bodyLarge?.copyWith(height: 1.6),
-                            onTapUrl: (url) async {
-                              final uri = Uri.tryParse(url);
-                              if (uri == null ||
-                                  ![
-                                    'https',
-                                    'http',
-                                    'mailto',
-                                    'tel',
-                                  ].contains(uri.scheme)) {
-                                return false;
-                              }
-                              return launchUrl(
-                                uri,
-                                mode: LaunchMode.externalApplication,
-                              );
-                            },
-                          ),
-                        ),
-                ),
-              ),
-            ],
           ),
         ),
       ),

@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -62,34 +63,36 @@ class _BehaviorRecordScreenState extends ConsumerState<BehaviorRecordScreen> {
           ),
         ),
       ),
-      body: SafeArea(
-        child: behaviorsAsync.when(
-          data: (allBehaviors) {
-            final behaviors = allBehaviors
-                .where(
-                  (row) =>
-                      widget.classId == null ||
-                      (row['classId'] is Map
-                                  ? row['classId']['_id']
-                                  : row['classId'])
-                              ?.toString() ==
-                          widget.classId,
-                )
-                .toList();
-            if (behaviors.isEmpty) {
-              return const Center(child: Text("No behavior records found"));
-            }
-            return ListView.builder(
-              padding: const EdgeInsets.all(20),
-              itemCount: behaviors.length,
-              itemBuilder: (context, index) {
-                final behavior = behaviors[index];
-                return _buildRecordCard(behavior);
-              },
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, stack) => Center(child: Text("Error: $err")),
+      body: ResponsiveBody(
+        child: SafeArea(
+          child: behaviorsAsync.when(
+            data: (allBehaviors) {
+              final behaviors = allBehaviors
+                  .where(
+                    (row) =>
+                        widget.classId == null ||
+                        (row['classId'] is Map
+                                    ? row['classId']['_id']
+                                    : row['classId'])
+                                ?.toString() ==
+                            widget.classId,
+                  )
+                  .toList();
+              if (behaviors.isEmpty) {
+                return const Center(child: Text("No behavior records found"));
+              }
+              return ListView.builder(
+                padding: const EdgeInsets.all(20),
+                itemCount: behaviors.length,
+                itemBuilder: (context, index) {
+                  final behavior = behaviors[index];
+                  return _buildRecordCard(behavior);
+                },
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, stack) => Center(child: Text("Error: $err")),
+          ),
         ),
       ),
       floatingActionButton: Tooltip(

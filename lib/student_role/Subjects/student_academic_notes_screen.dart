@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import 'package:opalmer_education/core/widgets/app_home_button.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -79,67 +80,73 @@ class _StudentAcademicNotesScreenState
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
-      body: RefreshIndicator(
-        onRefresh: () => ref.refresh(studentAcademicDocumentsProvider.future),
-        color: AppColors.primaryMid,
-        child: documentsAsync.when(
-          data: (documents) {
-            if (documents.isEmpty) {
-              return SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.7,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.article_rounded,
-                          size: 64,
-                          color: Colors.grey.shade200,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          "No academic notes found",
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade500,
-                            fontWeight: FontWeight.w500,
+      body: ResponsiveBody(
+        child: RefreshIndicator(
+          onRefresh: () => ref.refresh(studentAcademicDocumentsProvider.future),
+          color: AppColors.primaryMid,
+          child: documentsAsync.when(
+            data: (documents) {
+              if (documents.isEmpty) {
+                return SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.article_rounded,
+                            size: 64,
+                            color: Colors.grey.shade200,
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 16),
+                          Text(
+                            "No academic notes found",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade500,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            }
-            return ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: documents.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 16),
-              itemBuilder: (context, index) {
-                final doc = documents[index];
-                final dateStr = doc.createdAt != null
-                    ? "${doc.createdAt!.day}_${doc.createdAt!.month}_${doc.createdAt!.year}"
-                    : "Unknown";
-
-                final isDownloading = _downloadingId == doc.id;
-
-                return _buildDocumentCard(
-                  context,
-                  doc,
-                  doc.teacherName != null
-                      ? "Note from ${doc.teacherName}"
-                      : "Academic Note - ${dateStr.replaceAll('_', '/')}",
-                  dateStr,
-                  isDownloading,
                 );
-              },
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, stack) => Center(child: Text('Error: $err')),
+              }
+              return ListView.separated(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 24,
+                ),
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: documents.length,
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 16),
+                itemBuilder: (context, index) {
+                  final doc = documents[index];
+                  final dateStr = doc.createdAt != null
+                      ? "${doc.createdAt!.day}_${doc.createdAt!.month}_${doc.createdAt!.year}"
+                      : "Unknown";
+
+                  final isDownloading = _downloadingId == doc.id;
+
+                  return _buildDocumentCard(
+                    context,
+                    doc,
+                    doc.teacherName != null
+                        ? "Note from ${doc.teacherName}"
+                        : "Academic Note - ${dateStr.replaceAll('_', '/')}",
+                    dateStr,
+                    isDownloading,
+                  );
+                },
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, stack) => Center(child: Text('Error: $err')),
+          ),
         ),
       ),
     );

@@ -1,3 +1,4 @@
+import 'package:opalmer_education/core/responsive/responsive.dart';
 import '../core/widgets/brand_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:opalmer_education/core/theme/app_colors.dart';
@@ -139,6 +140,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.sizeOf(context);
+    // On wide landscape screens (iPad) a portrait photo with BoxFit.cover is
+    // cropped down to a thin strip. Show the whole image instead.
+    final showWholeImage = screenSize.width > screenSize.height;
     return Scaffold(
       body: Stack(
         children: [
@@ -175,11 +179,17 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         opacity: _imageFade,
                         child: SlideTransition(
                           position: _imageSlide,
-                          child: Image.asset(
-                            onboardingData[index]["image"]!,
-                            fit: BoxFit.cover,
-                            alignment: onboardingData[index]["imageAlignment"],
-                          ),
+                          child: showWholeImage
+                              ? _WholeImage(
+                                  asset: onboardingData[index]["image"]!,
+                                  background: onboardingData[index]["bgColor"],
+                                )
+                              : Image.asset(
+                                  onboardingData[index]["image"]!,
+                                  fit: BoxFit.cover,
+                                  alignment:
+                                      onboardingData[index]["imageAlignment"],
+                                ),
                         ),
                       ),
                     ),
@@ -242,7 +252,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               child: SlideTransition(
                 position: _cardSlide,
                 child: Container(
-                  height: 300,
+                  // A minimum rather than a fixed height, so larger text
+                  // (accessibility sizes, wider fonts) grows the card
+                  // instead of overflowing it.
+                  constraints: const BoxConstraints(minHeight: 300),
                   decoration: const BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.only(
@@ -250,64 +263,70 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       topRight: Radius.circular(30),
                     ),
                   ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: Responsive.gutter(
+                      context,
+                      maxWidth: Responsive.formMaxWidth,
+                      base: 24,
+                    ),
                     vertical: 28,
                   ),
-                  child: Column(
-                    children: [
-                      // Dots
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(
-                          onboardingData.length,
-                          (index) => buildDot(index: index),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      children: [
+                        // Dots
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(
+                            onboardingData.length,
+                            (index) => buildDot(index: index),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 28),
-                      const Text(
-                        "Empower Learning",
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                        const SizedBox(height: 28),
+                        const Text(
+                          "Empower Learning",
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        "Manage classes, track progress, and stay\nconnected all in one powerful platform.",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: AppColors.textSecondary,
-                          height: 1.55,
+                        const SizedBox(height: 12),
+                        const Text(
+                          "Manage classes, track progress, and stay\nconnected all in one powerful platform.",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: AppColors.textSecondary,
+                            height: 1.55,
+                          ),
                         ),
-                      ),
-                      const Spacer(),
+                        const Spacer(),
 
-                      // Button
-                      PrimaryButton(
-                        isGradient: false,
-                        text: _currentPage == onboardingData.length - 1
-                            ? "GET STARTED"
-                            : "CONTINUE",
-                        onPressed: () {
-                          if (_currentPage == onboardingData.length - 1) {
-                            Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                builder: (_) => const UserRoleScreen(),
-                              ),
-                            );
-                          } else {
-                            _pageController.nextPage(
-                              duration: const Duration(milliseconds: 350),
-                              curve: Curves.easeInOut,
-                            );
-                          }
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                    ],
+                        // Button
+                        PrimaryButton(
+                          isGradient: false,
+                          text: _currentPage == onboardingData.length - 1
+                              ? "GET STARTED"
+                              : "CONTINUE",
+                          onPressed: () {
+                            if (_currentPage == onboardingData.length - 1) {
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (_) => const UserRoleScreen(),
+                                ),
+                              );
+                            } else {
+                              _pageController.nextPage(
+                                duration: const Duration(milliseconds: 350),
+                                curve: Curves.easeInOut,
+                              );
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -330,6 +349,44 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             ? AppColors.primaryMid
             : const Color(0xFFE0E0E0),
         borderRadius: BorderRadius.circular(4),
+      ),
+    );
+  }
+}
+
+/// Shows the whole onboarding image at the available height, centered, with
+/// its side edges faded into the page color so photo backgrounds blend in.
+class _WholeImage extends StatelessWidget {
+  final String asset;
+  final Color background;
+
+  const _WholeImage({required this.asset, required this.background});
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Stack(
+        children: [
+          Image.asset(asset, fit: BoxFit.fitHeight),
+          Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      background,
+                      background.withValues(alpha: 0),
+                      background.withValues(alpha: 0),
+                      background,
+                    ],
+                    stops: const [0, .3, .7, 1],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
